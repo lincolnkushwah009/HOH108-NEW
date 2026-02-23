@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+backend/.env
+backend/.env.local
+backend/.env.production
+
+# Build output
+dist/
+build/
+
+# Uploads (user-generated content)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Logs
+backend/logs/*
+!backend/logs/.gitkeep
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Vite
+.vite/
+
+# Capacitor
+android/app/build/
+android/.gradle/
+android/build/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npm init -y)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(./node_modules/.bin/tailwindcss:*)",
+      "Bash(node utils/seed.js:*)",
+      "Bash(npm run build:*)",
+      "Bash(lsof:*)",
+      "Bash(npm run dev:*)",
+      "Bash(xargs kill -9)",
+      "Bash(npm start)",
+      "WebFetch(domain:hoh108.com)",
+      "Bash(sshpass:*)",
+      "Bash(curl:*)",
+      "Bash(# Check key API endpoints respond \\(without auth - should get 401 or auth error\\) echo \"\"=== Leads API ===\"\"; curl -s https://hoh108.com/api/leads)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless --disable-gpu --print-to-pdf=\"/Users/lincoln/Desktop/HOH108-Business-Flow.pdf\" --no-margins \"/Users/lincoln/Desktop/HOH108-Business-Flow.html\")",
+      "Bash(node -e:*)",
+      "Bash(npx vite build)",
+      "Bash(gh auth:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

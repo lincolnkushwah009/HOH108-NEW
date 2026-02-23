@@ -1,0 +1,22 @@
+{
+  "name": "HOH108 CRM",
+  "short_name": "HOH108",
+  "description": "Interior Design CRM & ERP Platform",
+  "start_url": "/admin",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#C59C82",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/Logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/Logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
