@@ -149,6 +149,178 @@ router.get('/',
 )
 
 /**
+ * @desc    Bulk upload employees from CSV
+ * @route   POST /api/employees/bulk-upload
+ * @access  Private (Admin)
+ */
+router.post('/bulk-upload',
+  requirePermission(PERMISSIONS.USERS_CREATE),
+  async (req, res) => {
+    try {
+      const { employees: employeeRows } = req.body
+      const companyId = req.activeCompany._id
+
+      if (!employeeRows || !Array.isArray(employeeRows) || employeeRows.length === 0) {
+        return res.status(400).json({ success: false, message: 'No employee data provided' })
+      }
+
+      if (employeeRows.length > 200) {
+        return res.status(400).json({ success: false, message: 'Maximum 200 employees per upload' })
+      }
+
+      const company = await Company.findById(companyId)
+      if (!company) {
+        return res.status(400).json({ success: false, message: 'Company not found' })
+      }
+
+      const results = { successful: 0, failed: 0, errors: [] }
+
+      // Column name mapping (lowercase CSV header → model field)
+      const columnMap = {
+        name: 'name', 'employee name': 'name', 'full name': 'name', fullname: 'name',
+        email: 'email', 'email address': 'email', emailaddress: 'email',
+        phone: 'phone', 'phone number': 'phone', phonenumber: 'phone', mobile: 'phone',
+        designation: 'designation', title: 'designation', 'job title': 'designation', jobtitle: 'designation',
+        department: 'department', dept: 'department',
+        role: 'role', 'system role': 'role',
+        'employment type': 'employmentType', employmenttype: 'employmentType', 'emp type': 'employmentType',
+        'date of joining': 'dateOfJoining', dateofjoining: 'dateOfJoining', doj: 'dateOfJoining', 'joining date': 'dateOfJoining',
+        city: 'city', branch: 'city', location: 'city',
+        gender: 'gender', sex: 'gender',
+      }
+
+      const validRoles = ['super_admin', 'company_admin', 'sales_manager', 'sales_executive', 'pre_sales', 'project_manager', 'site_engineer', 'designer', 'operations', 'finance', 'viewer']
+      const validEmploymentTypes = ['probation', 'permanent', 'contract', 'intern', 'consultant']
+      const validGenders = ['male', 'female', 'other']
+
+      // Map designation to role (same logic as importEmployees script)
+      function mapDesignationToRole(designation) {
+        const d = (designation || '').toLowerCase()
+        if (d.includes('ceo') || d.includes('director')) return 'super_admin'
+        if (d.includes('cbo') || d.includes('coo') || d.includes('cfo') || d.includes('cmo') || d.includes('cto')) return 'company_admin'
+        if (d.includes('head of') || d.includes('agm') || (d.includes('manager') && !d.includes('associate'))) return 'sales_manager'
+        if (d.includes('project manager')) return 'project_manager'
+        if (d.includes('site') || d.includes('engineer') || d.includes('supervisor')) return 'site_engineer'
+        if (d.includes('design') || d.includes('drm') || d.includes('architect') || d.includes('visualizer')) return 'designer'
+        if (d.includes('presales') || d.includes('sales')) return 'sales_executive'
+        if (d.includes('finance') || d.includes('account')) return 'finance'
+        if (d.includes('hr') || d.includes('recruiter') || d.includes('operations')) return 'operations'
+        return 'viewer'
+      }
+
+      const import_bcrypt = (await import('bcryptjs')).default
+      const salt = await import_bcrypt.genSalt(10)
+      const defaultPassword = await import_bcrypt.hash('Welcome@123', salt)
+
+      for (let i = 0; i < employeeRows.length; i++) {
+        const row = employeeRows[i]
+
+        // Normalize column names
+        const normalized = {}
+        for (const [key, value] of Object.entries(row)) {
+          const mappedKey = columnMap[key.toLowerCase().trim()] || key.toLowerCase().trim()
+          normalized[mappedKey] = typeof value === 'string' ? value.trim() : value
+        }
+
+        // Validate required fields
+        if (!normalized.name) {
+          results.failed++
+          results.errors.push({ row: i + 1, error: 'Name is required' })
+          continue
+        }
+        if (!normalized.email) {
+          results.failed++
+          results.errors.push({ row: i + 1, error: 'Email is required' })
+          continue
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(normalized.email)) {
+          results.failed++
+          results.errors.push({ row: i + 1, error: `Invalid email: ${normalized.email}` })
+          continue
+        }
+
+        try {
+          // Check for duplicate email
+          const existingUser = await User.findOne({ email: normalized.email.toLowerCase() })
+          if (existingUser) {
+            results.failed++
+            results.errors.push({ row: i + 1, error: `Email already exists: ${normalized.email}` })
+            continue
+          }
+
+          // Generate employee ID
+          const employeeId = await company.generateId('user')
+
+          // Determine role
+          let role = 'viewer'
+          if (normalized.role && validRoles.includes(normalized.role.toLowerCase())) {
+            role = normalized.role.toLowerCase()
+          } else if (normalized.designation) {
+            role = mapDesignationToRole(normalized.designation)
+          }
+
+          // Normalize employment type
+          let employmentType = 'probation'
+          if (normalized.employmentType) {
+            const et = normalized.employmentType.toLowerCase().trim()
+            if (validEmploymentTypes.includes(et)) employmentType = et
+          }
+
+          // Normalize gender
+          let gender = undefined
+          if (normalized.gender) {
+            const g = normalized.gender.toLowerCase().trim()
+            if (validGenders.includes(g)) gender = g
+          }
+
+          const employeeData = {
+            userId: employeeId,
+            name: normalized.name,
+            email: normalized.email.toLowerCase(),
+            phone: normalized.phone || '',
+            password: defaultPassword,
+            company: companyId,
+            role,
+            department: normalized.department || '',
+            designation: normalized.designation || '',
+            isActive: true,
+            isEmployee: true,
+            invitedBy: req.user._id,
+            invitedAt: new Date(),
+            hrDetails: {
+              employmentType,
+              dateOfJoining: normalized.dateOfJoining ? new Date(normalized.dateOfJoining) : undefined,
+              city: normalized.city || '',
+              gender,
+            }
+          }
+
+          await User.create(employeeData)
+          results.successful++
+        } catch (err) {
+          results.failed++
+          results.errors.push({ row: i + 1, error: err.message })
+        }
+      }
+
+      res.json({
+        success: true,
+        data: results,
+        message: `${results.successful} employee(s) created successfully${results.failed > 0 ? `, ${results.failed} failed` : ''}`
+      })
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      })
+    }
+  }
+)
+
+/**
  * @desc    Get single employee with full HR details
  * @route   GET /api/employees/:id
  * @access  Private

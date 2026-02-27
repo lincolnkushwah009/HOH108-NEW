@@ -271,6 +271,11 @@ export const employeesAPI = {
     }),
   delete: (id) =>
     apiRequest(`/employees/${id}`, { method: 'DELETE' }),
+  bulkUpload: (employees) =>
+    apiRequest('/employees/bulk-upload', {
+      method: 'POST',
+      body: JSON.stringify({ employees }),
+    }),
   changePassword: (id, newPassword) =>
     apiRequest(`/employees/${id}/change-password`, {
       method: 'PUT',

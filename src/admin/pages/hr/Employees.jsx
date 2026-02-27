@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Plus, Phone, Mail, MoreVertical, Eye, Edit, Trash2, Key, Upload, FileText, CheckCircle, XCircle, Clock, AlertTriangle, UserCheck, Calendar, Building2, MapPin, File, Image, Download, ExternalLink } from 'lucide-react'
+import { Plus, Phone, Mail, MoreVertical, Eye, Edit, Trash2, Key, Upload, FileText, CheckCircle, XCircle, Clock, AlertTriangle, UserCheck, Calendar, Building2, MapPin, File, Image, Download, ExternalLink, FileSpreadsheet, AlertCircle } from 'lucide-react'
 import { employeesAPI, departmentsAPI, companiesAPI, rolesAPI } from '../../utils/api'
 import PageHeader from '../../components/layout/PageHeader'
 import { Button, Card, Table, Badge, Avatar, SearchInput, Pagination, Dropdown, Modal, Input, Select, Tabs, Textarea } from '../../components/ui'
@@ -90,6 +90,12 @@ const Employees = () => {
   const [uploading, setUploading] = useState(false)
   const [uploadForm, setUploadForm] = useState({ documentType: '', documentName: '' })
   const fileInputRef = useRef(null)
+
+  // Bulk upload
+  const [bulkModal, setBulkModal] = useState({ open: false })
+  const [bulkData, setBulkData] = useState({ rows: [], fileName: '', parsing: false })
+  const [bulkResult, setBulkResult] = useState(null)
+  const [bulkUploading, setBulkUploading] = useState(false)
 
   // Probation data
   const [probationDue, setProbationDue] = useState([])
@@ -463,13 +469,94 @@ const Employees = () => {
     return <Image className="h-5 w-5 text-amber-600" />
   }
 
+  // Bulk upload functions
+  const downloadEmployeeTemplate = () => {
+    const headers = ['Name', 'Email', 'Phone', 'Designation', 'Department', 'Role', 'Employment Type', 'Date of Joining', 'City', 'Gender']
+    const sampleRows = [
+      ['John Doe', 'john.doe@company.com', '9876543210', 'Sales Executive', 'SALES', 'sales_executive', 'probation', '2026-03-01', 'Bengaluru', 'male'],
+      ['Jane Smith', 'jane.smith@company.com', '9876543211', 'Designer', 'DESIGN', 'designer', 'permanent', '2026-02-15', 'Mumbai', 'female'],
+    ]
+    const csvContent = [headers.join(','), ...sampleRows.map(r => r.map(v => `"${v}"`).join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'employee_bulk_upload_template.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const parseBulkCSV = (text) => {
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+    if (lines.length < 2) return []
+    const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim())
+    const rows = []
+    for (let i = 1; i < lines.length; i++) {
+      const values = []
+      let current = ''
+      let inQuotes = false
+      for (const char of lines[i]) {
+        if (char === '"') { inQuotes = !inQuotes; continue }
+        if (char === ',' && !inQuotes) { values.push(current.trim()); current = ''; continue }
+        current += char
+      }
+      values.push(current.trim())
+      const row = {}
+      headers.forEach((h, idx) => { if (values[idx]) row[h] = values[idx] })
+      if (Object.keys(row).length > 0) rows.push(row)
+    }
+    return rows
+  }
+
+  const handleBulkFileSelect = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (!file.name.endsWith('.csv')) {
+      alert('Please upload a CSV file')
+      return
+    }
+    setBulkData(prev => ({ ...prev, fileName: file.name, parsing: true }))
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const rows = parseBulkCSV(ev.target.result)
+      setBulkData({ rows, fileName: file.name, parsing: false })
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  const handleBulkUpload = async () => {
+    if (bulkData.rows.length === 0) return
+    setBulkUploading(true)
+    setBulkResult(null)
+    try {
+      const response = await employeesAPI.bulkUpload(bulkData.rows)
+      setBulkResult(response.data || response)
+      if ((response.data?.successful || response.successful) > 0) {
+        loadEmployees()
+      }
+    } catch (err) {
+      console.error('Bulk upload failed:', err)
+      setBulkResult({ successful: 0, failed: bulkData.rows.length, errors: [{ row: 0, error: err.message || 'Upload failed' }] })
+    } finally {
+      setBulkUploading(false)
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="Employees"
         description="Manage your team members"
         breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Employees' }]}
-        actions={<Button icon={Plus} onClick={() => setShowCreateModal(true)}>Add Employee</Button>}
+        actions={
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button variant="outline" icon={Upload} onClick={() => { setBulkModal({ open: true }); setBulkData({ rows: [], fileName: '', parsing: false }); setBulkResult(null) }}>
+              Bulk Upload
+            </Button>
+            <Button icon={Plus} onClick={() => setShowCreateModal(true)}>Add Employee</Button>
+          </div>
+        }
       />
 
       <Tabs tabs={tabs} defaultTab="all" onChange={setActiveTab} className="mb-6" />
@@ -1130,6 +1217,158 @@ const Employees = () => {
             </Modal.Footer>
           </div>
         )}
+      </Modal>
+
+      {/* Bulk Upload Modal */}
+      <Modal
+        isOpen={bulkModal.open}
+        onClose={() => setBulkModal({ open: false })}
+        title="Bulk Upload Employees"
+        size="lg"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Step 1: Download Template */}
+          <div style={{ padding: '16px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#C59C82', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '700' }}>1</div>
+              <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#1e293b' }}>Download CSV Template</h4>
+            </div>
+            <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#64748b', lineHeight: '1.5' }}>
+              Download the template, fill in your employee data, and upload. The template includes sample rows to guide you.
+            </p>
+            <Button variant="outline" icon={Download} onClick={downloadEmployeeTemplate} size="sm">
+              Download Template
+            </Button>
+          </div>
+
+          {/* Step 2: Upload CSV */}
+          <div style={{ padding: '16px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#C59C82', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '700' }}>2</div>
+              <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#1e293b' }}>Upload Filled CSV</h4>
+            </div>
+
+            {bulkData.rows.length === 0 && !bulkResult ? (
+              <label style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '32px 20px', border: '2px dashed #cbd5e1', borderRadius: '12px',
+                cursor: 'pointer', transition: 'border-color 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = '#C59C82'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = '#cbd5e1'}
+              >
+                <FileSpreadsheet style={{ width: '40px', height: '40px', color: '#94a3b8', marginBottom: '12px' }} />
+                <p style={{ margin: 0, fontSize: '14px', fontWeight: '500', color: '#475569' }}>Click to select CSV file</p>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#94a3b8' }}>Maximum 200 employees per upload</p>
+                <input type="file" accept=".csv" onChange={handleBulkFileSelect} style={{ display: 'none' }} />
+              </label>
+            ) : bulkData.rows.length > 0 && !bulkResult ? (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', backgroundColor: '#ecfdf5', borderRadius: '8px', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle style={{ width: '18px', height: '18px', color: '#059669' }} />
+                    <span style={{ fontSize: '14px', fontWeight: '500', color: '#065f46' }}>
+                      {bulkData.fileName} — {bulkData.rows.length} employee{bulkData.rows.length > 1 ? 's' : ''} found
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setBulkData({ rows: [], fileName: '', parsing: false })}
+                    style={{ fontSize: '13px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '500' }}
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                {/* Preview table */}
+                <div style={{ maxHeight: '200px', overflow: 'auto', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f1f5f9' }}>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: '600', color: '#475569', position: 'sticky', top: 0, backgroundColor: '#f1f5f9' }}>#</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: '600', color: '#475569', position: 'sticky', top: 0, backgroundColor: '#f1f5f9' }}>Name</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: '600', color: '#475569', position: 'sticky', top: 0, backgroundColor: '#f1f5f9' }}>Email</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: '600', color: '#475569', position: 'sticky', top: 0, backgroundColor: '#f1f5f9' }}>Designation</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: '600', color: '#475569', position: 'sticky', top: 0, backgroundColor: '#f1f5f9' }}>Department</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bulkData.rows.slice(0, 10).map((row, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '6px 12px', color: '#94a3b8' }}>{idx + 1}</td>
+                          <td style={{ padding: '6px 12px', color: '#1e293b', fontWeight: '500' }}>{row['Name'] || row.name || '-'}</td>
+                          <td style={{ padding: '6px 12px', color: '#64748b' }}>{row['Email'] || row.email || '-'}</td>
+                          <td style={{ padding: '6px 12px', color: '#64748b' }}>{row['Designation'] || row.designation || '-'}</td>
+                          <td style={{ padding: '6px 12px', color: '#64748b' }}>{row['Department'] || row.department || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {bulkData.rows.length > 10 && (
+                    <div style={{ padding: '8px 12px', fontSize: '12px', color: '#94a3b8', textAlign: 'center', backgroundColor: '#f8fafc' }}>
+                      ...and {bulkData.rows.length - 10} more rows
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Upload Result */}
+          {bulkResult && (
+            <div style={{ padding: '16px', borderRadius: '12px', border: '1px solid', borderColor: bulkResult.failed > 0 ? '#fde68a' : '#bbf7d0', backgroundColor: bulkResult.failed > 0 ? '#fffbeb' : '#f0fdf4' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                {bulkResult.successful > 0 ? (
+                  <CheckCircle style={{ width: '20px', height: '20px', color: '#059669' }} />
+                ) : (
+                  <AlertCircle style={{ width: '20px', height: '20px', color: '#dc2626' }} />
+                )}
+                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '600', color: '#1e293b' }}>Upload Complete</h4>
+              </div>
+              <div style={{ display: 'flex', gap: '20px', marginBottom: bulkResult.errors?.length > 0 ? '12px' : 0 }}>
+                <span style={{ fontSize: '13px', color: '#059669', fontWeight: '500' }}>{bulkResult.successful} successful</span>
+                {bulkResult.failed > 0 && (
+                  <span style={{ fontSize: '13px', color: '#dc2626', fontWeight: '500' }}>{bulkResult.failed} failed</span>
+                )}
+              </div>
+              {bulkResult.errors?.length > 0 && (
+                <div style={{ maxHeight: '120px', overflow: 'auto', fontSize: '12px' }}>
+                  {bulkResult.errors.map((err, idx) => (
+                    <div key={idx} style={{ padding: '4px 0', color: '#dc2626' }}>
+                      Row {err.row}: {err.error}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Template Info */}
+          <div style={{ padding: '12px 16px', backgroundColor: '#eff6ff', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+            <p style={{ margin: 0, fontSize: '12px', color: '#1e40af', lineHeight: '1.6' }}>
+              <strong>Employee ID is auto-generated.</strong> Default password: <strong>Welcome@123</strong><br />
+              <strong>Required columns:</strong> Name*, Email*<br />
+              <strong>Optional columns:</strong> Phone, Designation, Department (code), Role (viewer/sales_executive/designer/etc.),
+              Employment Type (probation/permanent/contract/intern), Date of Joining (YYYY-MM-DD), City, Gender (male/female/other)
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '4px' }}>
+            <Button variant="secondary" onClick={() => setBulkModal({ open: false })}>
+              {bulkResult ? 'Close' : 'Cancel'}
+            </Button>
+            {!bulkResult && bulkData.rows.length > 0 && (
+              <Button onClick={handleBulkUpload} loading={bulkUploading} icon={Upload}>
+                Upload {bulkData.rows.length} Employee{bulkData.rows.length > 1 ? 's' : ''}
+              </Button>
+            )}
+            {bulkResult && bulkResult.successful > 0 && (
+              <Button onClick={() => { setBulkModal({ open: false }); setBulkResult(null) }}>
+                Done
+              </Button>
+            )}
+          </div>
+        </div>
       </Modal>
     </div>
   )
