@@ -290,6 +290,9 @@ const Profile = () => {
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                 />
+                <div style={{ fontSize: 11, color: '#9ca3af', lineHeight: 1.6, padding: '4px 0' }}>
+                  Password must have: 8+ characters, 1 uppercase, 1 lowercase, 1 digit, 1 special character
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Button type="submit" loading={savingPassword}>Update Password</Button>
                 </div>

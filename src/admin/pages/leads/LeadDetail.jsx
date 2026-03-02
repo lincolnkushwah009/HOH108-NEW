@@ -1463,8 +1463,8 @@ const LeadDetail = () => {
               <div style={{ padding: '20px' }}>
                 {(() => {
                   const canEditRevisedBudget =
-                    ['super_admin', 'company_admin', 'sales_manager'].includes(user?.role) ||
-                    user?.approvalAuthority?.approverRole === 'design_head'
+                    ['super_admin', 'company_admin', 'sales_manager'].includes(currentUser?.role) ||
+                    currentUser?.approvalAuthority?.approverRole === 'design_head'
 
                   return canEditRevisedBudget ? (
                     <div>
@@ -1684,7 +1684,7 @@ const LeadDetail = () => {
                       </div>
                     </div>
                   ) : (
-                    (user?.approvalAuthority?.approverRole === 'design_head' || ['super_admin', 'company_admin'].includes(user?.role)) ? (
+                    (currentUser?.approvalAuthority?.approverRole === 'design_head' || ['super_admin', 'company_admin'].includes(currentUser?.role)) ? (
                       <button
                         onClick={async () => {
                           try {

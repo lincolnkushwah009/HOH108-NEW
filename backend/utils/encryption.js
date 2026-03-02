@@ -171,12 +171,12 @@ export const validatePasswordStrength = (password) => {
     return { isValid: false, errors: ['Password is required'], strength: 'none' }
   }
 
-  // Minimum length: 12 characters
-  if (password.length < 12) {
-    errors.push('Password must be at least 12 characters long')
+  // Minimum length: 8 characters
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long')
   } else {
     score += 1
-    if (password.length >= 16) score += 1
+    if (password.length >= 12) score += 1
   }
 
   // Uppercase letter
@@ -207,16 +207,15 @@ export const validatePasswordStrength = (password) => {
     score += 1
   }
 
-  // Common passwords check
+  // Common passwords check (exact match only, not substring)
   const commonPasswords = [
-    'password', '123456', 'qwerty', 'admin', 'letmein',
-    'welcome', 'monkey', 'dragon', 'master', 'login',
-    'password123', 'admin123', 'root', 'toor', 'pass',
-    'test', 'guest', 'abc123', '111111', '123123'
+    'password', '123456', 'qwerty', 'letmein',
+    'monkey', 'dragon', 'master', 'login',
+    'password123', 'admin123', 'abc123', '111111', '123123'
   ]
 
-  if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
-    errors.push('Password contains commonly used patterns')
+  if (commonPasswords.includes(password.toLowerCase())) {
+    errors.push('Password is too common, please choose a different one')
     score = Math.max(0, score - 2)
   }
 
