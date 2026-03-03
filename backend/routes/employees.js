@@ -233,8 +233,8 @@ router.post('/bulk-upload',
 
       // System Role → base role mapping
       function mapSystemRoleToBaseRole(systemRole, permissionRole) {
-        const s = (systemRole || '').toLowerCase().trim()
-        const p = (permissionRole || '').toLowerCase().trim()
+        const s = (systemRole || '').replace(/\s+/g, ' ').toLowerCase().trim()
+        const p = (permissionRole || '').replace(/\s+/g, ' ').toLowerCase().trim()
 
         if (['group ceo', 'director'].includes(s)) return 'super_admin'
         if (['ceo', 'cbo', 'coo', 'cfo', 'cmo', 'cto'].includes(s)) return 'company_admin'
@@ -256,6 +256,12 @@ router.post('/bulk-upload',
         if (s === 'mmt') return 'operations'
         if (['quality controller', 'subject matter expert', 'assistant subject matter expert'].includes(s)) return 'operations'
         if (['hr manager', 'senior executive (hr)'].includes(s)) return 'operations'
+        if (s === 'senior executive') {
+          // Disambiguate by permission role or department context
+          if (p.includes('finance')) return 'finance'
+          if (p.includes('hr')) return 'operations'
+          return 'operations'
+        }
         if (['financial controller', 'senior executive (finance)'].includes(s)) return 'finance'
         if (['csr & planner', 'business operations lead'].includes(s)) return 'operations'
         if (s === 'manager - channel sales') return 'sales_manager'
@@ -277,6 +283,36 @@ router.post('/bulk-upload',
         if (d.includes('hr') || d.includes('recruiter') || d.includes('operations')) return 'operations'
         return 'viewer'
       }
+
+      // Department name → department code mapping
+      const deptNameToCode = {
+        'management': 'MNG',
+        'sales & design': 'SALES',
+        'operations': 'EXECUTION',
+        'human resources & admin': 'HR',
+        'finance & accounts': 'FINANCE',
+        'marketing': 'MARKETING',
+        'information technology': 'IT',
+        'sales': 'SALES',
+        'design': 'DESIGN',
+        'project execution': 'EXECUTION',
+        'quality control': 'QC',
+        'planning': 'EXECUTION',
+        'presales': 'PRE_SALES',
+        'human resources': 'HR',
+        'finance': 'FINANCE',
+        'digital marketing': 'MARKETING',
+        'channel sales': 'CHANNEL_SALES',
+        'business intelligence': 'BI',
+        'business development': 'BD',
+        'administration': 'ADMIN',
+        'hr': 'HR',
+        'it': 'IT',
+        'procurement': 'PROCUREMENT',
+      }
+
+      // Management designations that override to MNG department
+      const managementDesignations = ['group ceo', 'director', 'ceo', 'cbo', 'coo', 'cfo', 'cmo', 'cto']
 
       const import_bcrypt = (await import('bcryptjs')).default
       const salt = await import_bcrypt.genSalt(10)
@@ -353,7 +389,7 @@ router.post('/bulk-upload',
           // Look up Permission Role → userRole (Role ObjectId)
           let userRoleId = undefined
           if (normalized.permissionRole) {
-            const roleCode = permissionRoleToCode[normalized.permissionRole.toLowerCase().trim()]
+            const roleCode = permissionRoleToCode[normalized.permissionRole.replace(/\s+/g, ' ').toLowerCase().trim()]
             if (roleCode && rolesByCode[roleCode]) {
               userRoleId = rolesByCode[roleCode]._id
             }
@@ -393,6 +429,17 @@ router.post('/bulk-upload',
             if (validGenders.includes(g)) gender = g
           }
 
+          // Map department name to code
+          let deptCode = normalized.department || ''
+          const deptLower = deptCode.toLowerCase().trim()
+          if (deptNameToCode[deptLower]) {
+            deptCode = deptNameToCode[deptLower]
+          }
+          // Override for top management
+          if (normalized.systemRole && managementDesignations.includes(normalized.systemRole.toLowerCase().trim())) {
+            deptCode = 'MNG'
+          }
+
           const employeeData = {
             userId: employeeId,
             name: normalized.name,
@@ -402,8 +449,8 @@ router.post('/bulk-upload',
             company: assignedCompany,
             role,
             userRole: userRoleId,
-            department: normalized.department || '',
-            designation: normalized.designation || '',
+            department: deptCode,
+            designation: normalized.designation || normalized.systemRole || '',
             isActive: true,
             isEmployee: true,
             invitedBy: req.user._id,

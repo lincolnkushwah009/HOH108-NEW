@@ -88,8 +88,8 @@ const PERMISSION_ROLE_TO_CODE = {
 // System Role → base role mapping
 // ============================================
 function mapSystemRoleToBaseRole(systemRole, permissionRole) {
-  const s = (systemRole || '').toLowerCase().trim()
-  const p = (permissionRole || '').toLowerCase().trim()
+  const s = (systemRole || '').replace(/\s+/g, ' ').toLowerCase().trim()
+  const p = (permissionRole || '').replace(/\s+/g, ' ').toLowerCase().trim()
 
   if (['group ceo', 'director'].includes(s)) return 'super_admin'
   if (['ceo', 'cbo', 'coo', 'cfo', 'cmo', 'cto'].includes(s)) return 'company_admin'
@@ -110,6 +110,11 @@ function mapSystemRoleToBaseRole(systemRole, permissionRole) {
   if (s === 'mmt') return 'operations'
   if (['quality controller', 'subject matter expert', 'assistant subject matter expert'].includes(s)) return 'operations'
   if (['hr manager', 'senior executive (hr)'].includes(s)) return 'operations'
+  if (s === 'senior executive') {
+    if (p.includes('finance')) return 'finance'
+    if (p.includes('hr')) return 'operations'
+    return 'operations'
+  }
   if (['financial controller', 'senior executive (finance)'].includes(s)) return 'finance'
   if (['csr & planner', 'business operations lead'].includes(s)) return 'operations'
   if (s === 'manager - channel sales') return 'sales_manager'
@@ -134,9 +139,13 @@ function mapDesignationToRole(designation) {
 
 // Department name mapping (Excel department → department code)
 const DEPT_NAME_TO_CODE = {
+  'management': 'MNG',
   'sales & design': 'SALES',
+  'operations': 'EXECUTION',
   'operations & procurement': 'PROCUREMENT',
+  'human resources & admin': 'HR',
   'hr & admin': 'HR',
+  'finance & accounts': 'FINANCE',
   'finance': 'FINANCE',
   'marketing': 'MARKETING',
   'infromation technology': 'IT',
@@ -156,7 +165,7 @@ const DEPT_NAME_TO_CODE = {
   'business development': 'BD',
   'it': 'IT',
   'administration': 'ADMIN',
-  'operations': 'EXECUTION',
+  'procurement': 'PROCUREMENT',
 }
 
 // Management designations → MNG department
@@ -315,7 +324,7 @@ async function seedEmployees() {
       // Map Permission Role → userRole (Role ObjectId)
       let userRoleId = undefined
       if (permissionRole) {
-        const roleCode = PERMISSION_ROLE_TO_CODE[permissionRole.toLowerCase().trim()]
+        const roleCode = PERMISSION_ROLE_TO_CODE[permissionRole.replace(/\s+/g, ' ').toLowerCase().trim()]
         if (roleCode) {
           // Look up in the correct company's roles
           const entityUpper = (entity || '').toUpperCase().trim()
@@ -349,7 +358,7 @@ async function seedEmployees() {
 
       // Map department
       let deptCode = department || ''
-      const deptLower = (department || '').toLowerCase().trim()
+      const deptLower = (department || '').replace(/\s+/g, ' ').toLowerCase().trim()
       if (DEPT_NAME_TO_CODE[deptLower]) {
         deptCode = DEPT_NAME_TO_CODE[deptLower]
       }
