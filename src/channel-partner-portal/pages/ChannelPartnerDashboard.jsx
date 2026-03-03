@@ -13,7 +13,9 @@ import {
 } from 'lucide-react'
 import { useChannelPartnerAuth } from '../context/ChannelPartnerAuthContext'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+const API_BASE = import.meta.env.PROD
+  ? 'https://hoh108.com/api'
+  : `http://${window.location.hostname}:5001/api`
 const PRIMARY_COLOR = '#C59C82'
 
 const ChannelPartnerDashboard = () => {

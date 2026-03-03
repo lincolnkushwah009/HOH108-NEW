@@ -13,7 +13,9 @@ import {
   AlertCircle
 } from 'lucide-react'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+const API_BASE = import.meta.env.PROD
+  ? 'https://hoh108.com/api'
+  : `http://${window.location.hostname}:5001/api`
 
 const VendorPurchaseOrders = () => {
   const { id } = useParams()

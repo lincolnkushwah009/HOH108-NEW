@@ -705,60 +705,82 @@ const RolesPermissions = () => {
         title={editingRole ? 'Edit Role' : 'Create New Role'}
         size="md"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role Code</label>
-            <input
-              type="text"
-              value={formData.roleCode}
-              onChange={(e) => setFormData({ ...formData, roleCode: e.target.value.toUpperCase().replace(/\s/g, '_') })}
-              placeholder="e.g., SALES_MANAGER"
-              required
-              disabled={editingRole?.isSystem}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none disabled:bg-gray-100"
-              style={{ borderRadius: '10px' }}
-              onFocus={(e) => { e.target.style.boxShadow = '0 0 0 2px #C59C82'; e.target.style.borderColor = '#C59C82' }}
-              onBlur={(e) => { e.target.style.boxShadow = 'none'; e.target.style.borderColor = '#d1d5db' }}
-            />
-            <p className="text-xs text-gray-500 mt-1">Unique identifier (auto-uppercase)</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role Name</label>
-            <input
-              type="text"
-              value={formData.roleName}
-              onChange={(e) => setFormData({ ...formData, roleName: e.target.value })}
-              placeholder="e.g., Sales Manager"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none"
-              style={{ borderRadius: '10px' }}
-              onFocus={(e) => { e.target.style.boxShadow = '0 0 0 2px #C59C82'; e.target.style.borderColor = '#C59C82' }}
-              onBlur={(e) => { e.target.style.boxShadow = 'none'; e.target.style.borderColor = '#d1d5db' }}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe the role responsibilities..."
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none resize-none"
-              style={{ borderRadius: '10px' }}
-              onFocus={(e) => { e.target.style.boxShadow = '0 0 0 2px #C59C82'; e.target.style.borderColor = '#C59C82' }}
-              onBlur={(e) => { e.target.style.boxShadow = 'none'; e.target.style.borderColor = '#d1d5db' }}
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '4px 0' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                Role Code
+              </label>
+              <input
+                type="text"
+                value={formData.roleCode}
+                onChange={(e) => setFormData({ ...formData, roleCode: e.target.value.toUpperCase().replace(/\s/g, '_') })}
+                placeholder="e.g., SALES_MANAGER"
+                required
+                disabled={editingRole?.isSystem}
+                style={{
+                  width: '100%', padding: '10px 14px', fontSize: '14px', borderRadius: '10px',
+                  border: '1px solid #E5E7EB', outline: 'none', color: '#111827',
+                  background: editingRole?.isSystem ? '#F9FAFB' : '#fff', boxSizing: 'border-box',
+                  fontFamily: 'monospace', letterSpacing: '0.02em',
+                }}
+                onFocus={(e) => { e.target.style.borderColor = '#C59C82'; e.target.style.boxShadow = '0 0 0 3px rgba(197,156,130,0.12)' }}
+                onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
+              />
+              <p style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '4px' }}>Unique identifier (auto-uppercase)</p>
+            </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#f9fafb', borderRadius: '12px' }}>
-            <Toggle
-              checked={formData.isActive}
-              onChange={() => setFormData({ ...formData, isActive: !formData.isActive })}
-            />
-            <label style={{ fontSize: '14px', color: '#374151' }}>
-              <span style={{ fontWeight: '600' }}>Active</span>
-              <span style={{ color: '#6b7280', marginLeft: '4px' }}>- Users can be assigned to this role</span>
-            </label>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                Role Name
+              </label>
+              <input
+                type="text"
+                value={formData.roleName}
+                onChange={(e) => setFormData({ ...formData, roleName: e.target.value })}
+                placeholder="e.g., Sales Manager"
+                required
+                style={{
+                  width: '100%', padding: '10px 14px', fontSize: '14px', borderRadius: '10px',
+                  border: '1px solid #E5E7EB', outline: 'none', color: '#111827', boxSizing: 'border-box',
+                }}
+                onFocus={(e) => { e.target.style.borderColor = '#C59C82'; e.target.style.boxShadow = '0 0 0 3px rgba(197,156,130,0.12)' }}
+                onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Describe the role responsibilities..."
+                rows={3}
+                style={{
+                  width: '100%', padding: '10px 14px', fontSize: '14px', borderRadius: '10px',
+                  border: '1px solid #E5E7EB', outline: 'none', color: '#111827', boxSizing: 'border-box',
+                  resize: 'none', fontFamily: 'inherit',
+                }}
+                onFocus={(e) => { e.target.style.borderColor = '#C59C82'; e.target.style.boxShadow = '0 0 0 3px rgba(197,156,130,0.12)' }}
+                onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
+              />
+            </div>
+
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '14px 16px', background: '#F9FAFB', borderRadius: '12px', border: '1px solid #F3F4F6',
+            }}>
+              <Toggle
+                checked={formData.isActive}
+                onChange={() => setFormData({ ...formData, isActive: !formData.isActive })}
+              />
+              <div>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Active</span>
+                <p style={{ fontSize: '12px', color: '#9CA3AF', margin: '2px 0 0' }}>Users can be assigned to this role</p>
+              </div>
+            </div>
           </div>
 
           <Modal.Footer>

@@ -19,7 +19,9 @@ const COLORS = {
 // ============================================
 // INTERIOR CALCULATOR
 // ============================================
-const INTERIOR_API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+const INTERIOR_API_BASE = import.meta.env.PROD
+  ? 'https://hoh108.com/api'
+  : `http://${window.location.hostname}:5001/api`
 
 function InteriorCalculator() {
   const [step, setStep] = useState(1)
@@ -714,7 +716,9 @@ function InteriorCalculator() {
 // ============================================
 // CONSTRUCTION CALCULATOR
 // ============================================
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+const API_BASE = import.meta.env.PROD
+  ? 'https://hoh108.com/api'
+  : `http://${window.location.hostname}:5001/api`
 
 function ConstructionCalculator() {
   const [step, setStep] = useState(1)

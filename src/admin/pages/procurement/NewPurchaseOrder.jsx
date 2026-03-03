@@ -252,69 +252,56 @@ const NewPurchaseOrder = () => {
         </Card>
 
         {/* Items */}
-        <Card className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Order Items</h3>
+        <Card style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>Order Items</h3>
             <Button type="button" size="sm" icon={Plus} onClick={addItem}>
               Add Item
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-2 px-2 font-medium text-gray-700">Material</th>
-                  <th className="text-left py-2 px-2 font-medium text-gray-700">Description</th>
-                  <th className="text-left py-2 px-2 font-medium text-gray-700 w-24">Qty</th>
-                  <th className="text-left py-2 px-2 font-medium text-gray-700 w-24">Unit</th>
-                  <th className="text-left py-2 px-2 font-medium text-gray-700 w-32">Unit Price</th>
-                  <th className="text-left py-2 px-2 font-medium text-gray-700 w-24">Tax %</th>
-                  <th className="text-right py-2 px-2 font-medium text-gray-700 w-32">Total</th>
-                  <th className="w-12"></th>
+                <tr>
+                  {['Material', 'Description', 'Qty', 'Unit', 'Unit Price', 'Tax %', 'Total', ''].map((h, i) => (
+                    <th key={h || i} style={{
+                      padding: '10px 12px', fontSize: 12, fontWeight: 700, color: '#6B7280',
+                      textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: i === 6 ? 'right' : 'left',
+                      borderBottom: '2px solid #E5E7EB', background: '#F9FAFB',
+                      whiteSpace: 'nowrap',
+                      ...(i === 2 ? { width: 90 } : i === 3 ? { width: 100 } : i === 4 ? { width: 120 } : i === 5 ? { width: 100 } : i === 6 ? { width: 110 } : i === 7 ? { width: 44 } : {}),
+                    }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {formData.items.map((item, index) => {
                   const lineTotal = item.quantity * item.unitPrice * (1 + item.tax / 100)
+                  const inputStyle = {
+                    width: '100%', padding: '9px 12px', fontSize: 13, color: '#111827',
+                    border: '1px solid #E5E7EB', borderRadius: 8, outline: 'none',
+                    background: '#fff', boxSizing: 'border-box',
+                  }
+                  const selectStyle = { ...inputStyle, cursor: 'pointer', appearance: 'auto' }
                   return (
-                    <tr key={index} className="border-b border-gray-100">
-                      <td className="py-2 px-2">
-                        <select
-                          value={item.material}
-                          onChange={(e) => handleItemChange(index, 'material', e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                        >
+                    <tr key={index} style={{ borderBottom: '1px solid #F3F4F6' }}>
+                      <td style={{ padding: '8px 8px 8px 12px' }}>
+                        <select value={item.material} onChange={(e) => handleItemChange(index, 'material', e.target.value)} style={selectStyle}>
                           <option value="">Select Material</option>
                           {materials.map(m => (
                             <option key={m._id} value={m._id}>{m.materialName} ({m.skuCode})</option>
                           ))}
                         </select>
                       </td>
-                      <td className="py-2 px-2">
-                        <input
-                          type="text"
-                          value={item.description}
-                          onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                          placeholder="Description"
-                        />
+                      <td style={{ padding: '8px' }}>
+                        <input type="text" value={item.description} onChange={(e) => handleItemChange(index, 'description', e.target.value)} placeholder="Description" style={inputStyle} />
                       </td>
-                      <td className="py-2 px-2">
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                        />
+                      <td style={{ padding: '8px' }}>
+                        <input type="number" min="1" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', e.target.value)} style={inputStyle} />
                       </td>
-                      <td className="py-2 px-2">
-                        <select
-                          value={item.unit}
-                          onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                        >
+                      <td style={{ padding: '8px' }}>
+                        <select value={item.unit} onChange={(e) => handleItemChange(index, 'unit', e.target.value)} style={selectStyle}>
                           <option value="nos">Nos</option>
                           <option value="kg">Kg</option>
                           <option value="ltr">Ltr</option>
@@ -325,22 +312,11 @@ const NewPurchaseOrder = () => {
                           <option value="set">Set</option>
                         </select>
                       </td>
-                      <td className="py-2 px-2">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={item.unitPrice}
-                          onChange={(e) => handleItemChange(index, 'unitPrice', e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                        />
+                      <td style={{ padding: '8px' }}>
+                        <input type="number" min="0" step="0.01" value={item.unitPrice} onChange={(e) => handleItemChange(index, 'unitPrice', e.target.value)} style={inputStyle} />
                       </td>
-                      <td className="py-2 px-2">
-                        <select
-                          value={item.tax}
-                          onChange={(e) => handleItemChange(index, 'tax', e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                        >
+                      <td style={{ padding: '8px' }}>
+                        <select value={item.tax} onChange={(e) => handleItemChange(index, 'tax', e.target.value)} style={selectStyle}>
                           <option value="0">0%</option>
                           <option value="5">5%</option>
                           <option value="12">12%</option>
@@ -348,17 +324,21 @@ const NewPurchaseOrder = () => {
                           <option value="28">28%</option>
                         </select>
                       </td>
-                      <td className="py-2 px-2 text-right font-medium">
+                      <td style={{ padding: '8px 12px 8px 8px', textAlign: 'right', fontSize: 14, fontWeight: 600, color: '#111827', whiteSpace: 'nowrap' }}>
                         {formatCurrency(lineTotal)}
                       </td>
-                      <td className="py-2 px-2">
+                      <td style={{ padding: '8px 12px 8px 0', textAlign: 'center' }}>
                         <button
                           type="button"
                           onClick={() => removeItem(index)}
-                          className="p-1 text-red-500 hover:bg-red-50 rounded"
                           disabled={formData.items.length === 1}
+                          style={{
+                            padding: 6, border: 'none', borderRadius: 6, cursor: formData.items.length === 1 ? 'not-allowed' : 'pointer',
+                            background: 'transparent', color: formData.items.length === 1 ? '#D1D5DB' : '#EF4444',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 size={15} />
                         </button>
                       </td>
                     </tr>
@@ -369,38 +349,44 @@ const NewPurchaseOrder = () => {
           </div>
 
           {/* Totals */}
-          <div className="mt-4 flex justify-end">
-            <div className="w-72 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Subtotal</span>
-                <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
+            <div style={{ width: 280 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 14 }}>
+                <span style={{ color: '#6B7280' }}>Subtotal</span>
+                <span style={{ fontWeight: 600, color: '#374151' }}>{formatCurrency(totals.subtotal)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Total Tax</span>
-                <span className="font-medium">{formatCurrency(totals.totalTax)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 14 }}>
+                <span style={{ color: '#6B7280' }}>Total Tax</span>
+                <span style={{ fontWeight: 600, color: '#374151' }}>{formatCurrency(totals.totalTax)}</span>
               </div>
-              <div className="flex justify-between text-lg border-t pt-2">
-                <span className="font-semibold">Grand Total</span>
-                <span className="font-bold text-amber-600">{formatCurrency(totals.grandTotal)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0 4px', fontSize: 18, borderTop: '2px solid #E5E7EB', marginTop: 4 }}>
+                <span style={{ fontWeight: 700, color: '#111827' }}>Grand Total</span>
+                <span style={{ fontWeight: 800, color: '#C59C82' }}>{formatCurrency(totals.grandTotal)}</span>
               </div>
             </div>
           </div>
         </Card>
 
         {/* Notes */}
-        <Card className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Notes</h3>
+        <Card style={{ marginBottom: 24 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: '0 0 16px' }}>Additional Notes</h3>
           <textarea
             value={formData.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
             rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             placeholder="Any special instructions or notes..."
+            style={{
+              width: '100%', padding: '12px 14px', fontSize: 14, color: '#111827',
+              border: '1px solid #E5E7EB', borderRadius: 10, outline: 'none',
+              resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box',
+            }}
+            onFocus={(e) => { e.target.style.borderColor = '#C59C82'; e.target.style.boxShadow = '0 0 0 3px rgba(197,156,130,0.12)' }}
+            onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none' }}
           />
         </Card>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
           <Button type="button" variant="secondary" onClick={() => navigate('/admin/purchase-orders')}>
             Cancel
           </Button>
