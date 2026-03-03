@@ -480,6 +480,78 @@ roleSchema.statics.createDefaultRoles = async function(companyId, userId) {
       createdBy: userId
     },
 
+    // ======================== QUALITY CONTROL / MISC DEPARTMENTS ========================
+    {
+      company: companyId, roleCode: 'TWO_D', roleName: '2D',
+      description: '2D quality control specialist',
+      isSystem: true, baseRole: 'operations', department: 'Quality Control',
+      permissions: { Dashboard: ['view'], Sales: [], Procurement: [], Inventory: [], HR: [], Finance: [], Projects: ['view', 'edit'], Customers: ['view'], Leads: [], Settings: [], Reports: [] },
+      granularPermissions: [
+        'customers:view','customers:view_assigned',
+        'projects:view','projects:view_assigned','projects:edit',
+        'dashboard:view','performance:view'
+      ],
+      createdBy: userId
+    },
+    {
+      company: companyId, roleCode: 'ARCHITECT', roleName: 'Architect',
+      description: 'Architect in design department',
+      isSystem: true, baseRole: 'designer', department: 'Design',
+      permissions: { Dashboard: ['view'], Sales: [], Procurement: [], Inventory: [], HR: [], Finance: [], Projects: ['view', 'edit'], Customers: ['view'], Leads: ['view'], Settings: [], Reports: [] },
+      granularPermissions: [
+        'leads:view_assigned',
+        'customers:view','customers:view_assigned',
+        'projects:view','projects:view_assigned','projects:edit',
+        'dashboard:view','kpi:manage','performance:view'
+      ],
+      createdBy: userId
+    },
+    {
+      company: companyId, roleCode: 'ADMIN_EXEC', roleName: 'Admin',
+      description: 'Administration executive',
+      isSystem: true, baseRole: 'operations', department: 'Administration',
+      permissions: { Dashboard: ['view'], Sales: [], Procurement: [], Inventory: [], HR: ['view'], Finance: [], Projects: [], Customers: [], Leads: [], Settings: ['view'], Reports: [] },
+      granularPermissions: [
+        'dashboard:view','performance:view'
+      ],
+      createdBy: userId
+    },
+    {
+      company: companyId, roleCode: 'BUSINESS_OPS_LEAD', roleName: 'Business Operations Lead',
+      description: 'Business operations lead managing procurement and inventory',
+      isSystem: true, baseRole: 'operations', department: 'Operations',
+      permissions: { Dashboard: ['view'], Sales: [], Procurement: ['view', 'create', 'edit'], Inventory: ['view', 'create', 'edit'], HR: [], Finance: [], Projects: ['view', 'edit'], Customers: ['view'], Leads: [], Settings: [], Reports: [] },
+      granularPermissions: [
+        'customers:view','customers:view_assigned',
+        'projects:view','projects:view_all','projects:view_assigned','projects:edit',
+        'dashboard:view','kpi:manage','performance:view'
+      ],
+      createdBy: userId
+    },
+    {
+      company: companyId, roleCode: 'MANAGER_CHANNEL_PARTNER', roleName: 'Manager - Channel Partner',
+      description: 'Manager for channel partner sales',
+      isSystem: true, baseRole: 'sales_manager', department: 'Channel Sales',
+      permissions: { Dashboard: ['view'], Sales: ['view', 'create', 'edit', 'approve'], Procurement: [], Inventory: [], HR: [], Finance: [], Projects: ['view'], Customers: ['view', 'create'], Leads: ['view', 'create', 'edit'], Settings: [], Reports: [] },
+      granularPermissions: [
+        'leads:view','leads:view_all','leads:view_assigned','leads:create','leads:edit','leads:assign','leads:convert',
+        'customers:view','customers:view_all','customers:view_assigned','customers:create',
+        'projects:view','projects:view_all',
+        'dashboard:view','kpi:view','kpi:manage','performance:view','performance:view_all'
+      ],
+      createdBy: userId
+    },
+    {
+      company: companyId, roleCode: 'INFORMATION_TECHNOLOGY', roleName: 'Information Technology',
+      description: 'IT department member',
+      isSystem: true, baseRole: 'operations', department: 'IT',
+      permissions: { Dashboard: ['view'], Sales: [], Procurement: [], Inventory: [], HR: [], Finance: [], Projects: [], Customers: [], Leads: [], Settings: ['view'], Reports: ['view'] },
+      granularPermissions: [
+        'dashboard:view','performance:view'
+      ],
+      createdBy: userId
+    },
+
     // ======================== LEGACY ROLES (backward compat) ========================
     {
       company: companyId, roleCode: 'MARKETING', roleName: 'Marketing',

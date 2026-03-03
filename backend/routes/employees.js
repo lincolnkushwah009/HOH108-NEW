@@ -4,6 +4,7 @@ import path from 'path'
 import fs from 'fs'
 import User from '../models/User.js'
 import Company from '../models/Company.js'
+import Role from '../models/Role.js'
 import Attendance from '../models/Attendance.js'
 import Leave from '../models/Leave.js'
 import {
@@ -182,18 +183,87 @@ router.post('/bulk-upload',
         phone: 'phone', 'phone number': 'phone', phonenumber: 'phone', mobile: 'phone',
         designation: 'designation', title: 'designation', 'job title': 'designation', jobtitle: 'designation',
         department: 'department', dept: 'department',
-        role: 'role', 'system role': 'role',
+        role: 'role', 'system role': 'systemRole',
+        'permission role': 'permissionRole',
+        entity: 'entity',
+        'emp id': 'empId',
         'employment type': 'employmentType', employmenttype: 'employmentType', 'emp type': 'employmentType',
         'date of joining': 'dateOfJoining', dateofjoining: 'dateOfJoining', doj: 'dateOfJoining', 'joining date': 'dateOfJoining',
         city: 'city', branch: 'city', location: 'city',
         gender: 'gender', sex: 'gender',
+        region: 'region',
       }
 
       const validRoles = ['super_admin', 'company_admin', 'sales_manager', 'sales_executive', 'pre_sales', 'project_manager', 'site_engineer', 'designer', 'operations', 'finance', 'viewer']
       const validEmploymentTypes = ['probation', 'permanent', 'contract', 'intern', 'consultant']
       const validGenders = ['male', 'female', 'other']
 
-      // Map designation to role (same logic as importEmployees script)
+      // Permission Role name → Role code mapping
+      const permissionRoleToCode = {
+        'company admin': 'ADMIN',
+        'pre sales executive': 'PRE_SALES_EXECUTIVE',
+        'sales manager': 'SALES_MANAGER',
+        'associate sales manager': 'SALES_MANAGER',
+        'sales head': 'SALES_HEAD',
+        'agm - sales': 'AGM_SALES',
+        'agm - business': 'AGM_BUSINESS',
+        'agm - operations': 'AGM_OPERATIONS',
+        'community manager': 'COMMUNITY_MANAGER',
+        'associate community manager': 'ASSOC_COMMUNITY_MANAGER',
+        'principal designer': 'PRINCIPAL_DESIGNER',
+        'design relationship manager': 'DESIGN_RELATIONSHIP_MANAGER',
+        'associate design relationship manager': 'ASSOC_DESIGN_REL_MANAGER',
+        'junior designer': 'JUNIOR_DESIGNER',
+        'project manager': 'PROJECT_MANAGER',
+        'site executive': 'SITE_EXECUTIVE',
+        'mmt technician': 'MMT_TECHNICIAN',
+        'quality controller': 'QC_QA',
+        'finance controller': 'FINANCE_CONTROLLER',
+        'finance executive': 'FINANCE_EXECUTIVE',
+        'hr head': 'HR_HEAD',
+        'hr executive': 'HR_EXECUTIVE',
+        'procurement': 'PROCUREMENT',
+        '2d': 'TWO_D',
+        'architect': 'ARCHITECT',
+        'admin': 'ADMIN_EXEC',
+        'business operations lead': 'BUSINESS_OPS_LEAD',
+        'manager - channel partner': 'MANAGER_CHANNEL_PARTNER',
+        'information technology': 'INFORMATION_TECHNOLOGY',
+      }
+
+      // System Role → base role mapping
+      function mapSystemRoleToBaseRole(systemRole, permissionRole) {
+        const s = (systemRole || '').toLowerCase().trim()
+        const p = (permissionRole || '').toLowerCase().trim()
+
+        if (['group ceo', 'director'].includes(s)) return 'super_admin'
+        if (['ceo', 'cbo', 'coo', 'cfo', 'cmo', 'cto'].includes(s)) return 'company_admin'
+        if (s === 'associate general manager') {
+          // Depends on permission role
+          if (p.includes('sales')) return 'sales_manager'
+          if (p.includes('operations')) return 'project_manager'
+          if (p.includes('business')) return 'company_admin'
+          return 'sales_manager'
+        }
+        if (['head of sales', 'sales manager'].includes(s)) return 'sales_manager'
+        if (s === 'associate sales manager') return 'sales_executive'
+        if (['presales executive', 'senior presales executive', 'business development manager'].includes(s)) return 'pre_sales'
+        if (['community manager', 'associate community manager', 'principal designer',
+             'design relationship manager', 'associate design relationship manager',
+             'junior designer', 'visualizer', 'senior architectural interior designer', 'architect'].includes(s)) return 'designer'
+        if (['project manager', 'junior project manager'].includes(s)) return 'project_manager'
+        if (s === 'site supervisor') return 'site_engineer'
+        if (s === 'mmt') return 'operations'
+        if (['quality controller', 'subject matter expert', 'assistant subject matter expert'].includes(s)) return 'operations'
+        if (['hr manager', 'senior executive (hr)'].includes(s)) return 'operations'
+        if (['financial controller', 'senior executive (finance)'].includes(s)) return 'finance'
+        if (['csr & planner', 'business operations lead'].includes(s)) return 'operations'
+        if (s === 'manager - channel sales') return 'sales_manager'
+        if (['technical head', 'head of product engineering', 'junior programme manager', 'senior motion graphic designer'].includes(s)) return 'operations'
+        return null // fallback handled below
+      }
+
+      // Legacy designation-based mapping as fallback
       function mapDesignationToRole(designation) {
         const d = (designation || '').toLowerCase()
         if (d.includes('ceo') || d.includes('director')) return 'super_admin'
@@ -211,6 +281,17 @@ router.post('/bulk-upload',
       const import_bcrypt = (await import('bcryptjs')).default
       const salt = await import_bcrypt.genSalt(10)
       const defaultPassword = await import_bcrypt.hash('Welcome@123', salt)
+
+      // Pre-fetch all roles for the company for permission role lookup
+      const allRoles = await Role.find({ company: companyId, isActive: true })
+      const rolesByCode = {}
+      for (const r of allRoles) {
+        rolesByCode[r.roleCode] = r
+      }
+
+      // Look up both companies for entity handling
+      const ipCompany = await Company.findOne({ code: 'IP' })
+      const hohCompany = await Company.findOne({ code: 'HOH' })
 
       for (let i = 0; i < employeeRows.length; i++) {
         const row = employeeRows[i]
@@ -251,15 +332,51 @@ router.post('/bulk-upload',
             continue
           }
 
-          // Generate employee ID
-          const employeeId = await company.generateId('user')
+          // Use EMP ID from sheet or generate one
+          const employeeId = normalized.empId || await company.generateId('user')
 
-          // Determine role
+          // Determine base role from System Role (Col G), with fallback to designation
           let role = 'viewer'
-          if (normalized.role && validRoles.includes(normalized.role.toLowerCase())) {
+          if (normalized.systemRole) {
+            const mappedRole = mapSystemRoleToBaseRole(normalized.systemRole, normalized.permissionRole)
+            if (mappedRole) {
+              role = mappedRole
+            } else if (normalized.designation) {
+              role = mapDesignationToRole(normalized.designation)
+            }
+          } else if (normalized.role && validRoles.includes(normalized.role.toLowerCase())) {
             role = normalized.role.toLowerCase()
           } else if (normalized.designation) {
             role = mapDesignationToRole(normalized.designation)
+          }
+
+          // Look up Permission Role → userRole (Role ObjectId)
+          let userRoleId = undefined
+          if (normalized.permissionRole) {
+            const roleCode = permissionRoleToCode[normalized.permissionRole.toLowerCase().trim()]
+            if (roleCode && rolesByCode[roleCode]) {
+              userRoleId = rolesByCode[roleCode]._id
+            }
+          }
+
+          // Handle Entity (Col I) → company assignment
+          let assignedCompany = companyId
+          let additionalCompanies = undefined
+          const entity = (normalized.entity || '').toUpperCase().trim()
+
+          if (entity === 'IP' && ipCompany) {
+            assignedCompany = ipCompany._id
+          } else if (entity === 'HOH' && hohCompany) {
+            assignedCompany = hohCompany._id
+          } else if (entity === 'BOTH') {
+            // Primary = HOH (mother company), additional = IP
+            if (hohCompany) assignedCompany = hohCompany._id
+            if (ipCompany) {
+              additionalCompanies = [{ company: ipCompany._id, role }]
+            }
+          } else if (!entity && ipCompany) {
+            // Default to IP if no entity specified
+            assignedCompany = ipCompany._id
           }
 
           // Normalize employment type
@@ -282,8 +399,9 @@ router.post('/bulk-upload',
             email: normalized.email.toLowerCase(),
             phone: normalized.phone || '',
             password: defaultPassword,
-            company: companyId,
+            company: assignedCompany,
             role,
+            userRole: userRoleId,
             department: normalized.department || '',
             designation: normalized.designation || '',
             isActive: true,
@@ -295,7 +413,12 @@ router.post('/bulk-upload',
               dateOfJoining: normalized.dateOfJoining ? new Date(normalized.dateOfJoining) : undefined,
               city: normalized.city || '',
               gender,
+              region: normalized.region || '',
             }
+          }
+
+          if (additionalCompanies) {
+            employeeData.additionalCompanies = additionalCompanies
           }
 
           await User.create(employeeData)
