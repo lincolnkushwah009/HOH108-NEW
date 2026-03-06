@@ -24,6 +24,11 @@ import { emitToUser } from '../utils/socketService.js'
 
 const router = express.Router()
 
+// Helper: get Callyzer API token from DB config or fall back to env var
+function getCallyzerToken(callyzerConfig) {
+  return callyzerConfig?.apiToken || process.env.CALLYZER_API_TOKEN || null
+}
+
 // ==================== HELPER: Compute stats from raw Callyzer calls ====================
 function computeFromCallHistory(rawCalls) {
   const total = rawCalls.length
@@ -282,14 +287,15 @@ router.post('/sync/calls',
       const company = await Company.findById(req.activeCompany._id)
       const callyzerConfig = company?.integrations?.callyzer
 
-      if (!callyzerConfig?.apiToken) {
+      const token = getCallyzerToken(callyzerConfig)
+      if (!token) {
         return res.status(400).json({
           success: false,
           message: 'Callyzer is not configured. Please add your API token first.'
         })
       }
 
-      const callyzer = new CallyzerService(callyzerConfig.apiToken)
+      const callyzer = new CallyzerService(token)
 
       // Fetch call history from Callyzer API v2.1
       const callsResult = await callyzer.getCallHistory({
@@ -470,9 +476,10 @@ router.get('/stats',
       const callyzerConfig = company?.integrations?.callyzer
 
       // Try Callyzer API first
-      if (callyzerConfig?.apiToken) {
+      const token = getCallyzerToken(callyzerConfig)
+      if (token) {
         try {
-          const callyzer = new CallyzerService(callyzerConfig.apiToken)
+          const callyzer = new CallyzerService(token)
           console.log('[Callyzer Stats] Fetching for company:', req.activeCompany._id)
           const empNumbers = effectiveEmpNumber ? [effectiveEmpNumber] : undefined
           const callTypes = callType ? [callType] : undefined
@@ -591,9 +598,10 @@ router.get('/calls',
       const callyzerConfig = company?.integrations?.callyzer
 
       // Try Callyzer API first, fall back to local DB if not configured or token invalid
-      if (callyzerConfig?.apiToken) {
+      const token = getCallyzerToken(callyzerConfig)
+      if (token) {
         try {
-          const callyzer = new CallyzerService(callyzerConfig.apiToken)
+          const callyzer = new CallyzerService(token)
 
           const options = {
             startDate,
@@ -768,14 +776,15 @@ router.get('/employees',
       const company = await Company.findById(req.activeCompany._id)
       const callyzerConfig = company?.integrations?.callyzer
 
-      if (!callyzerConfig?.apiToken) {
+      const token = getCallyzerToken(callyzerConfig)
+      if (!token) {
         return res.status(400).json({
           success: false,
           message: 'Callyzer is not configured'
         })
       }
 
-      const callyzer = new CallyzerService(callyzerConfig.apiToken)
+      const callyzer = new CallyzerService(token)
       const result = await callyzer.getEmployeeDetails()
 
       // Get CRM users with Callyzer mapping
@@ -873,9 +882,10 @@ router.get('/dashboard',
       const callyzerConfig = company?.integrations?.callyzer
 
       // Try Callyzer API first
-      if (callyzerConfig?.apiToken) {
+      const token = getCallyzerToken(callyzerConfig)
+      if (token) {
         try {
-          const callyzer = new CallyzerService(callyzerConfig.apiToken)
+          const callyzer = new CallyzerService(token)
           const apiOpts = { startDate, endDate, empNumbers: empFilter || undefined }
 
           // Fetch all dashboard data in parallel (with rate limiting built into CallyzerService)
@@ -1168,8 +1178,9 @@ router.get('/poll-call-status',
       // 2. Try Callyzer API for recent calls
       const company = await Company.findById(req.activeCompany._id)
       const callyzerConfig = company?.integrations?.callyzer
-      if (callyzerConfig?.apiToken) {
-        const callyzer = new CallyzerService(callyzerConfig.apiToken)
+      const token = getCallyzerToken(callyzerConfig)
+      if (token) {
+        const callyzer = new CallyzerService(token)
         const nowTs = Math.floor(Date.now() / 1000)
         const sinceTs = Math.floor(sinceDate.getTime() / 1000)
         const result = await callyzer.getCallHistory({

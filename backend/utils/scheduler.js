@@ -153,7 +153,8 @@ async function syncCallyzerCalls() {
     for (const company of companies) {
       try {
         const config = company.integrations.callyzer
-        const callyzer = new CallyzerService(config.apiToken)
+        const token = config.apiToken || process.env.CALLYZER_API_TOKEN
+        const callyzer = new CallyzerService(token)
 
         // Sync last 24 hours
         const endDate = new Date().toISOString().split('T')[0]
