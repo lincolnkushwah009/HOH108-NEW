@@ -10,7 +10,7 @@
  */
 
 // Default to production; override with CALLYZER_API_URL env var or pass apiUrl to constructor
-const CALLYZER_API_BASE = process.env.CALLYZER_API_URL || 'https://api.callyzer.co/api/v2.1'
+const CALLYZER_API_BASE = process.env.CALLYZER_API_URL || 'https://api1.callyzer.co/api/v2.1'
 
 class CallyzerService {
   constructor(apiToken, apiUrl) {
