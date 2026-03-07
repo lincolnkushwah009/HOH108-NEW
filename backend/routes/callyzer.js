@@ -105,7 +105,7 @@ function computeFromCallHistory(rawCalls) {
 async function fetchAllCallyzerCalls(callyzer, opts) {
   const allCalls = []
   let page = 1
-  const pageSize = 250
+  const pageSize = 100
   while (true) {
     const res = await callyzer.getCallHistory({ ...opts, page, pageSize })
     if (!res.success) break
@@ -482,39 +482,16 @@ router.get('/stats',
         try {
           const callyzer = new CallyzerService(token)
           console.log('[Callyzer Stats] Fetching for company:', req.activeCompany._id)
-          const empNumbers = effectiveEmpNumber ? [effectiveEmpNumber] : undefined
-          const callTypes = callType ? [callType] : undefined
-          const summary = await callyzer.getCallLogSummary({ startDate, endDate, empNumbers, callTypes })
-          const analysis = await callyzer.getCallAnalysis({ startDate, endDate, empNumbers })
 
-          if (summary.success) {
-            const summaryData = summary.data?.result || summary.data || {}
-            const apiTotal = summaryData.total_calls || 0
-            if (apiTotal > 0) {
-              console.log('[Callyzer Stats] Using API data, total:', apiTotal)
-              return res.json({
-                success: true,
-                data: {
-                  summary: summaryData,
-                  analysis: analysis.data?.result || analysis.data
-                }
-              })
-            }
-            console.log('[Callyzer Stats] Summary API empty, trying call history...')
-          }
-
-          // Summary API returned empty - compute from call history
-          try {
-            const histOpts = { startDate, endDate }
-            if (effectiveEmpNumber) histOpts.empNumbers = [effectiveEmpNumber]
-            const allCalls = await fetchAllCallyzerCalls(callyzer, histOpts)
-            if (allCalls.length > 0) {
-              console.log('[Callyzer Stats] Computed from call history:', allCalls.length, 'calls')
-              const computed = computeFromCallHistory(allCalls)
-              return res.json({ success: true, data: { summary: computed.summary, analysis: null } })
-            }
-          } catch (histErr) {
-            console.log('[Callyzer Stats] Call history fetch failed:', histErr.message)
+          // Use call history to compute stats (avoids rate limit issues with multiple API calls)
+          const histOpts = { startDate, endDate }
+          if (effectiveEmpNumber) histOpts.empNumbers = [effectiveEmpNumber]
+          if (callType) histOpts.callTypes = [callType]
+          const allCalls = await fetchAllCallyzerCalls(callyzer, histOpts)
+          if (allCalls.length > 0) {
+            console.log('[Callyzer Stats] Computed from call history:', allCalls.length, 'calls')
+            const computed = computeFromCallHistory(allCalls)
+            return res.json({ success: true, data: { summary: computed.summary, analysis: null } })
           }
         } catch (apiErr) {
           console.log('[Callyzer Stats] API failed, falling back to local DB:', apiErr.message)
@@ -889,127 +866,42 @@ router.get('/dashboard',
           const callyzer = new CallyzerService(token)
           const apiOpts = { startDate, endDate, empNumbers: empFilter || undefined }
 
-          // Fetch all dashboard data in parallel (with rate limiting built into CallyzerService)
-          const [summaryRes, employeeRes, daywiseRes, hourlyRes] = await Promise.allSettled([
-            callyzer.getCallLogSummary(apiOpts),
-            isPreSales ? Promise.resolve({ success: false }) : callyzer.getEmployeeSummary(apiOpts),
-            callyzer.getDaywiseAnalytics(apiOpts),
-            callyzer.getHourlyAnalytics(apiOpts)
-          ])
+          // Compute dashboard from call history (avoids rate limit issues with multiple API calls)
+          const histOpts = { startDate, endDate, empNumbers: empFilter || undefined }
+          const allCalls = await fetchAllCallyzerCalls(callyzer, histOpts)
 
-          const summary = summaryRes.status === 'fulfilled' && summaryRes.value.success
-            ? (summaryRes.value.data?.result || summaryRes.value.data || {})
-            : {}
+          if (allCalls.length > 0) {
+            console.log('[Callyzer Dashboard] Computed from call history:', allCalls.length, 'calls')
+            const computed = computeFromCallHistory(allCalls)
 
-          const employees = employeeRes.status === 'fulfilled' && employeeRes.value.success
-            ? (employeeRes.value.data?.result || [])
-            : []
+            // Fetch outcome distribution from local CRM data
+            const outcomeQuery = { company: req.activeCompany._id }
+            if (isPreSales) outcomeQuery.calledBy = req.user._id
+            if (startDate || endDate) {
+              const df = {}
+              if (startDate) df.$gte = new Date(startDate)
+              if (endDate) df.$lte = new Date(new Date(endDate).setHours(23, 59, 59, 999))
+              outcomeQuery.$or = [
+                { startedAt: df },
+                { startedAt: { $exists: false }, createdAt: df },
+                { startedAt: null, createdAt: df }
+              ]
+            }
+            const localOutcomes = await CallActivity.aggregate([
+              { $match: outcomeQuery },
+              { $group: { _id: '$outcome', count: { $sum: 1 } } },
+              { $sort: { count: -1 } }
+            ])
+            const outcomeDistribution = localOutcomes.filter(o => o._id).map(o => ({ outcome: o._id, count: o.count }))
 
-          const dailyTrend = daywiseRes.status === 'fulfilled' && daywiseRes.value.success
-            ? (daywiseRes.value.data?.result || [])
-            : []
-
-          const hourlyDistribution = hourlyRes.status === 'fulfilled' && hourlyRes.value.success
-            ? (hourlyRes.value.data?.result || [])
-            : []
-
-          // Derive call type breakdown from summary or set defaults
-          const callTypeBreakdown = {
-            incoming: summary.incoming_calls || summary.total_incoming || 0,
-            outgoing: summary.outgoing_calls || summary.total_outgoing || 0,
-            missed: summary.missed_calls || summary.total_missed || 0,
-            rejected: summary.rejected_calls || summary.total_rejected || 0
-          }
-
-          // Fetch outcome distribution from local CRM data
-          const outcomeQuery = { company: req.activeCompany._id }
-          if (isPreSales) outcomeQuery.calledBy = req.user._id
-          if (startDate || endDate) {
-            const df = {}
-            if (startDate) df.$gte = new Date(startDate)
-            if (endDate) df.$lte = new Date(new Date(endDate).setHours(23, 59, 59, 999))
-            outcomeQuery.$or = [
-              { startedAt: df },
-              { startedAt: { $exists: false }, createdAt: df },
-              { startedAt: null, createdAt: df }
-            ]
-          }
-          const localOutcomes = await CallActivity.aggregate([
-            { $match: outcomeQuery },
-            { $group: { _id: '$outcome', count: { $sum: 1 } } },
-            { $sort: { count: -1 } }
-          ])
-          const outcomeDistribution = localOutcomes.filter(o => o._id).map(o => ({ outcome: o._id, count: o.count }))
-
-          // Enhance employees with avg_duration
-          const enhancedEmployees = employees.map(e => ({
-            ...e,
-            avg_duration: (e.total_calls || 0) > 0 ? Math.round((e.total_duration || 0) / (e.total_calls || 1)) : 0
-          }))
-
-          // Only use API data if it returned meaningful results, otherwise fall back to local DB
-          const apiTotal = (summary.total_calls || 0) + (callTypeBreakdown.incoming + callTypeBreakdown.outgoing + callTypeBreakdown.missed + callTypeBreakdown.rejected)
-          if (apiTotal > 0 || enhancedEmployees.length > 0 || dailyTrend.length > 0) {
-            console.log('[Callyzer Dashboard] Using API data, total:', apiTotal)
             return res.json({
               success: true,
               data: {
-                summary: {
-                  total_calls: summary.total_calls || 0,
-                  connected_calls: summary.connected_calls || summary.total_connected || 0,
-                  missed_calls: summary.missed_calls || summary.total_missed || 0,
-                  total_duration: summary.total_duration || summary.total_call_duration || 0,
-                  avg_duration: summary.avg_duration || summary.average_call_duration || 0
-                },
-                employees: enhancedEmployees,
-                dailyTrend,
-                hourlyDistribution,
-                callTypeBreakdown,
+                ...computed,
                 outcomeDistribution,
                 isPreSales
               }
             })
-          }
-          console.log('[Callyzer Dashboard] Analytics APIs empty, trying call history...')
-
-          // Analytics APIs returned empty - compute from call history
-          try {
-            const histOpts = { startDate, endDate, empNumbers: empFilter || undefined }
-            const allCalls = await fetchAllCallyzerCalls(callyzer, histOpts)
-            if (allCalls.length > 0) {
-              console.log('[Callyzer Dashboard] Computed from call history:', allCalls.length, 'calls')
-              const computed = computeFromCallHistory(allCalls)
-              // Also fetch outcome distribution from local CRM data
-              const outcomeQuery2 = { company: req.activeCompany._id }
-              if (isPreSales) outcomeQuery2.calledBy = req.user._id
-              if (startDate || endDate) {
-                const df2 = {}
-                if (startDate) df2.$gte = new Date(startDate)
-                if (endDate) df2.$lte = new Date(new Date(endDate).setHours(23, 59, 59, 999))
-                outcomeQuery2.$or = [
-                  { startedAt: df2 },
-                  { startedAt: { $exists: false }, createdAt: df2 },
-                  { startedAt: null, createdAt: df2 }
-                ]
-              }
-              const localOutcomes2 = await CallActivity.aggregate([
-                { $match: outcomeQuery2 },
-                { $group: { _id: '$outcome', count: { $sum: 1 } } },
-                { $sort: { count: -1 } }
-              ])
-              const outcomeDistribution2 = localOutcomes2.filter(o => o._id).map(o => ({ outcome: o._id, count: o.count }))
-
-              return res.json({
-                success: true,
-                data: {
-                  ...computed,
-                  outcomeDistribution: outcomeDistribution2,
-                  isPreSales
-                }
-              })
-            }
-          } catch (histErr) {
-            console.log('[Callyzer Dashboard] Call history fetch failed:', histErr.message)
           }
         } catch (apiErr) {
           console.log('[Callyzer Dashboard] API failed, falling back to local DB:', apiErr.message)

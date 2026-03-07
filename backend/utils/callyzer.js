@@ -12,6 +12,10 @@
 // Default to production; override with CALLYZER_API_URL env var or pass apiUrl to constructor
 const CALLYZER_API_BASE = process.env.CALLYZER_API_URL || 'https://api1.callyzer.co/api/v2.1'
 
+// Global rate limiter shared across all CallyzerService instances
+let _globalLastRequestTime = 0
+const _globalMinInterval = 1100 // 1.1s to be safe (Callyzer enforces 1 req/sec)
+
 class CallyzerService {
   constructor(apiToken, apiUrl) {
     this.apiToken = apiToken
@@ -20,25 +24,21 @@ class CallyzerService {
       'Authorization': `Bearer ${apiToken}`,
       'Content-Type': 'application/json'
     }
-
-    // Rate limiting: 1 request per 2 seconds
-    this.lastRequestTime = 0
-    this.minRequestInterval = 2000
   }
 
   /**
-   * Rate limit helper - ensures we don't exceed 1 request per 2 seconds
+   * Rate limit helper - global across all instances
    */
   async waitForRateLimit() {
     const now = Date.now()
-    const timeSinceLastRequest = now - this.lastRequestTime
+    const timeSinceLastRequest = now - _globalLastRequestTime
 
-    if (timeSinceLastRequest < this.minRequestInterval) {
-      const waitTime = this.minRequestInterval - timeSinceLastRequest
+    if (timeSinceLastRequest < _globalMinInterval) {
+      const waitTime = _globalMinInterval - timeSinceLastRequest
       await new Promise(resolve => setTimeout(resolve, waitTime))
     }
 
-    this.lastRequestTime = Date.now()
+    _globalLastRequestTime = Date.now()
   }
 
   /**
