@@ -135,12 +135,13 @@ router.get('/config',
         .select('integrations.callyzer')
 
       const config = company?.integrations?.callyzer || {}
-      console.log('[Callyzer Config] Company:', req.activeCompany._id, 'hasToken:', !!config.apiToken, 'isEnabled:', config.isEnabled)
+      const hasToken = !!getCallyzerToken(config)
+      console.log('[Callyzer Config] Company:', req.activeCompany._id, 'hasToken:', hasToken, 'isEnabled:', config.isEnabled)
 
       res.json({
         success: true,
         data: {
-          isConfigured: !!config.apiToken,
+          isConfigured: hasToken,
           isEnabled: config.isEnabled || false,
           lastSyncAt: config.lastSyncAt,
           syncStatus: config.syncStatus || 'never',
