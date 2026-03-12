@@ -573,7 +573,22 @@ router.post('/',
   requirePermission(PERMISSIONS.USERS_CREATE),
   async (req, res) => {
     try {
-      const companyId = req.activeCompany._id
+      let companyId = req.activeCompany._id
+      const isBoth = req.body.company === 'both'
+
+      // Handle "both" company selection
+      if (isBoth) {
+        const allCompanies = await Company.find({})
+        const ipCompany = allCompanies.find(c => c.code === 'IP')
+        const hohCompany = allCompanies.find(c => c.code === 'HOH')
+        if (!ipCompany || !hohCompany) {
+          return res.status(400).json({ success: false, message: 'Could not find both companies' })
+        }
+        companyId = ipCompany._id
+        req.body.entity = 'Both'
+        req.body.additionalCompanies = [{ company: hohCompany._id, role: req.body.role || 'employee' }]
+        delete req.body.company
+      }
 
       // Get company for ID generation
       const company = await Company.findById(companyId)
@@ -646,6 +661,18 @@ router.put('/:id',
 
       // Don't allow updating password
       const { password, ...updateData } = req.body
+
+      // Handle "both" company selection
+      if (updateData.company === 'both') {
+        const allCompanies = await Company.find({})
+        const ipCompany = allCompanies.find(c => c.code === 'IP')
+        const hohCompany = allCompanies.find(c => c.code === 'HOH')
+        if (ipCompany && hohCompany) {
+          updateData.company = ipCompany._id
+          updateData.entity = 'Both'
+          updateData.additionalCompanies = [{ company: hohCompany._id, role: updateData.role || employee.role || 'employee' }]
+        }
+      }
 
       // Handle email update - check for duplicates
       if (updateData.email && updateData.email !== employee.email) {

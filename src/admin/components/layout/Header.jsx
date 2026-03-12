@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Menu, ChevronDown, PanelLeftClose, PanelLeft, Building2, Globe, User, Briefcase, Users, FolderKanban, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { useCompany, ALL_COMPANIES, BOTH_COMPANIES } from '../../context/CompanyContext'
+import { useCompany, ALL_COMPANIES } from '../../context/CompanyContext'
 import Dropdown from '../ui/Dropdown'
 import { apiRequest } from '../../utils/api'
 import NotificationBell from './NotificationBell'
@@ -10,7 +10,7 @@ import NotificationBell from './NotificationBell'
 const Header = ({ onMenuClick, onCollapseToggle, collapsed }) => {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const { companies, activeCompany, switchCompany, isSuperAdmin, isViewingAllCompanies, isViewingBothCompanies } = useCompany()
+  const { companies, activeCompany, switchCompany, isSuperAdmin, isViewingAllCompanies } = useCompany()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState(null)
   const [showResults, setShowResults] = useState(false)
@@ -421,31 +421,6 @@ const Header = ({ onMenuClick, onCollapseToggle, collapsed }) => {
                       <Dropdown.Divider />
                     </>
                   )}
-                  {/* HOH108+IP(Both) option */}
-                  <Dropdown.Item
-                    onClick={() => switchCompany('both')}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '6px',
-                        background: isViewingBothCompanies ? 'linear-gradient(135deg, #C59C82 0%, #A68B6A 100%)' : '#f1f5f9',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <Users style={{ width: '12px', height: '12px', color: isViewingBothCompanies ? 'white' : '#64748b' }} />
-                      </div>
-                      <div>
-                        <span style={{ fontWeight: isViewingBothCompanies ? '600' : '500', color: isViewingBothCompanies ? '#C59C82' : '#334155' }}>
-                          HOH108+IP(Both)
-                        </span>
-                        <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0 }}>Employees in both entities</p>
-                      </div>
-                    </div>
-                  </Dropdown.Item>
-                  <Dropdown.Divider />
                   {companies.map((company) => (
                     <Dropdown.Item
                       key={company._id}

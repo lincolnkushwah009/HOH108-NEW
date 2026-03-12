@@ -262,7 +262,7 @@ const Employees = () => {
       userRole: employee.userRole?._id || employee.userRole || '',
       department: employee.department?.code || employee.department || '',
       designation: employee.designation || '',
-      company: employee.company?._id || employee.company || '',
+      company: employee.entity === 'Both' ? 'both' : (employee.company?._id || employee.company || ''),
       isActive: employee.isActive !== false
     })
     setShowEditModal(true)
@@ -725,7 +725,7 @@ const Employees = () => {
             />
             <Select
               label="Company"
-              options={[{ value: '', label: 'Select Company' }, ...companies.map(c => ({ value: c._id, label: c.name }))]}
+              options={[{ value: '', label: 'Select Company' }, ...companies.map(c => ({ value: c._id, label: c.name })), { value: 'both', label: 'HOH108+IP(Both)' }]}
               value={formData.company}
               onChange={(e) => setFormData({ ...formData, company: e.target.value })}
             />
@@ -838,7 +838,7 @@ const Employees = () => {
             />
             <Select
               label="Company"
-              options={[{ value: '', label: 'Select Company' }, ...companies.map(c => ({ value: c._id, label: c.name }))]}
+              options={[{ value: '', label: 'Select Company' }, ...companies.map(c => ({ value: c._id, label: c.name })), { value: 'both', label: 'HOH108+IP(Both)' }]}
               value={editFormData.company}
               onChange={(e) => setEditFormData({ ...editFormData, company: e.target.value })}
             />
