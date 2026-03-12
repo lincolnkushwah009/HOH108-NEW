@@ -1,6 +1,123 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
 
+// ============================================
+// MODULE PERMISSION DEFINITIONS
+// Maps Excel column indices to function slugs
+// ============================================
+export const MODULE_PERMISSION_MAP = {
+  // Column index → { module, key }
+  16: { module: 'Sales & CRM', key: 'crm_dashboard' },
+  17: { module: 'Sales & CRM', key: 'leads' },
+  18: { module: 'Sales & CRM', key: 'call_activities' },
+  19: { module: 'Sales & CRM', key: 'customers' },
+  20: { module: 'Sales & CRM', key: 'sales_orders' },
+  21: { module: 'Sales & CRM', key: 'quotations' },
+  22: { module: 'Sales & CRM', key: 'boq_generator' },
+  23: { module: 'Sales & CRM', key: 'dispatches' },
+  24: { module: 'Sales & CRM', key: 'lead_scoring' },
+  25: { module: 'Sales & CRM', key: 'surveys' },
+  26: { module: 'Sales & CRM', key: 'sales_approvals' },
+  27: { module: 'Sales & CRM', key: 'design_iterations' },
+  28: { module: 'Sales & CRM', key: 'channel_partners' },
+  29: { module: 'Procurement', key: 'vendors' },
+  30: { module: 'Procurement', key: 'purchase_requisitions' },
+  31: { module: 'Procurement', key: 'purchase_orders' },
+  32: { module: 'Procurement', key: 'goods_receipt_grn' },
+  33: { module: 'Procurement', key: 'vendor_invoices' },
+  34: { module: 'Procurement', key: 'vendor_milestones' },
+  35: { module: 'Procurement', key: 'rfq' },
+  36: { module: 'Procurement', key: 'vendor_performance' },
+  37: { module: 'Inventory', key: 'materials' },
+  38: { module: 'Inventory', key: 'stock_management' },
+  39: { module: 'Inventory', key: 'stock_movements' },
+  40: { module: 'Projects', key: 'all_projects' },
+  41: { module: 'Projects', key: 'gantt_chart' },
+  42: { module: 'Projects', key: 'budget_costing' },
+  43: { module: 'Projects', key: 'timeline' },
+  44: { module: 'Projects', key: 'p2p_tracker' },
+  45: { module: 'Projects', key: 'qc_master' },
+  46: { module: 'Projects', key: 'change_orders' },
+  47: { module: 'Projects', key: 'risk_register' },
+  48: { module: 'Projects', key: 'stock_takes' },
+  49: { module: 'Production (PPC)', key: 'ppc_dashboard' },
+  50: { module: 'Production (PPC)', key: 'work_orders' },
+  51: { module: 'Production (PPC)', key: 'bill_of_materials' },
+  52: { module: 'Production (PPC)', key: 'mrp' },
+  53: { module: 'Production (PPC)', key: 'material_issues' },
+  54: { module: 'Production (PPC)', key: 'labor_tracking' },
+  55: { module: 'Production (PPC)', key: 'daily_progress' },
+  56: { module: 'Production (PPC)', key: 'production_costs' },
+  57: { module: 'HR Management', key: 'employees_module' },
+  58: { module: 'HR Management', key: 'departments_module' },
+  59: { module: 'HR Management', key: 'attendance' },
+  60: { module: 'HR Management', key: 'leaves' },
+  61: { module: 'HR Management', key: 'reimbursements' },
+  62: { module: 'HR Management', key: 'advance_requests' },
+  63: { module: 'HR Management', key: 'salary_management' },
+  64: { module: 'HR Management', key: 'payroll' },
+  65: { module: 'HR Management', key: 'employee_letters' },
+  66: { module: 'HR Management', key: 'asset_management' },
+  67: { module: 'HR Management', key: 'skill_matrix' },
+  68: { module: 'HR Management', key: 'exit_management' },
+  69: { module: 'Performance', key: 'kra_master' },
+  70: { module: 'Performance', key: 'kpi_master' },
+  71: { module: 'Performance', key: 'role_templates' },
+  72: { module: 'Performance', key: 'reviews' },
+  73: { module: 'Performance', key: 'review_cycles' },
+  74: { module: 'Finance', key: 'customer_invoices' },
+  75: { module: 'Finance', key: 'payments' },
+  76: { module: 'Finance', key: 'accounts_receivable' },
+  77: { module: 'Finance', key: 'accounts_payable' },
+  78: { module: 'Finance', key: 'bank_reconciliation' },
+  79: { module: 'Finance', key: 'budget_forecast' },
+  80: { module: 'Finance', key: 'credit_debit_notes' },
+  81: { module: 'Finance', key: 'ledger_master' },
+  82: { module: 'Finance', key: 'ledger_mapping' },
+  83: { module: 'Finance', key: 'aging_dashboard' },
+  84: { module: 'Analytics', key: 'analytics_overview' },
+  85: { module: 'Analytics', key: 'sales_analytics' },
+  86: { module: 'Analytics', key: 'finance_analytics' },
+  87: { module: 'Analytics', key: 'project_analytics' },
+  88: { module: 'Analytics', key: 'hr_analytics' },
+  89: { module: 'Compliance', key: 'compliance_dashboard' },
+  90: { module: 'Compliance', key: 'consent_dpdp' },
+  91: { module: 'Compliance', key: 'data_requests' },
+  92: { module: 'Compliance', key: 'e_invoicing' },
+  93: { module: 'Compliance', key: 'gst_returns' },
+  94: { module: 'Compliance', key: 'sod_review' },
+  95: { module: 'Compliance', key: 'access_reviews' },
+  96: { module: 'Notifications', key: 'notifications_module' },
+  97: { module: 'Approvals', key: 'approvals_module' },
+  98: { module: 'Support Tickets', key: 'all_tickets' },
+  99: { module: 'Support Tickets', key: 'my_tickets' },
+  100: { module: 'Support Tickets', key: 'assigned_to_me' },
+  101: { module: 'Support Tickets', key: 'create_ticket' },
+  102: { module: 'Marketing', key: 'mail_templates' },
+  103: { module: 'Marketing', key: 'game_entries' }
+}
+
+// All module permission keys (for iteration)
+export const ALL_MODULE_PERMISSION_KEYS = Object.values(MODULE_PERMISSION_MAP).map(v => v.key)
+
+// Module grouping for UI display
+export const MODULE_GROUPS = {
+  'Sales & CRM': ['crm_dashboard', 'leads', 'call_activities', 'customers', 'sales_orders', 'quotations', 'boq_generator', 'dispatches', 'lead_scoring', 'surveys', 'sales_approvals', 'design_iterations', 'channel_partners'],
+  'Procurement': ['vendors', 'purchase_requisitions', 'purchase_orders', 'goods_receipt_grn', 'vendor_invoices', 'vendor_milestones', 'rfq', 'vendor_performance'],
+  'Inventory': ['materials', 'stock_management', 'stock_movements'],
+  'Projects': ['all_projects', 'gantt_chart', 'budget_costing', 'timeline', 'p2p_tracker', 'qc_master', 'change_orders', 'risk_register', 'stock_takes'],
+  'Production (PPC)': ['ppc_dashboard', 'work_orders', 'bill_of_materials', 'mrp', 'material_issues', 'labor_tracking', 'daily_progress', 'production_costs'],
+  'HR Management': ['employees_module', 'departments_module', 'attendance', 'leaves', 'reimbursements', 'advance_requests', 'salary_management', 'payroll', 'employee_letters', 'asset_management', 'skill_matrix', 'exit_management'],
+  'Performance': ['kra_master', 'kpi_master', 'role_templates', 'reviews', 'review_cycles'],
+  'Finance': ['customer_invoices', 'payments', 'accounts_receivable', 'accounts_payable', 'bank_reconciliation', 'budget_forecast', 'credit_debit_notes', 'ledger_master', 'ledger_mapping', 'aging_dashboard'],
+  'Analytics': ['analytics_overview', 'sales_analytics', 'finance_analytics', 'project_analytics', 'hr_analytics'],
+  'Compliance': ['compliance_dashboard', 'consent_dpdp', 'data_requests', 'e_invoicing', 'gst_returns', 'sod_review', 'access_reviews'],
+  'Notifications': ['notifications_module'],
+  'Approvals': ['approvals_module'],
+  'Support Tickets': ['all_tickets', 'my_tickets', 'assigned_to_me', 'create_ticket'],
+  'Marketing': ['mail_templates', 'game_entries']
+}
+
 // Permission definitions for RBAC
 export const PERMISSIONS = {
   // Lead permissions
@@ -279,7 +396,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
       type: String,
-      enum: ['viewer', 'company_admin', 'sales_manager', 'project_manager'],
+      enum: ['viewer', 'company_admin', 'sales_manager', 'sales_executive', 'pre_sales', 'project_manager', 'site_engineer', 'designer', 'operations', 'finance', 'super_admin'],
       default: 'viewer'
     },
     grantedAt: {
@@ -498,6 +615,156 @@ const userSchema = new mongoose.Schema({
   websiteSource: {
     type: String,
     default: 'HOH108'
+  },
+
+  // ============================================
+  // EMPLOYEE MASTER FIELDS (from Roles & Permission sheet)
+  // ============================================
+  empId: {
+    type: String, // e.g., HOHIP001
+    sparse: true,
+    index: true
+  },
+
+  systemRole: {
+    type: String // e.g., "Group CEO", "Director", "Associate Sales Manager"
+  },
+
+  entity: {
+    type: String,
+    enum: ['IP', 'HOH', 'Both', 'None'],
+    default: 'IP'
+  },
+
+  branch: {
+    type: String // e.g., "HSR", "Horamavu", "Hyderabad", "Mysore"
+  },
+
+  region: {
+    type: String // e.g., "Karnataka", "Telangana"
+  },
+
+  // ============================================
+  // GRANULAR MODULE PERMISSIONS (View/Edit per function)
+  // Populated from Roles & Permission Excel sheet
+  // Each key is a function slug, value is { view: Boolean, edit: Boolean }
+  // ============================================
+  modulePermissions: {
+    // ---- Sales & CRM ----
+    crm_dashboard:      { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    leads:              { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    call_activities:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    customers:          { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    sales_orders:       { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    quotations:         { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    boq_generator:      { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    dispatches:         { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    lead_scoring:       { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    surveys:            { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    sales_approvals:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    design_iterations:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    channel_partners:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Procurement ----
+    vendors:              { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    purchase_requisitions:{ view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    purchase_orders:      { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    goods_receipt_grn:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    vendor_invoices:      { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    vendor_milestones:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    rfq:                  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    vendor_performance:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Inventory ----
+    materials:        { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    stock_management: { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    stock_movements:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Projects ----
+    all_projects:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    gantt_chart:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    budget_costing: { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    timeline:       { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    p2p_tracker:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    qc_master:      { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    change_orders:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    risk_register:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    stock_takes:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Production (PPC) ----
+    ppc_dashboard:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    work_orders:      { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    bill_of_materials:{ view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    mrp:              { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    material_issues:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    labor_tracking:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    daily_progress:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    production_costs: { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- HR Management ----
+    employees_module:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    departments_module: { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    attendance:         { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    leaves:             { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    reimbursements:     { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    advance_requests:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    salary_management:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    payroll:            { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    employee_letters:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    asset_management:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    skill_matrix:       { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    exit_management:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Performance ----
+    kra_master:     { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    kpi_master:     { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    role_templates: { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    reviews:        { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    review_cycles:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Finance ----
+    customer_invoices:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    payments:             { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    accounts_receivable:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    accounts_payable:     { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    bank_reconciliation:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    budget_forecast:      { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    credit_debit_notes:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    ledger_master:        { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    ledger_mapping:       { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    aging_dashboard:      { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Analytics ----
+    analytics_overview:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    sales_analytics:      { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    finance_analytics:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    project_analytics:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    hr_analytics:         { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Compliance ----
+    compliance_dashboard: { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    consent_dpdp:         { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    data_requests:        { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    e_invoicing:          { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    gst_returns:          { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    sod_review:           { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    access_reviews:       { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Notifications ----
+    notifications_module: { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Approvals ----
+    approvals_module:     { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Support Tickets ----
+    all_tickets:    { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    my_tickets:     { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    assigned_to_me: { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    create_ticket:  { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+
+    // ---- Marketing ----
+    mail_templates: { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } },
+    game_entries:   { view: { type: Boolean, default: false }, edit: { type: Boolean, default: false } }
   },
 
   // ============================================
@@ -897,6 +1164,27 @@ userSchema.methods.hasAnyPermission = function(permissionList) {
 userSchema.methods.hasAllPermissions = function(permissionList) {
   const permissions = this.getPermissions()
   return permissionList.every(p => permissions.includes(p))
+}
+
+// Check if user has module-level permission (view or edit) for a function
+userSchema.methods.hasModulePermission = function(functionKey, accessType = 'view') {
+  if (!this.modulePermissions) return false
+  const perm = this.modulePermissions[functionKey]
+  if (!perm) return false
+  return accessType === 'edit' ? !!perm.edit : !!perm.view
+}
+
+// Get all granted module permissions as a structured object
+userSchema.methods.getModulePermissions = function() {
+  if (!this.modulePermissions) return {}
+  const result = {}
+  const mp = this.modulePermissions.toObject ? this.modulePermissions.toObject() : this.modulePermissions
+  for (const [key, val] of Object.entries(mp)) {
+    if (val && (val.view || val.edit)) {
+      result[key] = { view: !!val.view, edit: !!val.edit }
+    }
+  }
+  return result
 }
 
 // Check if user can access a specific company

@@ -93,7 +93,10 @@ router.get('/',
           { email: { $regex: search, $options: 'i' } },
           { phone: { $regex: search, $options: 'i' } },
           { designation: { $regex: search, $options: 'i' } },
-          { employeeId: { $regex: search, $options: 'i' } }
+          { empId: { $regex: search, $options: 'i' } },
+          { userId: { $regex: search, $options: 'i' } },
+          { systemRole: { $regex: search, $options: 'i' } },
+          { branch: { $regex: search, $options: 'i' } }
         ]
       }
 
@@ -1727,6 +1730,178 @@ router.get('/by-location',
         success: false,
         message: error.message
       })
+    }
+  }
+)
+
+// ============================================
+// MODULE PERMISSIONS ROUTES
+// ============================================
+
+/**
+ * @desc    Get module permissions for an employee
+ * @route   GET /api/employees/:id/module-permissions
+ * @access  Private
+ */
+router.get('/:id/module-permissions',
+  requirePermission(PERMISSIONS.USERS_VIEW),
+  async (req, res) => {
+    try {
+      const employee = await User.findById(req.params.id)
+        .select('empId name email entity systemRole modulePermissions')
+
+      if (!employee) {
+        return res.status(404).json({ success: false, message: 'Employee not found' })
+      }
+
+      // Group permissions by module
+      const { MODULE_GROUPS } = await import('../models/User.js')
+      const grouped = {}
+      for (const [moduleName, keys] of Object.entries(MODULE_GROUPS)) {
+        grouped[moduleName] = {}
+        for (const key of keys) {
+          const perm = employee.modulePermissions?.[key]
+          grouped[moduleName][key] = {
+            view: perm?.view || false,
+            edit: perm?.edit || false
+          }
+        }
+      }
+
+      res.json({
+        success: true,
+        data: {
+          employee: {
+            _id: employee._id,
+            empId: employee.empId,
+            name: employee.name,
+            email: employee.email,
+            entity: employee.entity,
+            systemRole: employee.systemRole
+          },
+          permissions: grouped,
+          raw: employee.modulePermissions
+        }
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
+    }
+  }
+)
+
+/**
+ * @desc    Update module permissions for an employee
+ * @route   PUT /api/employees/:id/module-permissions
+ * @access  Private (Admin)
+ */
+router.put('/:id/module-permissions',
+  requirePermission(PERMISSIONS.USERS_MANAGE_ROLES),
+  async (req, res) => {
+    try {
+      const { permissions } = req.body
+
+      if (!permissions || typeof permissions !== 'object') {
+        return res.status(400).json({ success: false, message: 'permissions object required' })
+      }
+
+      const employee = await User.findById(req.params.id)
+      if (!employee) {
+        return res.status(404).json({ success: false, message: 'Employee not found' })
+      }
+
+      // Build update object for modulePermissions
+      const updateData = {}
+      for (const [key, val] of Object.entries(permissions)) {
+        if (val && typeof val === 'object') {
+          if (val.view !== undefined) updateData[`modulePermissions.${key}.view`] = !!val.view
+          if (val.edit !== undefined) updateData[`modulePermissions.${key}.edit`] = !!val.edit
+        }
+      }
+
+      await User.updateOne({ _id: employee._id }, { $set: updateData })
+
+      res.json({
+        success: true,
+        message: `Module permissions updated for ${employee.name}`
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
+    }
+  }
+)
+
+/**
+ * @desc    Check if current user has a specific module permission
+ * @route   GET /api/employees/me/check-permission/:functionKey/:accessType
+ * @access  Private
+ */
+router.get('/me/check-permission/:functionKey/:accessType',
+  async (req, res) => {
+    try {
+      const { functionKey, accessType } = req.params
+      const user = await User.findById(req.user._id).select('modulePermissions entity')
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' })
+      }
+
+      const perm = user.modulePermissions?.[functionKey]
+      const hasAccess = perm ? !!(accessType === 'edit' ? perm.edit : perm.view) : false
+
+      res.json({
+        success: true,
+        data: {
+          functionKey,
+          accessType,
+          hasAccess,
+          entity: user.entity
+        }
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
+    }
+  }
+)
+
+/**
+ * @desc    Get current user's full module permissions
+ * @route   GET /api/employees/me/module-permissions
+ * @access  Private
+ */
+router.get('/me/module-permissions',
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user._id)
+        .select('empId name entity modulePermissions')
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' })
+      }
+
+      const { MODULE_GROUPS } = await import('../models/User.js')
+      const grouped = {}
+      for (const [moduleName, keys] of Object.entries(MODULE_GROUPS)) {
+        grouped[moduleName] = {}
+        for (const key of keys) {
+          const perm = user.modulePermissions?.[key]
+          grouped[moduleName][key] = {
+            view: perm?.view || false,
+            edit: perm?.edit || false
+          }
+        }
+      }
+
+      res.json({
+        success: true,
+        data: {
+          empId: user.empId,
+          name: user.name,
+          entity: user.entity,
+          permissions: grouped
+        }
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
     }
   }
 )

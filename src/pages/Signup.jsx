@@ -18,7 +18,7 @@ const COLORS = {
   success: '#22C55E',
 }
 
-const API_BASE = 'https://hoh108.com/api'
+const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:5001/api` : 'https://hoh108.com/api'
 
 function Signup() {
   const navigate = useNavigate()

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Plus, Phone, Mail, MoreVertical, Eye, Edit, Trash2, Key, Upload, FileText, CheckCircle, XCircle, Clock, AlertTriangle, UserCheck, Calendar, Building2, MapPin, File, Image, Download, ExternalLink, FileSpreadsheet, AlertCircle } from 'lucide-react'
 import { employeesAPI, departmentsAPI, companiesAPI, rolesAPI } from '../../utils/api'
 import PageHeader from '../../components/layout/PageHeader'
@@ -107,10 +107,27 @@ const Employees = () => {
     loadRoles()
   }, [])
 
-  // Load employees when pagination, search, activeTab change
+  // Debounced search: wait 400ms after user stops typing before firing API call
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const searchTimerRef = useRef(null)
+
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 400)
+    return () => clearTimeout(searchTimerRef.current)
+  }, [search])
+
+  // Reset to page 1 when search or tab changes, then load
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, page: 1 }))
+  }, [debouncedSearch, activeTab])
+
+  // Load employees when page changes (including the reset above)
   useEffect(() => {
     loadEmployees()
-  }, [pagination.page, search, activeTab])
+  }, [pagination.page, debouncedSearch, activeTab])
 
   useEffect(() => {
     if (activeTab === 'probation') {
@@ -149,7 +166,8 @@ const Employees = () => {
   const loadEmployees = async () => {
     setLoading(true)
     try {
-      const params = { page: pagination.page, limit: pagination.limit, search }
+      const params = { page: pagination.page, limit: pagination.limit }
+      if (debouncedSearch) params.search = debouncedSearch
       if (activeTab === 'probation') {
         params.employmentType = 'probation'
       }

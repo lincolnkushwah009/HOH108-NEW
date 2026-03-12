@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
-import User, { PERMISSIONS, ROLE_PERMISSIONS } from '../models/User.js'
+import User, { PERMISSIONS, ROLE_PERMISSIONS, MODULE_PERMISSION_MAP, ALL_MODULE_PERMISSION_KEYS, MODULE_GROUPS } from '../models/User.js'
 import Company from '../models/Company.js'
 import TokenBlacklist from '../models/TokenBlacklist.js'
 
@@ -14,8 +14,8 @@ import TokenBlacklist from '../models/TokenBlacklist.js'
  * - Company-scoped data access
  */
 
-// Re-export PERMISSIONS for use in routes
-export { PERMISSIONS } from '../models/User.js'
+// Re-export PERMISSIONS and MODULE constants for use in routes
+export { PERMISSIONS, MODULE_PERMISSION_MAP, ALL_MODULE_PERMISSION_KEYS, MODULE_GROUPS } from '../models/User.js'
 
 // Helper to safely extract ID string from populated or unpopulated Mongoose field
 const toId = (field) => (field?._id || field)?.toString()
@@ -280,6 +280,37 @@ export const requireAllPermissions = (...permissions) => {
       return res.status(403).json({
         success: false,
         message: 'You do not have all required permissions'
+      })
+    }
+    next()
+  }
+}
+
+/**
+ * Check for module-level permission (view/edit) on a specific function
+ * Uses the new granular modulePermissions on the User model
+ * @param {string} functionKey - e.g., 'leads', 'vendors', 'all_projects'
+ * @param {string} accessType - 'view' or 'edit'
+ */
+export const requireModulePermission = (functionKey, accessType = 'view') => {
+  return async (req, res, next) => {
+    // Super admins and company admins bypass module permission checks
+    if (['super_admin', 'company_admin'].includes(req.user.role)) {
+      return next()
+    }
+
+    const user = await User.findById(req.user._id).select('modulePermissions')
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'User not found' })
+    }
+
+    const perm = user.modulePermissions?.[functionKey]
+    const hasAccess = perm ? !!(accessType === 'edit' ? perm.edit : perm.view) : false
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        message: `You do not have ${accessType} access to ${functionKey.replace(/_/g, ' ')}`
       })
     }
     next()

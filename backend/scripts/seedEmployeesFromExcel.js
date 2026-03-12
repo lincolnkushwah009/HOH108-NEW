@@ -54,9 +54,10 @@ function generateEmail(name, empId) {
 // ============================================
 const PERMISSION_ROLE_TO_CODE = {
   'company admin': 'ADMIN',
+  'owner': 'OWNER',
   'pre sales executive': 'PRE_SALES_EXECUTIVE',
   'sales manager': 'SALES_MANAGER',
-  'associate sales manager': 'SALES_MANAGER',
+  'associate sales manager': 'ASSOCIATE_SALES_MANAGER',
   'sales head': 'SALES_HEAD',
   'agm - sales': 'AGM_SALES',
   'agm - business': 'AGM_BUSINESS',
@@ -64,10 +65,12 @@ const PERMISSION_ROLE_TO_CODE = {
   'community manager': 'COMMUNITY_MANAGER',
   'associate community manager': 'ASSOC_COMMUNITY_MANAGER',
   'principal designer': 'PRINCIPAL_DESIGNER',
+  'design head': 'DESIGN_HEAD',
   'design relationship manager': 'DESIGN_RELATIONSHIP_MANAGER',
   'associate design relationship manager': 'ASSOC_DESIGN_REL_MANAGER',
   'junior designer': 'JUNIOR_DESIGNER',
   'project manager': 'PROJECT_MANAGER',
+  'site engineer': 'SITE_ENGINEER',
   'site executive': 'SITE_EXECUTIVE',
   'mmt technician': 'MMT_TECHNICIAN',
   'quality controller': 'QC_QA',
@@ -82,6 +85,9 @@ const PERMISSION_ROLE_TO_CODE = {
   'business operations lead': 'BUSINESS_OPS_LEAD',
   'manager - channel partner': 'MANAGER_CHANNEL_PARTNER',
   'information technology': 'INFORMATION_TECHNOLOGY',
+  'marketing': 'MARKETING',
+  'crm': 'CRM',
+  'viewer': 'VIEWER',
 }
 
 // ============================================

@@ -120,7 +120,7 @@ export function SpinWheelTrigger({ onClick }) {
   )
 }
 
-const API_BASE = 'https://hoh108.com/api'
+const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:5001/api` : 'https://hoh108.com/api'
 
 // Main Spin Wheel Lightbox Component
 function SpinWheelLightbox({ isOpen, onClose }) {
