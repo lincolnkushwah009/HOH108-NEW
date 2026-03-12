@@ -176,6 +176,16 @@ export const setCompanyContext = async (req, res, next) => {
       // Set special flag for viewing all companies
       req.activeCompany = null
       req.viewingAllCompanies = true
+      req.viewingBothCompanies = false
+      req.activeRole = req.user.role
+      return next()
+    }
+
+    // Handle "both" - show employees with entity=Both
+    if (companyId === 'both') {
+      req.activeCompany = null
+      req.viewingAllCompanies = false
+      req.viewingBothCompanies = true
       req.activeRole = req.user.role
       return next()
     }
@@ -327,11 +337,18 @@ export const companyScopedQuery = (req, baseQuery = {}) => {
     return baseQuery
   }
 
+  // If viewing "Both" entity, filter by entity=Both
+  if (req.viewingBothCompanies) {
+    return {
+      ...baseQuery,
+      entity: 'Both'
+    }
+  }
+
   const companyId = req.activeCompany?._id || req.user.company?._id
 
   // Super admin can see all if no company context set
   if (req.user.role === 'super_admin' && !companyId) {
-    // Return all companies the super admin manages
     return baseQuery
   }
 
@@ -340,9 +357,13 @@ export const companyScopedQuery = (req, baseQuery = {}) => {
     return baseQuery
   }
 
+  // Include employees whose primary company matches OR who have this company in additionalCompanies
   return {
     ...baseQuery,
-    company: companyId
+    $or: [
+      { company: companyId },
+      { 'additionalCompanies.company': companyId }
+    ]
   }
 }
 

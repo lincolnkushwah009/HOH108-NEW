@@ -7,6 +7,9 @@ const CompanyContext = createContext(null)
 // Special value for "All Companies" option
 export const ALL_COMPANIES = { _id: 'all', name: 'All Companies', code: 'ALL' }
 
+// Special value for "Both" (HOH108 + Interior Plus) option
+export const BOTH_COMPANIES = { _id: 'both', name: 'HOH108+IP(Both)', code: 'BOTH' }
+
 export const CompanyProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth()
   const [companies, setCompanies] = useState([])
@@ -36,8 +39,9 @@ export const CompanyProvider = ({ children }) => {
       const savedCompanyId = localStorage.getItem('hoh108_active_company')
 
       if (savedCompanyId === 'all' && isSuperAdmin) {
-        // Super admin viewing all companies
         setActiveCompany(ALL_COMPANIES)
+      } else if (savedCompanyId === 'both') {
+        setActiveCompany(BOTH_COMPANIES)
       } else if (savedCompanyId && companyList.find(c => c._id === savedCompanyId)) {
         setActiveCompany(companyList.find(c => c._id === savedCompanyId))
       } else if (companyList.length > 0) {
@@ -55,6 +59,9 @@ export const CompanyProvider = ({ children }) => {
     if (companyId === 'all' && isSuperAdmin) {
       setActiveCompany(ALL_COMPANIES)
       localStorage.setItem('hoh108_active_company', 'all')
+    } else if (companyId === 'both') {
+      setActiveCompany(BOTH_COMPANIES)
+      localStorage.setItem('hoh108_active_company', 'both')
     } else {
       const company = companies.find(c => c._id === companyId)
       if (company) {
@@ -66,14 +73,14 @@ export const CompanyProvider = ({ children }) => {
 
   // Get the company ID to send to API (null for "all")
   const getActiveCompanyId = () => {
-    if (activeCompany?._id === 'all') {
-      return 'all'
-    }
+    if (activeCompany?._id === 'all') return 'all'
+    if (activeCompany?._id === 'both') return 'both'
     return activeCompany?._id || null
   }
 
   // Check if viewing all companies
   const isViewingAllCompanies = activeCompany?._id === 'all'
+  const isViewingBothCompanies = activeCompany?._id === 'both'
 
   const value = {
     companies,
@@ -83,6 +90,7 @@ export const CompanyProvider = ({ children }) => {
     reload: loadCompanies,
     isSuperAdmin,
     isViewingAllCompanies,
+    isViewingBothCompanies,
     getActiveCompanyId,
   }
 
