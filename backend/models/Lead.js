@@ -28,7 +28,11 @@ const activitySchema = new mongoose.Schema({
       'communication_logged',
       'disposition_changed',
       'sales_order_created',
-      'sales_order_cancelled'
+      'sales_order_cancelled',
+      'call_initiated',
+      'call_completed',
+      'call_failed',
+      'call_missed'
     ],
     required: true
   },
@@ -355,7 +359,7 @@ const leadSchema = new mongoose.Schema({
   // Secondary Status (legacy — cold/warm/hot are now primaryStatus columns)
   secondaryStatus: {
     type: String,
-    enum: ['hot', 'warm', 'cold', 'future'],
+    enum: ['hot', 'warm', 'cold', 'future', '', null],
     default: null
   },
 

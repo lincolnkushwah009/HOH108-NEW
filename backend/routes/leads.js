@@ -1073,13 +1073,10 @@ router.put('/:id/assign',
         })
       }
 
-      // Verify assignee is in same company
+      // Verify assignee exists
       const assignee = await User.findById(userId)
-      if (!assignee || assignee.company.toString() !== lead.company.toString()) {
-        return res.status(400).json({
-          success: false,
-          message: 'User not found or not in same company'
-        })
+      if (!assignee) {
+        return res.status(400).json({ success: false, message: 'User not found' })
       }
 
       const oldAssignee = lead.assignedTo

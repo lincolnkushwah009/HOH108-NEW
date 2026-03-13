@@ -343,7 +343,7 @@ router.put('/:id/complete',
       // Update lead's call summary
       const lead = await Lead.findById(activity.lead)
       if (lead) {
-        await lead.updateCallSummary()
+        await lead.updateCallSummary({ outcome, duration, status: 'completed' })
 
         // Handle RNR tracking
         if (outcome === 'rnr') {

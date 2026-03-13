@@ -230,12 +230,23 @@ callActivitySchema.pre('save', async function(next) {
 })
 
 // Method to complete the call
-callActivitySchema.methods.completeCall = function(outcome, notes, duration) {
+callActivitySchema.methods.completeCall = function(data, userId, userName) {
+  // Support both object and positional args
+  const outcome = typeof data === 'object' ? data.outcome : data
+  const notes = typeof data === 'object' ? data.notes : userId
+  const duration = typeof data === 'object' ? data.duration : userName
+  const nextAction = typeof data === 'object' ? data.nextAction : undefined
+  const nextActionDate = typeof data === 'object' ? data.nextActionDate : undefined
+  const callerId = typeof data === 'object' ? userId : undefined
+  const callerName = typeof data === 'object' ? userName : undefined
+
   this.status = 'completed'
   this.endedAt = new Date()
   this.outcome = outcome
-  this.notes = notes
+  if (notes) this.notes = notes
   this.duration = duration || Math.floor((this.endedAt - this.startedAt) / 1000)
+  if (nextAction) this.nextAction = nextAction
+  if (nextActionDate) this.nextActionDate = nextActionDate
 
   this.activities.push({
     action: 'call_completed',

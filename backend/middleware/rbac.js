@@ -523,13 +523,24 @@ export const getLeadQueryFilter = (req, additionalFilters = {}) => {
     return baseFilter
   }
 
-  // Otherwise, only assigned leads
+  // Otherwise, show leads that are either:
+  // 1. In the user's company AND assigned to them, OR
+  // 2. Assigned to them in ANY company (cross-company assignment)
+  const assignedConditions = [
+    { assignedTo: req.user._id },
+    { 'teamMembers.user': req.user._id },
+    { 'departmentAssignments.preSales.employee': req.user._id },
+    { 'departmentAssignments.crm.employee': req.user._id },
+    { 'departmentAssignments.sales.employee': req.user._id },
+    { 'departmentAssignments.design.employee': req.user._id },
+    { 'departmentAssignments.operations.employee': req.user._id },
+    { 'departmentAssignments.finance.employee': req.user._id },
+    { createdBy: req.user._id }
+  ]
+
   return {
-    ...baseFilter,
-    $or: [
-      { assignedTo: req.user._id },
-      { 'teamMembers.user': req.user._id }
-    ]
+    ...additionalFilters,
+    $or: assignedConditions
   }
 }
 
@@ -600,8 +611,22 @@ export const canModifyResource = (req, resource, resourceType) => {
     return req.user.role === 'company_admin'
   }
 
-  // Must be in same company
-  if (resourceCompanyId.toString() !== req.user.company._id.toString()) {
+  // Check if user has access to resource's company (primary or additional)
+  const userCompanyId = req.user.company._id.toString()
+  const userAdditionalCompanies = (req.user.additionalCompanies || []).map(ac => (ac.company?._id || ac.company)?.toString()).filter(Boolean)
+  const userAllCompanies = [userCompanyId, ...userAdditionalCompanies]
+  const resCompanyStr = resourceCompanyId.toString()
+
+  // If user is assigned to the resource, allow regardless of company
+  const userId = req.user._id.toString()
+  if (resourceType === 'lead') {
+    if (toId(resource.assignedTo) === userId || resource.teamMembers?.some(tm => toId(tm.user) === userId)) {
+      // User is assigned — allow modification
+      if (req.user.hasPermission(PERMISSIONS.LEADS_EDIT)) return true
+    }
+  }
+
+  if (!userAllCompanies.includes(resCompanyStr)) {
     return false
   }
 
@@ -620,7 +645,6 @@ export const canModifyResource = (req, resource, resourceType) => {
   }
 
   // Check ownership/assignment based on role (handle populated fields)
-  const userId = req.user._id.toString()
   switch (resourceType) {
     case 'lead':
       // Managers with view-all access can modify any lead in their company
