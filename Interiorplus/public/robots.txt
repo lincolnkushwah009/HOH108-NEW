@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+Sitemap: https://interiorplus.in/sitemap.xml
+
+# Block access to admin/api paths if any
+Disallow: /admin/
+Disallow: /api/

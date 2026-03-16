@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GOD IS KIND - Spin & Win!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-yellow: #FFD700;
+            --accent-orange: #FF6B35;
+            --accent-purple: #9B59B6;
+            --accent-pink: #FF69B4;
+            --dark: #1a1a1a;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1f3d 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--white);
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-animation span {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-yellow);
+            border-radius: 50%;
+            animation: float 15s infinite;
+            opacity: 0.1;
+        }
+
+        .bg-animation span:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .bg-animation span:nth-child(2) { left: 30%; animation-delay: 2s; background: var(--accent-orange); }
+        .bg-animation span:nth-child(3) { left: 50%; animation-delay: 4s; background: var(--accent-purple); }
+        .bg-animation span:nth-child(4) { left: 70%; animation-delay: 6s; background: var(--accent-pink); }
+        .bg-animation span:nth-child(5) { left: 90%; animation-delay: 8s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) scale(0); }
+            50% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) scale(1); }
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Logo & Branding */
+        .brand-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary-yellow), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 4px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .tagline {
+            font-size: 1rem;
+            color: var(--white);
+            opacity: 0.9;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Spin Counter */
+        .spin-counter {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(155, 89, 182, 0.4);
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Wheel Container */
+        .wheel-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 20px 0;
+        }
+
+        .wheel-outer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-yellow), var(--accent-orange));
+            padding: 10px;
+            box-shadow:
+                0 0 30px rgba(255, 215, 0, 0.5),
+                0 0 60px rgba(255, 107, 53, 0.3),
+                inset 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            background: var(--dark);
+        }
+
+        .wheel-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            left: 50%;
+            top: 0;
+            transform-origin: 0% 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            clip-path: polygon(0% 100%, 100% 0%, 0% 0%);
+        }
+
+        .wheel-segment span {
+            position: absolute;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--dark);
+            transform: rotate(67.5deg) translateY(-60px);
+            text-align: center;
+            width: 80px;
+            line-height: 1.2;
+        }
+
+        .wheel-segment:nth-child(1) { transform: rotate(0deg); background: var(--primary-yellow); }
+        .wheel-segment:nth-child(2) { transform: rotate(45deg); background: var(--white); }
+        .wheel-segment:nth-child(3) { transform: rotate(90deg); background: var(--accent-orange); }
+        .wheel-segment:nth-child(4) { transform: rotate(135deg); background: var(--accent-pink); }
+        .wheel-segment:nth-child(5) { transform: rotate(180deg); background: var(--primary-yellow); }
+        .wheel-segment:nth-child(6) { transform: rotate(225deg); background: var(--white); }
+        .wheel-segment:nth-child(7) { transform: rotate(270deg); background: var(--accent-purple); }
+        .wheel-segment:nth-child(8) { transform: rotate(315deg); background: var(--accent-pink); }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--dark), #333);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 0.8rem;
+            color: var(--primary-yellow);
+            text-align: center;
+            line-height: 1.1;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        /* Pointer */
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid var(--primary-yellow);
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+            z-index: 20;
+        }
+
+        /* Spin Button */
+        .spin-btn {
+            background: linear-gradient(135deg, var(--primary-yellow), var(--accent-orange));
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 3px;
+            color: var(--dark);
+            border-radius: 60px;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow:
+                0 6px 30px rgba(255, 215, 0, 0.5),
+                0 4px 15px rgba(255, 107, 53, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow:
+                0 8px 40px rgba(255, 215, 0, 0.6),
+                0 6px 20px rgba(255, 107, 53, 0.5);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .spin-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255,255,255,0.3),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .instructions {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px 25px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .instructions p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .instructions .highlight {
+            color: var(--primary-yellow);
+            font-weight: 700;
+        }
+
+        /* Win Screen */
+        .win-message {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .win-message h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-yellow), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            animation: celebrate 0.5s ease infinite alternate;
+        }
+
+        @keyframes celebrate {
+            from { transform: scale(1) rotate(-1deg); }
+            to { transform: scale(1.02) rotate(1deg); }
+        }
+
+        .win-message .prize {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .win-message .emoji {
+            font-size: 4rem;
+            display: block;
+            margin: 20px 0;
+            animation: bounce 0.6s ease infinite;
+        }
+
+        /* Form Styles */
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .form-container h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-yellow);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-yellow);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-yellow), var(--accent-orange));
+            border: none;
+            padding: 18px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            color: var(--dark);
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .star-rating .star {
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .star-rating .star:hover,
+        .star-rating .star.active {
+            color: var(--primary-yellow);
+            transform: scale(1.2);
+        }
+
+        .review-text {
+            text-align: center;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        /* Thank You Screen */
+        .thank-you-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .thank-you-screen .big-emoji {
+            font-size: 5rem;
+            display: block;
+            margin-bottom: 30px;
+            animation: bounce 1s ease infinite;
+        }
+
+        .thank-you-screen h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary-yellow), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .thank-you-screen .message {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .thank-you-screen .pickup-info {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            padding: 20px 30px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .thank-you-screen .kindness-quote {
+            margin-top: 40px;
+            font-style: italic;
+            opacity: 0.8;
+            font-size: 1rem;
+        }
+
+        /* Confetti */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 20px;
+            top: -20px;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Result Message */
+        .result-message {
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-message.try-again {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.3), rgba(255, 105, 180, 0.3));
+        }
+
+        .result-message.win {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 107, 53, 0.3));
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 400px) {
+            .wheel-container {
+                width: 280px;
+                height: 280px;
+            }
+
+            .brand-logo {
+                font-size: 2.5rem;
+            }
+
+            .spin-btn {
+                padding: 18px 50px;
+                font-size: 1.3rem;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+        }
+
+        /* Glow effect on win */
+        .wheel-glow {
+            animation: glow-pulse 0.5s ease infinite alternate;
+        }
+
+        @keyframes glow-pulse {
+            from {
+                box-shadow:
+                    0 0 30px rgba(255, 215, 0, 0.5),
+                    0 0 60px rgba(255, 107, 53, 0.3);
+            }
+            to {
+                box-shadow:
+                    0 0 50px rgba(255, 215, 0, 0.8),
+                    0 0 100px rgba(255, 107, 53, 0.6),
+                    0 0 150px rgba(255, 215, 0, 0.4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <div class="container">
+        <!-- SCREEN 1: Main Game Screen -->
+        <div class="screen active" id="gameScreen">
+            <div class="brand-logo">GOD IS KIND</div>
+            <p class="tagline">Wear the Message. Spread Kindness.</p>
+
+            <div class="spin-counter" id="spinCounter">
+                🎯 SPINS LEFT: <span id="spinsLeft">3</span>
+            </div>
+
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <div class="wheel-outer">
+                    <div class="wheel" id="wheel">
+                        <div class="wheel-segment"><span>TRY AGAIN</span></div>
+                        <div class="wheel-segment"><span>ALMOST THERE!</span></div>
+                        <div class="wheel-segment"><span>FREE T-SHIRT 🎁</span></div>
+                        <div class="wheel-segment"><span>SO CLOSE!</span></div>
+                        <div class="wheel-segment"><span>ONE MORE CHANCE</span></div>
+                        <div class="wheel-segment"><span>GOD IS KIND WIN! ⭐</span></div>
+                        <div class="wheel-segment"><span>BETTER LUCK!</span></div>
+                        <div class="wheel-segment"><span>KEEP SPINNING!</span></div>
+                    </div>
+                    <div class="wheel-center">GOD IS<br>KIND</div>
+                </div>
+            </div>
+
+            <button class="spin-btn" id="spinBtn" onclick="spinWheel()">
+                🎰 SPIN TO WIN!
+            </button>
+
+            <div class="result-message" id="resultMessage" style="display: none;"></div>
+
+            <div class="instructions">
+                <p>🎁 <span class="highlight">You get 3 chances!</span></p>
+                <p>Everyone wins a FREE T-shirt! 🎉</p>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: Win Celebration & Form -->
+        <div class="screen" id="formScreen">
+            <div class="brand-logo">GOD IS KIND</div>
+
+            <div class="win-message">
+                <span class="emoji">🎉</span>
+                <h2>CONGRATULATIONS!</h2>
+                <p class="prize">You Won a FREE GOD IS KIND T-Shirt!</p>
+            </div>
+
+            <div class="form-container">
+                <h3>📝 CLAIM YOUR PRIZE</h3>
+                <form id="claimForm" onsubmit="submitForm(event)">
+                    <div class="form-group">
+                        <label for="fullName">Your Full Name</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+                    </div>
+                    <button type="submit" class="submit-btn">CLAIM MY T-SHIRT →</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: Review Screen -->
+        <div class="screen" id="reviewScreen">
+            <div class="brand-logo">GOD IS KIND</div>
+
+            <div class="form-container">
+                <h3>⭐ QUICK REVIEW</h3>
+                <p class="review-text">
+                    How do you like the<br>
+                    <strong>GOD IS KIND</strong> clothing & design?
+                </p>
+
+                <div class="star-rating" id="starRating">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                </div>
+
+                <button class="submit-btn" onclick="submitReview()">SUBMIT & CONTINUE →</button>
+                <p style="text-align: center; margin-top: 15px; opacity: 0.7; font-size: 0.85rem;">
+                    Tap a star to rate, or skip if you prefer
+                </p>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: Thank You Screen -->
+        <div class="screen" id="thankYouScreen">
+            <div class="thank-you-screen">
+                <span class="big-emoji">💛</span>
+                <h2>THANK YOU!</h2>
+                <p class="message">
+                    Thank you for spreading kindness!<br>
+                    Your positive energy makes the world better.
+                </p>
+
+                <div class="pickup-info">
+                    🎁 Your FREE T-shirt will be<br>handed over now!
+                </div>
+
+                <p class="kindness-quote">
+                    "In a world where you can be anything,<br>
+                    <strong>be kind.</strong>"<br>
+                    — GOD IS KIND 💛
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration - Update this URL for production
+        const API_BASE_URL = 'http://localhost:5001/api';
+
+        // Game State
+        let spinsLeft = 3;
+        let currentRotation = 0;
+        let isSpinning = false;
+        let userRating = 0;
+        let totalSpinsUsed = 0;
+
+        // User Data
+        const userData = {
+            name: '',
+            phone: '',
+            rating: 0,
+            spinsUsed: 0,
+            campaign: 'GOD IS KIND Street Marketing',
+            location: '',
+            deviceInfo: {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                screenSize: `${window.screen.width}x${window.screen.height}`
+            }
+        };
+
+        // Wheel Segments (8 segments, 45 degrees each)
+        const segments = [
+            { text: 'TRY AGAIN', isWin: false },
+            { text: 'ALMOST THERE!', isWin: false },
+            { text: 'FREE T-SHIRT 🎁', isWin: true },
+            { text: 'SO CLOSE!', isWin: false },
+            { text: 'ONE MORE CHANCE', isWin: false },
+            { text: 'GOD IS KIND WIN!', isWin: true },
+            { text: 'BETTER LUCK!', isWin: false },
+            { text: 'KEEP SPINNING!', isWin: false }
+        ];
+
+        // Messages for non-winning spins
+        const tryAgainMessages = [
+            "So Close! 🔥 Give it another spin!",
+            "Almost There! 💪 Try again!",
+            "Ooh, just missed! 🎯 One more try!",
+            "The universe is building suspense! 🌟",
+            "Your winning spin is coming! 🎰"
+        ];
+
+        // Win segments indices (0-indexed)
+        const winSegments = [2, 5]; // FREE T-SHIRT and GOD IS KIND WIN
+
+        function spinWheel() {
+            if (isSpinning || spinsLeft <= 0) return;
+
+            isSpinning = true;
+            const spinBtn = document.getElementById('spinBtn');
+            const wheel = document.getElementById('wheel');
+            const resultMessage = document.getElementById('resultMessage');
+
+            spinBtn.disabled = true;
+            resultMessage.style.display = 'none';
+
+            // Determine if this spin should win
+            const shouldWin = spinsLeft === 1; // Guaranteed win on last spin
+
+            // Calculate target segment
+            let targetSegment;
+            if (shouldWin) {
+                // Pick a winning segment
+                targetSegment = winSegments[Math.floor(Math.random() * winSegments.length)];
+            } else {
+                // Pick a non-winning segment
+                const nonWinSegments = segments
+                    .map((seg, idx) => ({ ...seg, idx }))
+                    .filter(seg => !seg.isWin)
+                    .map(seg => seg.idx);
+                targetSegment = nonWinSegments[Math.floor(Math.random() * nonWinSegments.length)];
+            }
+
+            // Calculate rotation
+            // Each segment is 45 degrees (360/8)
+            // We need to land on the target segment (pointer at top)
+            const segmentAngle = 45;
+            const segmentCenter = targetSegment * segmentAngle + (segmentAngle / 2);
+
+            // Add multiple full rotations for effect
+            const fullRotations = 5 + Math.floor(Math.random() * 3); // 5-7 full rotations
+            const totalRotation = 360 * fullRotations + (360 - segmentCenter);
+
+            currentRotation += totalRotation;
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+            // Wait for spin to complete
+            setTimeout(() => {
+                spinsLeft--;
+                totalSpinsUsed++;
+                document.getElementById('spinsLeft').textContent = spinsLeft;
+
+                if (shouldWin || segments[targetSegment].isWin) {
+                    // WIN!
+                    userData.spinsUsed = totalSpinsUsed;
+                    showWin();
+                } else {
+                    // Try again
+                    showTryAgain();
+                }
+
+                isSpinning = false;
+                if (spinsLeft > 0 && !shouldWin) {
+                    spinBtn.disabled = false;
+                }
+            }, 4000);
+        }
+
+        function showTryAgain() {
+            const resultMessage = document.getElementById('resultMessage');
+            const message = tryAgainMessages[Math.floor(Math.random() * tryAgainMessages.length)];
+
+            resultMessage.className = 'result-message try-again';
+            resultMessage.innerHTML = `${message}<br><small>Spins remaining: ${spinsLeft}</small>`;
+            resultMessage.style.display = 'block';
+        }
+
+        function showWin() {
+            const wheelOuter = document.querySelector('.wheel-outer');
+            wheelOuter.classList.add('wheel-glow');
+
+            // Create confetti
+            createConfetti();
+
+            // Show winning message briefly
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.className = 'result-message win';
+            resultMessage.innerHTML = '🎉 CONGRATULATIONS! YOU WON! 🎉';
+            resultMessage.style.display = 'block';
+
+            // Transition to form screen
+            setTimeout(() => {
+                document.getElementById('gameScreen').classList.remove('active');
+                document.getElementById('formScreen').classList.add('active');
+                createConfetti(); // More confetti on form screen
+            }, 2000);
+        }
+
+        function createConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#FFD700', '#FF6B35', '#9B59B6', '#FF69B4', '#fff'];
+
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+                    if (Math.random() > 0.5) {
+                        confetti.style.width = '8px';
+                        confetti.style.height = '8px';
+                        confetti.style.borderRadius = '50%';
+                    }
+
+                    container.appendChild(confetti);
+
+                    // Remove after animation
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 20);
+            }
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('fullName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+
+            if (!name || !phone) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Store user data
+            userData.name = name;
+            userData.phone = phone;
+            userData.timestamp = new Date().toISOString();
+
+            // Log data (for backend integration)
+            console.log('User Data:', userData);
+
+            // Transition to review screen
+            document.getElementById('formScreen').classList.remove('active');
+            document.getElementById('reviewScreen').classList.add('active');
+        }
+
+        // Star Rating Functionality
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.dataset.rating);
+                userRating = rating;
+
+                document.querySelectorAll('.star').forEach((s, idx) => {
+                    if (idx < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.dataset.rating);
+                document.querySelectorAll('.star').forEach((s, idx) => {
+                    if (idx < rating) {
+                        s.style.color = 'var(--primary-yellow)';
+                        s.style.transform = 'scale(1.2)';
+                    }
+                });
+            });
+
+            star.addEventListener('mouseleave', function() {
+                document.querySelectorAll('.star').forEach((s, idx) => {
+                    if (!s.classList.contains('active')) {
+                        s.style.color = 'rgba(255,255,255,0.3)';
+                        s.style.transform = 'scale(1)';
+                    }
+                });
+            });
+        });
+
+        async function submitReview() {
+            userData.rating = userRating;
+
+            // Show loading state
+            const submitBtn = document.querySelector('#reviewScreen .submit-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+
+            try {
+                // Send data to HOH108 backend
+                const response = await fetch(`${API_BASE_URL}/game-entries`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log('Entry saved successfully:', result);
+                } else {
+                    console.error('Failed to save entry:', result.message);
+                }
+            } catch (error) {
+                console.error('Error submitting data:', error);
+                // Continue to thank you screen even if API fails
+                // Data is already captured in console for manual entry if needed
+            }
+
+            // Transition to thank you screen
+            document.getElementById('reviewScreen').classList.remove('active');
+            document.getElementById('thankYouScreen').classList.add('active');
+            createConfetti(); // Final celebration
+
+            // Reset button (in case user goes back somehow)
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+
+        // Function to send data to backend (alternative method)
+        async function sendToBackend(data) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/game-entries`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                console.log('API Response:', result);
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Prevent zoom on double tap (mobile)
+        document.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.target.click();
+        }, { passive: false });
+
+        // Add touch feedback
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.95)';
+            });
+            btn.addEventListener('touchend', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

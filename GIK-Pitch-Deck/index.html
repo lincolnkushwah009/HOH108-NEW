@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOD IS KIND (GIK) — Investor Pitch Deck</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+
+  :root {
+    --black: #111111;
+    --charcoal: #1a1a1a;
+    --dark: #2a2a2a;
+    --warm-gray: #8a8278;
+    --beige: #d4c5b2;
+    --light-beige: #e8dfd3;
+    --cream: #f5f0ea;
+    --off-white: #faf8f5;
+    --white: #ffffff;
+    --wood: #a08c6e;
+    --wood-dark: #6b5d4a;
+    --brass: #c9a96e;
+    --accent: #c59c82;
+    --muted-green: #7a8c6e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; scroll-snap-type: y mandatory; overflow-y: scroll; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--black);
+    color: var(--off-white);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Slide Container ─── */
+  .slide {
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 120px;
+    position: relative;
+    scroll-snap-align: start;
+    overflow: hidden;
+  }
+
+  /* ─── Navigation ─── */
+  .nav {
+    position: fixed;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .nav-dot:hover, .nav-dot.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.3);
+  }
+
+  /* ─── Slide Counter ─── */
+  .slide-counter {
+    position: absolute;
+    bottom: 40px;
+    right: 120px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.25);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ─── Typography ─── */
+  .slide-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: 48px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 40px;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: 28px;
+    line-height: 1.3;
+    margin-bottom: 20px;
+  }
+
+  .subtitle {
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--beige);
+    max-width: 640px;
+  }
+
+  .body-text {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.65);
+  }
+
+  /* ─── List styles ─── */
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .feature-list li {
+    font-size: 17px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.7);
+    padding-left: 28px;
+    position: relative;
+    line-height: 1.6;
+  }
+  .feature-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 8px;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  /* ─── Grid Layouts ─── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 40px;
+  }
+
+  /* ─── Cards ─── */
+  .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 36px;
+    transition: all 0.3s ease;
+  }
+  .card:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(197,156,130,0.2);
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--off-white);
+  }
+  .card-subtitle {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .card-body {
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.55);
+  }
+
+  /* ─── Metrics ─── */
+  .metric {
+    text-align: center;
+    padding: 32px;
+  }
+  .metric-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .metric-label {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  /* ─── Tags ─── */
+  .tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    margin: 4px;
+  }
+  .tag--accent {
+    border-color: rgba(197,156,130,0.3);
+    color: var(--accent);
+    background: rgba(197,156,130,0.08);
+  }
+
+  /* ─── Divider ─── */
+  .divider {
+    width: 48px;
+    height: 2px;
+    background: var(--accent);
+    margin: 32px 0;
+  }
+
+  /* ─── Intersection blocks ─── */
+  .intersection {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    margin: 32px 0;
+    flex-wrap: wrap;
+  }
+  .intersection-item {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--beige);
+    padding: 10px 24px;
+    border: 1px solid rgba(212,197,178,0.2);
+    border-radius: 8px;
+    background: rgba(212,197,178,0.04);
+  }
+  .intersection-x {
+    font-size: 18px;
+    color: var(--accent);
+    font-weight: 300;
+  }
+
+  /* ─── Timeline ─── */
+  .timeline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    margin-top: 40px;
+  }
+  .timeline-phase {
+    position: relative;
+    padding-left: 28px;
+  }
+  .timeline-phase::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--accent), rgba(197,156,130,0.15));
+    border-radius: 2px;
+  }
+  .phase-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  /* ─── Cost Breakdown ─── */
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+  }
+  .cost-table td {
+    padding: 14px 0;
+    font-size: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .cost-table td:first-child {
+    color: rgba(255,255,255,0.5);
+  }
+  .cost-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--off-white);
+  }
+  .cost-table .total td {
+    border-bottom: none;
+    border-top: 2px solid rgba(197,156,130,0.3);
+    padding-top: 18px;
+    font-size: 18px;
+  }
+  .cost-table .total td:last-child {
+    color: var(--accent);
+    font-size: 20px;
+  }
+
+  /* ─── Advantage icons ─── */
+  .advantage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 32px;
+  }
+  .advantage-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 20px 24px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .advantage-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(197,156,130,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+  .advantage-text h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--off-white);
+  }
+  .advantage-text p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.5;
+  }
+
+  /* ─── Decorative ─── */
+  .bg-pattern {
+    position: absolute;
+    top: 0; right: 0;
+    width: 50%;
+    height: 100%;
+    opacity: 0.03;
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(255,255,255,1) 40px,
+      rgba(255,255,255,1) 41px
+    );
+    pointer-events: none;
+  }
+
+  .glow {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.06;
+    pointer-events: none;
+  }
+
+  /* ─── Specific Slides ─── */
+
+  /* Slide 0 - Cover */
+  .slide--cover {
+    background: linear-gradient(160deg, #0a0a0a 0%, #1a1814 50%, #0f0d0a 100%);
+    align-items: center;
+    text-align: center;
+  }
+  .slide--cover h1 {
+    font-size: 96px;
+    margin-bottom: 16px;
+  }
+  .slide--cover .tagline {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: var(--beige);
+    margin-bottom: 48px;
+    text-transform: uppercase;
+  }
+  .slide--cover .sub-tagline {
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.35);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* Dark alternating */
+  .slide--dark { background: var(--charcoal); }
+  .slide--darker { background: #0f0f0f; }
+  .slide--warm { background: linear-gradient(160deg, #1a1814 0%, #151210 100%); }
+
+  /* ─── Print Styles ─── */
+  @media print {
+    html { scroll-snap-type: none; }
+    .slide { page-break-after: always; min-height: 100vh; }
+    .nav { display: none; }
+  }
+
+  /* ─── Logo ─── */
+  .logo-watermark {
+    position: absolute;
+    bottom: 32px;
+    left: 120px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .logo-cover {
+    width: 160px;
+    height: 160px;
+    margin-bottom: 32px;
+    filter: drop-shadow(0 0 40px rgba(197,156,130,0.2));
+  }
+  .logo-closing {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 24px;
+    filter: drop-shadow(0 0 30px rgba(197,156,130,0.15));
+  }
+
+  /* ─── Infographics ─── */
+  .infographic-donut {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+  }
+  .infographic-donut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .infographic-donut .center-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .infographic-donut .center-label .value {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .infographic-donut .center-label .label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+  }
+
+  .bar-chart-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .bar-chart-item .bar-label {
+    width: 120px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .bar-chart-item .bar-track {
+    flex: 1;
+    height: 28px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-chart-item .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--off-white);
+    transition: width 0.8s ease;
+  }
+
+  .funnel-step {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    position: relative;
+    margin-bottom: 4px;
+  }
+  .funnel-step .step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(197,156,130,0.12);
+    border: 1.5px solid rgba(197,156,130,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .funnel-step .step-content h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--off-white);
+    margin-bottom: 2px;
+  }
+  .funnel-step .step-content p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+  }
+  .funnel-connector {
+    width: 2px;
+    height: 16px;
+    background: linear-gradient(180deg, rgba(197,156,130,0.4), rgba(197,156,130,0.1));
+    margin-left: 41px;
+  }
+
+  .stat-ring {
+    width: 120px;
+    height: 120px;
+    position: relative;
+  }
+  .stat-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .stat-ring .ring-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--off-white);
+  }
+
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 20px;
+    padding: 8px 0;
+  }
+
+  @keyframes fillBar { from { width: 0; } }
+  @keyframes drawRing { from { stroke-dashoffset: 251; } }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-on-view { opacity: 0; }
+  .animate-on-view.visible { animation: fadeInUp 0.6s ease forwards; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 1024px) {
+    .slide { padding: 60px 48px; }
+    .two-col { grid-template-columns: 1fr; gap: 40px; }
+    .three-col { grid-template-columns: 1fr; }
+    .slide--cover h1 { font-size: 56px; }
+    h2 { font-size: 36px; }
+    .nav { display: none; }
+    .timeline { grid-template-columns: 1fr; }
+    .advantage-grid { grid-template-columns: 1fr; }
+    .logo-watermark { left: 48px; bottom: 24px; width: 32px; height: 32px; }
+    .logo-cover { width: 120px; height: 120px; }
+    .logo-closing { width: 80px; height: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Navigation Dots -->
+<nav class="nav" id="nav"></nav>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 0 — COVER
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--cover" id="slide-0">
+  <div class="bg-pattern"></div>
+  <div class="glow" style="top:-100px; left:50%; transform:translateX(-50%); background:rgba(197,156,130,0.4);"></div>
+
+  <img src="assets/GIK.png" alt="GIK Logo" class="logo-cover">
+
+  <div class="slide-label" style="margin-bottom:24px;">Investor Pitch Deck</div>
+
+  <h1>GOD IS KIND</h1>
+  <div class="tagline" style="margin-top:12px;">Reclaimed Design. Intentional Living.</div>
+
+  <div class="divider" style="margin:32px auto;"></div>
+
+  <p class="sub-tagline">
+    A Zero-Waste, High-Margin E-Commerce Vertical<br>
+    Transforming Interior Manufacturing Surplus Into Premium Lifestyle Products
+  </p>
+
+  <div class="slide-counter">01 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 1 — THE PROBLEM
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--darker" id="slide-1">
+  <div class="bg-pattern"></div>
+
+  <div class="slide-label">The Problem</div>
+  <div class="two-col">
+    <div>
+      <h2>Interior manufacturing generates<br><span style="color:var(--accent);">8&ndash;15% material surplus.</span></h2>
+      <p class="subtitle" style="margin-bottom:40px;">
+        These materials already carry sunk cost, are structurally usable, and are financially underleveraged.
+      </p>
+      <div class="divider"></div>
+      <p class="body-text" style="margin-top:24px; font-size:20px; font-weight:500; color:var(--accent);">
+        Most factories discard value.<br>We convert it into margin.
+      </p>
+    </div>
+    <div>
+      <!-- Donut chart: Surplus breakdown -->
+      <div style="display:flex; flex-direction:column; align-items:center; gap:32px; margin-top:20px;">
+        <div class="infographic-donut" style="width:220px; height:220px;">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="12"/>
+            <!-- Veneer 35% -->
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#c59c82" stroke-width="12"
+              stroke-dasharray="87.96 163.36" stroke-dashoffset="0" stroke-linecap="round"/>
+            <!-- Laminate 25% -->
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#a08c6e" stroke-width="12"
+              stroke-dasharray="62.83 188.5" stroke-dashoffset="-87.96" stroke-linecap="round"/>
+            <!-- Plywood 25% -->
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#c9a96e" stroke-width="12"
+              stroke-dasharray="62.83 188.5" stroke-dashoffset="-150.79" stroke-linecap="round"/>
+            <!-- Hardware 15% -->
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#8a8278" stroke-width="12"
+              stroke-dasharray="37.7 213.63" stroke-dashoffset="-213.62" stroke-linecap="round"/>
+          </svg>
+          <div class="center-label">
+            <div class="value">8-15%</div>
+            <div class="label">Surplus</div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px 32px; width:100%;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:12px; height:12px; border-radius:3px; background:#c59c82; flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:14px; font-weight:600;">Veneer Offcuts</div>
+              <div style="font-size:11px; color:rgba(255,255,255,0.35);">~35% of surplus</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:12px; height:12px; border-radius:3px; background:#a08c6e; flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:14px; font-weight:600;">Laminate Scrap</div>
+              <div style="font-size:11px; color:rgba(255,255,255,0.35);">~25% of surplus</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:12px; height:12px; border-radius:3px; background:#c9a96e; flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:14px; font-weight:600;">Plywood Edges</div>
+              <div style="font-size:11px; color:rgba(255,255,255,0.35);">~25% of surplus</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:12px; height:12px; border-radius:3px; background:#8a8278; flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:14px; font-weight:600;">Hardware Excess</div>
+              <div style="font-size:11px; color:rgba(255,255,255,0.35);">~15% of surplus</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">02 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 2 — MARKET SHIFT
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--warm" id="slide-2">
+  <div class="slide-label">Market Shift</div>
+  <h2>The modern consumer is evolving.</h2>
+
+  <div class="three-col" style="margin-top:16px;">
+    <div class="card" style="text-align:center; padding:40px 32px;">
+      <div style="font-size:36px; margin-bottom:16px;">&#127807;</div>
+      <div class="card-title" style="font-size:18px;">Sustainable Products</div>
+      <div class="card-body" style="margin-top:8px;">Conscious consumers prefer brands with transparent, low-waste supply chains.</div>
+    </div>
+    <div class="card" style="text-align:center; padding:40px 32px;">
+      <div style="font-size:36px; margin-bottom:16px;">&#9670;</div>
+      <div class="card-title" style="font-size:18px;">Minimal Design</div>
+      <div class="card-body" style="margin-top:8px;">Clean aesthetics and intentional form are defining premium lifestyle segments.</div>
+    </div>
+    <div class="card" style="text-align:center; padding:40px 32px;">
+      <div style="font-size:36px; margin-bottom:16px;">&#10026;</div>
+      <div class="card-title" style="font-size:18px;">Meaning-Driven</div>
+      <div class="card-body" style="margin-top:8px;">Subtle spiritual alignment and purpose-driven purchases are mainstream.</div>
+    </div>
+  </div>
+
+  <!-- Market Size Horizontal Bars -->
+  <div style="max-width:760px; margin:48px auto 0;">
+    <div style="font-size:11px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:24px;">India Market Size (Projected)</div>
+
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+      <div style="width:120px; text-align:right; font-size:14px; font-weight:500; color:rgba(255,255,255,0.6); flex-shrink:0;">Home Decor</div>
+      <div style="flex:1; position:relative;">
+        <div style="height:36px; background:rgba(255,255,255,0.04); border-radius:8px; overflow:hidden;">
+          <div style="width:90%; height:100%; background:linear-gradient(90deg, #c59c82, #c9a96e); border-radius:8px; transition:width 0.8s ease;"></div>
+        </div>
+      </div>
+      <div style="min-width:120px; flex-shrink:0;">
+        <div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--accent); line-height:1;">$32B</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.35);">by 2028</div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+      <div style="width:120px; text-align:right; font-size:14px; font-weight:500; color:rgba(255,255,255,0.6); flex-shrink:0;">Sustainable</div>
+      <div style="flex:1; position:relative;">
+        <div style="height:36px; background:rgba(255,255,255,0.04); border-radius:8px; overflow:hidden;">
+          <div style="width:55%; height:100%; background:linear-gradient(90deg, #7a8c6e, #a08c6e); border-radius:8px; transition:width 0.8s ease;"></div>
+        </div>
+      </div>
+      <div style="min-width:120px; flex-shrink:0;">
+        <div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--muted-green); line-height:1;">$8.2B</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.35);">CAGR 18%</div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+      <div style="width:120px; text-align:right; font-size:14px; font-weight:500; color:rgba(255,255,255,0.6); flex-shrink:0;">Spiritual Decor</div>
+      <div style="flex:1; position:relative;">
+        <div style="height:36px; background:rgba(255,255,255,0.04); border-radius:8px; overflow:hidden;">
+          <div style="width:40%; height:100%; background:linear-gradient(90deg, #8a8278, #c59c82); border-radius:8px; transition:width 0.8s ease;"></div>
+        </div>
+      </div>
+      <div style="min-width:120px; flex-shrink:0;">
+        <div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--warm-gray); line-height:1;">$4.5B</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.35);">growing fast</div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div style="width:120px; text-align:right; font-size:14px; font-weight:500; color:rgba(255,255,255,0.6); flex-shrink:0;">D2C Online</div>
+      <div style="flex:1; position:relative;">
+        <div style="height:36px; background:rgba(255,255,255,0.04); border-radius:8px; overflow:hidden;">
+          <div style="width:72%; height:100%; background:linear-gradient(90deg, #c9a96e, #c59c82); border-radius:8px; transition:width 0.8s ease;"></div>
+        </div>
+      </div>
+      <div style="min-width:120px; flex-shrink:0;">
+        <div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--brass); line-height:1;">$18B</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.35);">CAGR 25%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="intersection" style="margin-top:40px;">
+    <span class="intersection-item">Sustainability</span>
+    <span class="intersection-x">&times;</span>
+    <span class="intersection-item">Spirituality</span>
+    <span class="intersection-x">&times;</span>
+    <span class="intersection-item">Design</span>
+    <span class="intersection-x">&times;</span>
+    <span class="intersection-item">E-Commerce</span>
+  </div>
+
+  <div class="slide-counter">03 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 3 — STRATEGIC ADVANTAGE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--darker" id="slide-3">
+  <div class="bg-pattern"></div>
+  <div class="slide-label">Our Strategic Advantage</div>
+
+  <div class="two-col">
+    <div>
+      <h2>We already own<br>the supply chain.</h2>
+      <p class="subtitle">
+        Unlike traditional decor brands that start from scratch, we have infrastructure, materials, and design expertise in place.
+      </p>
+      <!-- Cost Comparison Infographic -->
+      <div style="margin-top:40px; padding:32px; border-radius:14px; background:rgba(197,156,130,0.06); border:1px solid rgba(197,156,130,0.15);">
+        <div style="font-size:11px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--accent); margin-bottom:24px;">Material Cost Comparison</div>
+        <div style="display:flex; align-items:center; gap:32px; justify-content:center;">
+          <!-- Market Cost -->
+          <div style="text-align:center;">
+            <div class="stat-ring">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="8"
+                  stroke-dasharray="251 251" stroke-linecap="round"/>
+              </svg>
+              <div class="ring-label" style="color:rgba(255,255,255,0.5);">100%</div>
+            </div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.35); margin-top:8px;">Market Price</div>
+          </div>
+          <!-- Arrow -->
+          <div style="font-size:32px; color:var(--accent);">&#8594;</div>
+          <!-- GIK Cost -->
+          <div style="text-align:center;">
+            <div class="stat-ring">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent)" stroke-width="8"
+                  stroke-dasharray="37.65 213.63" stroke-linecap="round"/>
+              </svg>
+              <div class="ring-label" style="color:var(--accent);">15%</div>
+            </div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.35); margin-top:8px;">GIK Cost</div>
+          </div>
+          <!-- Savings -->
+          <div style="text-align:center; padding:16px 20px; border-radius:12px; background:rgba(122,140,110,0.1); border:1px solid rgba(122,140,110,0.2);">
+            <div style="font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--muted-green);">85%</div>
+            <div style="font-size:11px; color:rgba(122,140,110,0.7); margin-top:4px; font-weight:500;">SAVINGS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="advantage-grid" style="grid-template-columns:1fr;">
+        <div class="advantage-item">
+          <div class="advantage-icon">&#9878;</div>
+          <div class="advantage-text">
+            <h4>Reclaimed Material Source</h4>
+            <p>Direct access to premium surplus from active interior projects</p>
+          </div>
+        </div>
+        <div class="advantage-item">
+          <div class="advantage-icon">&#9881;</div>
+          <div class="advantage-text">
+            <h4>CNC & Fabrication Infrastructure</h4>
+            <p>Production-ready machinery with idle capacity</p>
+          </div>
+        </div>
+        <div class="advantage-item">
+          <div class="advantage-icon">&#9889;</div>
+          <div class="advantage-text">
+            <h4>Skilled In-House Labour</h4>
+            <p>Craftsmen trained in precision interior manufacturing</p>
+          </div>
+        </div>
+        <div class="advantage-item">
+          <div class="advantage-icon">&#9733;</div>
+          <div class="advantage-text">
+            <h4>Interior Design Credibility</h4>
+            <p>Established brand trust from premium home projects</p>
+          </div>
+        </div>
+        <div class="advantage-item">
+          <div class="advantage-icon">&#9830;</div>
+          <div class="advantage-text">
+            <h4>Story-Driven Positioning</h4>
+            <p>Every product carries an authentic reclaimed narrative</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">04 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 4 — BRAND ARCHITECTURE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--warm" id="slide-4">
+  <div class="slide-label">Brand Architecture</div>
+  <h2 style="text-align:center;">Three verticals. One brand ecosystem.</h2>
+
+  <div class="three-col" style="margin-top:48px;">
+    <div class="card" style="border-top:3px solid var(--accent); padding:44px 36px;">
+      <div class="card-subtitle">Directional Series</div>
+      <div class="card-title" style="font-size:28px; margin-bottom:16px;">GIK Align&trade;</div>
+      <div class="card-body">
+        Vaastu-informed design objects that support spatial alignment and intentional placement within homes and workspaces.
+      </div>
+      <div style="margin-top:20px;">
+        <span class="tag tag--accent">Directional</span>
+        <span class="tag tag--accent">Vaastu</span>
+        <span class="tag tag--accent">Spatial</span>
+      </div>
+    </div>
+
+    <div class="card" style="border-top:3px solid var(--wood); padding:44px 36px;">
+      <div class="card-subtitle" style="color:var(--wood);">Sacred Geometry</div>
+      <div class="card-title" style="font-size:28px; margin-bottom:16px;">GIK Form&trade;</div>
+      <div class="card-body">
+        Sacred geometry and art panels crafted from reclaimed fragments. High perceived value, architectural presence.
+      </div>
+      <div style="margin-top:20px;">
+        <span class="tag" style="border-color:rgba(160,140,110,0.3); color:var(--wood);">Geometry</span>
+        <span class="tag" style="border-color:rgba(160,140,110,0.3); color:var(--wood);">Wall Art</span>
+        <span class="tag" style="border-color:rgba(160,140,110,0.3); color:var(--wood);">Panels</span>
+      </div>
+    </div>
+
+    <div class="card" style="border-top:3px solid var(--warm-gray); padding:44px 36px;">
+      <div class="card-subtitle" style="color:var(--warm-gray);">Functional Minimal</div>
+      <div class="card-title" style="font-size:28px; margin-bottom:16px;">GIK Utility&trade;</div>
+      <div class="card-body">
+        Minimal functional decor: holders, brackets, trays, and typography panels. Everyday objects, elevated.
+      </div>
+      <div style="margin-top:20px;">
+        <span class="tag">Functional</span>
+        <span class="tag">Minimal</span>
+        <span class="tag">Everyday</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">05 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 5 — GIK ALIGN
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--darker" id="slide-5">
+  <div class="slide-label">GIK Align&trade; &mdash; Directional Series</div>
+  <div class="two-col">
+    <div>
+      <h2>Designed to support spatial alignment.</h2>
+      <p class="subtitle" style="margin-bottom:32px;">
+        Modern, subtle, non-superstitious language. Each piece is directionally intentional &mdash; placed with purpose, not ritual.
+      </p>
+      <div class="divider"></div>
+      <p class="body-text" style="margin-top:20px;">
+        Positioning rooted in architectural awareness and contemporary lifestyle, not religious symbolism.
+      </p>
+    </div>
+    <div>
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">East Entry Energy Anchor&trade;</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Key Holder &mdash; Directional entry piece</div>
+        </div>
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">North Clarity Panel&trade;</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Wall-mounted directional alignment</div>
+        </div>
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">ProsperGrid&trade; Pyramid</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Geometric prosperity form</div>
+        </div>
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">Ritual Ledge&trade;</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Minimal Puja Shelf &mdash; Clean, contemporary</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">06 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 6 — GIK FORM
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--warm" id="slide-6">
+  <div class="slide-label">GIK Form&trade; &mdash; Sacred Geometry Wall Art</div>
+  <div class="two-col">
+    <div>
+      <h2>High perceived value.<br><span style="color:var(--accent);">Low material cost.</span></h2>
+      <p class="subtitle" style="margin-bottom:32px;">
+        Art panels crafted from reclaimed fragments &mdash; veneer scraps, brass leftovers, CNC offcuts, and laminate pieces &mdash; composed into geometric precision.
+      </p>
+
+      <h3 style="font-size:20px; color:var(--off-white); margin-top:32px;">Materials Used</h3>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+        <span class="tag tag--accent">Veneer Scraps</span>
+        <span class="tag tag--accent">Brass Leftovers</span>
+        <span class="tag tag--accent">CNC Offcuts</span>
+        <span class="tag tag--accent">Laminate Fragments</span>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">Geometry of Order&trade; Series</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Precision-cut geometric compositions</div>
+        </div>
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">RePattern&trade; Panels</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Crafted from reclaimed fragments into cohesive art</div>
+        </div>
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">Directional Balance&trade; Collection</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Spatial harmony through sacred proportions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">07 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 7 — GIK UTILITY
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--darker" id="slide-7">
+  <div class="bg-pattern"></div>
+  <div class="slide-label">GIK Utility&trade; &mdash; Functional Minimal</div>
+  <div class="two-col">
+    <div>
+      <h2>Everyday objects,<br>elevated.</h2>
+      <p class="subtitle" style="margin-bottom:32px;">
+        Minimal functional decor with a distinct material language: raw wood, matte black, and brushed brass.
+      </p>
+      <div style="display:flex; gap:24px; margin-top:32px;">
+        <div style="text-align:center;">
+          <div style="width:64px; height:64px; border-radius:14px; background:rgba(160,140,110,0.1); border:1px solid rgba(160,140,110,0.2); display:flex; align-items:center; justify-content:center; margin:0 auto 8px;">
+            <span style="font-size:11px; font-weight:700; color:var(--wood); letter-spacing:0.05em;">WOOD</span>
+          </div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.35);">Raw Wood</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:64px; height:64px; border-radius:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; margin:0 auto 8px;">
+            <span style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.5); letter-spacing:0.05em;">BLK</span>
+          </div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.35);">Matte Black</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:64px; height:64px; border-radius:14px; background:rgba(201,169,110,0.08); border:1px solid rgba(201,169,110,0.2); display:flex; align-items:center; justify-content:center; margin:0 auto 8px;">
+            <span style="font-size:11px; font-weight:700; color:var(--brass); letter-spacing:0.05em;">BRS</span>
+          </div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.35);">Brushed Brass</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">Clarity Dock&trade;</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Phone Holder &mdash; Reclaimed wood + brass accent</div>
+        </div>
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">FrameLine&trade;</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Curtain Brackets &mdash; Matte black minimalism</div>
+        </div>
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">Order Tray&trade;</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Desk organizer &mdash; Raw wood + matte finish</div>
+        </div>
+        <div class="card" style="padding:28px 32px;">
+          <div style="font-weight:600; font-size:17px; margin-bottom:4px;">Quiet Statement&trade;</div>
+          <div style="font-size:14px; color:rgba(255,255,255,0.4);">Typography Panels &mdash; CNC-cut affirmations</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">08 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 8 — VALUE CREATION MODEL
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--warm" id="slide-8">
+  <div class="slide-label">Value Creation Model</div>
+  <h2 style="text-align:center;">Feature becomes brand value.<br><span style="color:var(--accent);">Brand value enables premium pricing.</span></h2>
+
+  <p class="body-text" style="text-align:center; max-width:600px; margin:0 auto 48px;">
+    We productize manufacturing features into trademarked brand assets &mdash; the same way Nike markets Dri-Fit or Under Armour markets HeatGear.
+  </p>
+
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:24px;">
+    <div class="card" style="text-align:center; padding:36px 24px;">
+      <div style="font-size:28px; margin-bottom:12px;">&#9851;</div>
+      <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:600; margin-bottom:8px;">ReBorn&trade; Wood</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4); line-height:1.6;">Reclaimed structural wood with verified origin</div>
+    </div>
+    <div class="card" style="text-align:center; padding:36px 24px;">
+      <div style="font-size:28px; margin-bottom:12px;">&#10697;</div>
+      <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:600; margin-bottom:8px;">VaastuFlow&trade;</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4); line-height:1.6;">Directionally aware geometric design system</div>
+    </div>
+    <div class="card" style="text-align:center; padding:36px 24px;">
+      <div style="font-size:28px; margin-bottom:12px;">&#9854;</div>
+      <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:600; margin-bottom:8px;">ZeroWasteForm&trade;</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4); line-height:1.6;">Fabrication process using 100% surplus materials</div>
+    </div>
+    <div class="card" style="text-align:center; padding:36px 24px;">
+      <div style="font-size:28px; margin-bottom:12px;">&#10024;</div>
+      <div style="font-family:'Playfair Display',serif; font-size:18px; font-weight:600; margin-bottom:8px;">ShuddhFinish&trade;</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4); line-height:1.6;">Low-VOC, non-toxic coating standard</div>
+    </div>
+  </div>
+
+  <div class="slide-counter">09 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 9 — UNIT ECONOMICS
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--darker" id="slide-9">
+  <div class="slide-label">Unit Economics</div>
+  <div class="two-col" style="align-items:center;">
+    <div>
+      <h2>~75% gross margin<br><span style="color:var(--accent);">per unit.</span></h2>
+      <p class="subtitle" style="margin-bottom:32px;">
+        Illustrative example: Medium Wall Panel. Even after logistics and marketing costs, margins remain exceptionally strong.
+      </p>
+
+      <table class="cost-table">
+        <tr>
+          <td>Material (reclaimed)</td>
+          <td>₹800</td>
+        </tr>
+        <tr>
+          <td>Labour</td>
+          <td>₹1,500</td>
+        </tr>
+        <tr>
+          <td>Packaging</td>
+          <td>₹500</td>
+        </tr>
+        <tr class="total">
+          <td>Total Cost</td>
+          <td>₹2,800</td>
+        </tr>
+      </table>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:32px;">
+      <!-- Selling Price Card -->
+      <div style="text-align:center; padding:36px 40px; border-radius:24px; background:rgba(197,156,130,0.06); border:1px solid rgba(197,156,130,0.15); width:100%; max-width:360px;">
+        <div style="font-size:13px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--accent); margin-bottom:16px;">Selling Price</div>
+        <div style="font-family:'Playfair Display',serif; font-size:72px; font-weight:700; color:var(--off-white); line-height:1;">₹11,999</div>
+        <div style="margin-top:24px; width:100%; height:8px; border-radius:4px; background:rgba(255,255,255,0.06); overflow:hidden;">
+          <div style="width:76.5%; height:100%; border-radius:4px; background:linear-gradient(90deg, var(--accent), var(--brass));"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:rgba(255,255,255,0.35);">
+          <span>Cost: ₹2,800</span>
+          <span style="color:var(--accent); font-weight:600;">Margin: ~75%</span>
+        </div>
+      </div>
+
+      <!-- Waterfall Visual -->
+      <div style="width:100%; max-width:360px;">
+        <div style="font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:16px; text-align:center;">Cost Waterfall</div>
+        <div style="display:flex; align-items:flex-end; justify-content:center; gap:8px; height:160px; padding-bottom:24px; border-bottom:1px solid rgba(255,255,255,0.06);">
+          <!-- Material -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div style="font-size:11px; font-weight:600; color:rgba(255,255,255,0.5);">₹800</div>
+            <div style="width:48px; height:38px; background:linear-gradient(180deg, #c59c82, #a08060); border-radius:6px 6px 0 0;"></div>
+            <div style="font-size:9px; color:rgba(255,255,255,0.3); text-align:center;">Material</div>
+          </div>
+          <!-- Labour -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div style="font-size:11px; font-weight:600; color:rgba(255,255,255,0.5);">₹1,500</div>
+            <div style="width:48px; height:72px; background:linear-gradient(180deg, #a08c6e, #7a6e50); border-radius:6px 6px 0 0;"></div>
+            <div style="font-size:9px; color:rgba(255,255,255,0.3); text-align:center;">Labour</div>
+          </div>
+          <!-- Packaging -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div style="font-size:11px; font-weight:600; color:rgba(255,255,255,0.5);">₹500</div>
+            <div style="width:48px; height:24px; background:linear-gradient(180deg, #c9a96e, #9a8050); border-radius:6px 6px 0 0;"></div>
+            <div style="font-size:9px; color:rgba(255,255,255,0.3); text-align:center;">Packaging</div>
+          </div>
+          <!-- Spacer -->
+          <div style="width:16px;"></div>
+          <!-- Margin -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div style="font-size:11px; font-weight:700; color:var(--muted-green);">₹9,199</div>
+            <div style="width:56px; height:134px; background:linear-gradient(180deg, rgba(122,140,110,0.5), rgba(122,140,110,0.2)); border:1px solid rgba(122,140,110,0.3); border-radius:6px 6px 0 0;"></div>
+            <div style="font-size:9px; color:var(--muted-green); font-weight:600; text-align:center;">MARGIN</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">10 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 10 — PRODUCTION SYSTEM
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--warm" id="slide-10">
+  <div class="slide-label">Production System</div>
+  <h2 style="text-align:center; margin-bottom:16px;">Designed for scalability.<br><span style="color:var(--accent);">No customization complexity.</span></h2>
+  <p class="body-text" style="text-align:center; max-width:520px; margin:0 auto 48px;">
+    Every operational rule is designed to reduce variability and maximize throughput.
+  </p>
+
+  <!-- Production Pipeline Infographic -->
+  <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:40px; flex-wrap:wrap;">
+    <div style="text-align:center; padding:18px 20px; background:rgba(197,156,130,0.08); border-radius:12px; border:1px solid rgba(197,156,130,0.15); min-width:120px;">
+      <div style="font-size:18px; margin-bottom:6px;">&#9851;</div>
+      <div style="font-size:12px; font-weight:600; color:var(--accent);">COLLECT</div>
+      <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px;">Surplus capture</div>
+    </div>
+    <div style="color:var(--accent); font-size:20px; padding:0 4px;">&#8594;</div>
+    <div style="text-align:center; padding:18px 20px; background:rgba(160,140,110,0.08); border-radius:12px; border:1px solid rgba(160,140,110,0.15); min-width:120px;">
+      <div style="font-size:18px; margin-bottom:6px;">&#9881;</div>
+      <div style="font-size:12px; font-weight:600; color:var(--wood);">CNC CUT</div>
+      <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px;">Precision shaping</div>
+    </div>
+    <div style="color:var(--accent); font-size:20px; padding:0 4px;">&#8594;</div>
+    <div style="text-align:center; padding:18px 20px; background:rgba(201,169,110,0.08); border-radius:12px; border:1px solid rgba(201,169,110,0.15); min-width:120px;">
+      <div style="font-size:18px; margin-bottom:6px;">&#9997;</div>
+      <div style="font-size:12px; font-weight:600; color:var(--brass);">FINISH</div>
+      <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px;">Coat &amp; assemble</div>
+    </div>
+    <div style="color:var(--accent); font-size:20px; padding:0 4px;">&#8594;</div>
+    <div style="text-align:center; padding:18px 20px; background:rgba(138,130,120,0.08); border-radius:12px; border:1px solid rgba(138,130,120,0.15); min-width:120px;">
+      <div style="font-size:18px; margin-bottom:6px;">&#128230;</div>
+      <div style="font-size:12px; font-weight:600; color:var(--warm-gray);">PACK</div>
+      <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px;">Flat-pack box</div>
+    </div>
+    <div style="color:var(--accent); font-size:20px; padding:0 4px;">&#8594;</div>
+    <div style="text-align:center; padding:18px 20px; background:rgba(122,140,110,0.1); border-radius:12px; border:1px solid rgba(122,140,110,0.2); min-width:120px;">
+      <div style="font-size:18px; margin-bottom:6px;">&#128666;</div>
+      <div style="font-size:12px; font-weight:600; color:var(--muted-green);">SHIP</div>
+      <div style="font-size:10px; color:rgba(255,255,255,0.35); margin-top:2px;">D2C delivery</div>
+    </div>
+  </div>
+
+  <!-- Production Constraints Grid -->
+  <div class="three-col">
+    <div class="card" style="text-align:center; padding:32px;">
+      <div style="font-size:24px; margin-bottom:12px;">&#9634;</div>
+      <div style="font-weight:600; font-size:15px; margin-bottom:4px;">Fixed SKUs Only</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4);">No bespoke orders. Repeatable production.</div>
+    </div>
+    <div class="card" style="text-align:center; padding:32px;">
+      <div style="font-size:24px; margin-bottom:12px;">&#9635;</div>
+      <div style="font-weight:600; font-size:15px; margin-bottom:4px;">3 Size Options Max</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4);">Controlled variation. Efficient tooling.</div>
+    </div>
+    <div class="card" style="text-align:center; padding:32px;">
+      <div style="font-size:24px; margin-bottom:12px;">&#9636;</div>
+      <div style="font-weight:600; font-size:15px; margin-bottom:4px;">2 Materials Per Product</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4);">Simplified sourcing and assembly.</div>
+    </div>
+    <div class="card" style="text-align:center; padding:32px;">
+      <div style="font-size:24px; margin-bottom:12px;">&#128230;</div>
+      <div style="font-weight:600; font-size:15px; margin-bottom:4px;">Flat-Pack Friendly</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4);">Optimized for e-commerce shipping.</div>
+    </div>
+    <div class="card" style="text-align:center; padding:32px;">
+      <div style="font-size:24px; margin-bottom:12px;">&#9878;</div>
+      <div style="font-weight:600; font-size:15px; margin-bottom:4px;">Under 3kg Target</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4);">Logistics-friendly weight band.</div>
+    </div>
+    <div class="card" style="text-align:center; padding:32px;">
+      <div style="font-size:24px; margin-bottom:12px;">&#8634;</div>
+      <div style="font-weight:600; font-size:15px; margin-bottom:4px;">Batch Production</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4);">Cycled manufacturing runs.</div>
+    </div>
+  </div>
+
+  <div class="slide-counter">11 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 11 — GO-TO-MARKET
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--darker" id="slide-11">
+  <div class="bg-pattern"></div>
+  <div class="slide-label">Go-To-Market Strategy</div>
+  <h2>Two-phase market entry.</h2>
+
+  <div class="timeline">
+    <div class="timeline-phase">
+      <div class="phase-label">Phase 1 &mdash; Launch</div>
+      <ul class="feature-list">
+        <li>Shopify direct-to-consumer website</li>
+        <li>Instagram storytelling &amp; brand building</li>
+        <li>Cross-selling to existing Interior Plus clients</li>
+        <li>Content marketing: process, craft, material stories</li>
+      </ul>
+    </div>
+    <div class="timeline-phase">
+      <div class="phase-label">Phase 2 &mdash; Scale</div>
+      <ul class="feature-list">
+        <li>Amazon Premium store listing</li>
+        <li>Corporate gifting partnerships</li>
+        <li>Architect &amp; designer collaborations</li>
+        <li>Retail pop-ups and curated marketplaces</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Customer Acquisition Funnel -->
+  <div style="margin-top:48px; display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start;">
+    <div>
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--accent); margin-bottom:20px;">Customer Acquisition Funnel</div>
+      <div class="funnel-step" style="background:rgba(197,156,130,0.08);">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Interior Plus Client Base</h4>
+          <p>Existing premium home project clients</p>
+        </div>
+      </div>
+      <div class="funnel-connector"></div>
+      <div class="funnel-step" style="background:rgba(197,156,130,0.06);">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Instagram &amp; Content</h4>
+          <p>Story-driven organic reach + paid ads</p>
+        </div>
+      </div>
+      <div class="funnel-connector"></div>
+      <div class="funnel-step" style="background:rgba(197,156,130,0.04);">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Shopify Store Visit</h4>
+          <p>Conversion-optimized D2C experience</p>
+        </div>
+      </div>
+      <div class="funnel-connector"></div>
+      <div class="funnel-step" style="background:rgba(122,140,110,0.08); border:1px solid rgba(122,140,110,0.15);">
+        <div class="step-num" style="background:rgba(122,140,110,0.15); border-color:rgba(122,140,110,0.3); color:var(--muted-green);">4</div>
+        <div class="step-content">
+          <h4 style="color:var(--muted-green);">Purchase + Repeat</h4>
+          <p>High-margin sale, gift triggers referral</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--accent); margin-bottom:20px;">Channel Revenue Mix (Year 1)</div>
+      <!-- Stacked horizontal bar -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span style="font-size:13px; color:rgba(255,255,255,0.6);">Shopify D2C</span>
+            <span style="font-size:13px; font-weight:600; color:var(--accent);">45%</span>
+          </div>
+          <div style="height:24px; background:rgba(255,255,255,0.04); border-radius:6px; overflow:hidden;">
+            <div style="width:45%; height:100%; background:linear-gradient(90deg, #c59c82, #c9a96e); border-radius:6px;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span style="font-size:13px; color:rgba(255,255,255,0.6);">Interior Plus Cross-Sell</span>
+            <span style="font-size:13px; font-weight:600; color:#a08c6e;">30%</span>
+          </div>
+          <div style="height:24px; background:rgba(255,255,255,0.04); border-radius:6px; overflow:hidden;">
+            <div style="width:30%; height:100%; background:linear-gradient(90deg, #a08c6e, #8a7a5e); border-radius:6px;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span style="font-size:13px; color:rgba(255,255,255,0.6);">Amazon Premium</span>
+            <span style="font-size:13px; font-weight:600; color:#c9a96e;">15%</span>
+          </div>
+          <div style="height:24px; background:rgba(255,255,255,0.04); border-radius:6px; overflow:hidden;">
+            <div style="width:15%; height:100%; background:linear-gradient(90deg, #c9a96e, #a08050); border-radius:6px;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span style="font-size:13px; color:rgba(255,255,255,0.6);">Corporate Gifting</span>
+            <span style="font-size:13px; font-weight:600; color:#8a8278;">10%</span>
+          </div>
+          <div style="height:24px; background:rgba(255,255,255,0.04); border-radius:6px; overflow:hidden;">
+            <div style="width:10%; height:100%; background:linear-gradient(90deg, #8a8278, #6b5d4a); border-radius:6px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">12 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 12 — CROSS-VERTICAL SYNERGY
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--warm" id="slide-12">
+  <div class="slide-label">Cross-Vertical Synergy</div>
+  <div class="two-col" style="align-items:center;">
+    <div>
+      <h2>Interior Plus generates premium homes.<br><span style="color:var(--accent);">GIK transforms the surplus.</span></h2>
+      <p class="subtitle">
+        Each completed project can include a GIK Align&trade; piece as a handover gift &mdash; reinforcing brand and creating repeat purchase opportunity.
+      </p>
+    </div>
+    <div>
+      <!-- Circular Flywheel Infographic -->
+      <div style="position:relative; padding:32px; border-radius:20px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06);">
+        <svg viewBox="0 0 340 340" width="100%" style="max-width:340px; margin:0 auto; display:block;">
+          <!-- Outer ring -->
+          <circle cx="170" cy="170" r="145" fill="none" stroke="rgba(197,156,130,0.08)" stroke-width="2"/>
+          <!-- Animated dashed ring -->
+          <circle cx="170" cy="170" r="145" fill="none" stroke="rgba(197,156,130,0.15)" stroke-width="1.5"
+            stroke-dasharray="8 12" stroke-linecap="round">
+            <animateTransform attributeName="transform" type="rotate" from="0 170 170" to="360 170 170" dur="30s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Center text -->
+          <text x="170" y="158" text-anchor="middle" font-family="Playfair Display, serif" font-size="16" font-weight="700" fill="#c59c82">FLYWHEEL</text>
+          <text x="170" y="178" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="rgba(255,255,255,0.35)" letter-spacing="0.1em">SELF-REINFORCING</text>
+
+          <!-- Node 1: Interior Project (top) -->
+          <circle cx="170" cy="38" r="28" fill="rgba(197,156,130,0.1)" stroke="rgba(197,156,130,0.25)" stroke-width="1.5"/>
+          <text x="170" y="35" text-anchor="middle" font-size="16">&#127968;</text>
+          <text x="170" y="50" text-anchor="middle" font-family="Inter, sans-serif" font-size="6.5" font-weight="600" fill="rgba(255,255,255,0.7)">PROJECT</text>
+
+          <!-- Node 2: Surplus (right) -->
+          <circle cx="298" cy="132" r="28" fill="rgba(160,140,110,0.1)" stroke="rgba(160,140,110,0.25)" stroke-width="1.5"/>
+          <text x="298" y="129" text-anchor="middle" font-size="16">&#9851;</text>
+          <text x="298" y="144" text-anchor="middle" font-family="Inter, sans-serif" font-size="6.5" font-weight="600" fill="rgba(255,255,255,0.7)">SURPLUS</text>
+
+          <!-- Node 3: GIK Product (right-bottom) -->
+          <circle cx="276" cy="275" r="28" fill="rgba(201,169,110,0.1)" stroke="rgba(201,169,110,0.25)" stroke-width="1.5"/>
+          <text x="276" y="272" text-anchor="middle" font-size="16">&#10024;</text>
+          <text x="276" y="287" text-anchor="middle" font-family="Inter, sans-serif" font-size="6.5" font-weight="600" fill="rgba(255,255,255,0.7)">PRODUCT</text>
+
+          <!-- Node 4: Customer (left-bottom) -->
+          <circle cx="64" cy="275" r="28" fill="rgba(122,140,110,0.1)" stroke="rgba(122,140,110,0.25)" stroke-width="1.5"/>
+          <text x="64" y="272" text-anchor="middle" font-size="16">&#128722;</text>
+          <text x="64" y="287" text-anchor="middle" font-family="Inter, sans-serif" font-size="6.5" font-weight="600" fill="rgba(255,255,255,0.7)">CUSTOMER</text>
+
+          <!-- Node 5: Revenue (left) -->
+          <circle cx="42" cy="132" r="28" fill="rgba(197,156,130,0.12)" stroke="rgba(197,156,130,0.3)" stroke-width="1.5"/>
+          <text x="42" y="129" text-anchor="middle" font-size="14">&#128176;</text>
+          <text x="42" y="144" text-anchor="middle" font-family="Inter, sans-serif" font-size="6.5" font-weight="600" fill="rgba(255,255,255,0.7)">REVENUE</text>
+
+          <!-- Arrows between nodes -->
+          <!-- 1→2 -->
+          <path d="M 195 48 Q 250 60 288 108" fill="none" stroke="rgba(197,156,130,0.3)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <!-- 2→3 -->
+          <path d="M 308 162 Q 310 220 286 248" fill="none" stroke="rgba(160,140,110,0.3)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <!-- 3→4 -->
+          <path d="M 248 286 Q 170 310 92 286" fill="none" stroke="rgba(201,169,110,0.3)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <!-- 4→5 -->
+          <path d="M 52 248 Q 30 220 32 162" fill="none" stroke="rgba(122,140,110,0.3)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <!-- 5→1 -->
+          <path d="M 52 108 Q 90 60 145 48" fill="none" stroke="rgba(197,156,130,0.3)" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+          <defs>
+            <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="rgba(197,156,130,0.5)"/>
+            </marker>
+          </defs>
+        </svg>
+
+        <!-- Legend below -->
+        <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-top:16px;">
+          <div style="font-size:10px; color:rgba(255,255,255,0.3); padding:4px 10px; border:1px solid rgba(255,255,255,0.06); border-radius:20px;">Projects generate surplus</div>
+          <div style="font-size:10px; color:rgba(255,255,255,0.3); padding:4px 10px; border:1px solid rgba(255,255,255,0.06); border-radius:20px;">Surplus becomes product</div>
+          <div style="font-size:10px; color:rgba(255,255,255,0.3); padding:4px 10px; border:1px solid rgba(255,255,255,0.06); border-radius:20px;">Revenue funds growth</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">13 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 13 — WHY THIS WORKS
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--darker" id="slide-13">
+  <div class="bg-pattern"></div>
+  <div class="slide-label">Why This Works</div>
+  <h2 style="text-align:center; margin-bottom:16px;">Low downside.<br><span style="color:var(--accent);">High upside potential.</span></h2>
+
+  <!-- Key Metrics Row -->
+  <div style="display:flex; justify-content:center; gap:48px; margin:40px auto 0; flex-wrap:wrap;">
+    <div style="text-align:center;">
+      <div class="stat-ring" style="margin:0 auto;">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="7"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#c59c82" stroke-width="7"
+            stroke-dasharray="188.5 62.83" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-label">75%</div>
+      </div>
+      <div style="font-size:12px; color:rgba(255,255,255,0.5); margin-top:8px; font-weight:500;">Gross Margin</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="stat-ring" style="margin:0 auto;">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="7"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#7a8c6e" stroke-width="7"
+            stroke-dasharray="226.2 25.13" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-label" style="font-size:20px;">~0</div>
+      </div>
+      <div style="font-size:12px; color:rgba(255,255,255,0.5); margin-top:8px; font-weight:500;">Added CapEx</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="stat-ring" style="margin:0 auto;">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="7"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#c9a96e" stroke-width="7"
+            stroke-dasharray="213.63 37.7" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-label" style="font-size:18px;">100%</div>
+      </div>
+      <div style="font-size:12px; color:rgba(255,255,255,0.5); margin-top:8px; font-weight:500;">Zero Waste</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="stat-ring" style="margin:0 auto;">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="7"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#a08c6e" stroke-width="7"
+            stroke-dasharray="150.8 100.5" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-label" style="font-size:18px;">60d</div>
+      </div>
+      <div style="font-size:12px; color:rgba(255,255,255,0.5); margin-top:8px; font-weight:500;">To Launch</div>
+    </div>
+  </div>
+
+  <!-- Advantages grid below -->
+  <div class="advantage-grid" style="max-width:800px; margin:40px auto 0;">
+    <div class="advantage-item">
+      <div class="advantage-icon">&#9650;</div>
+      <div class="advantage-text">
+        <h4>Sunk Cost Arbitrage</h4>
+        <p>Materials already paid for. Every sale is near-pure margin.</p>
+      </div>
+    </div>
+    <div class="advantage-item">
+      <div class="advantage-icon">&#10004;</div>
+      <div class="advantage-text">
+        <h4>High-Margin Small-Ticket</h4>
+        <p>75%+ gross margins on accessible price points.</p>
+      </div>
+    </div>
+    <div class="advantage-item">
+      <div class="advantage-icon">&#127807;</div>
+      <div class="advantage-text">
+        <h4>Sustainable Positioning</h4>
+        <p>Genuine zero-waste narrative, not greenwashing.</p>
+      </div>
+    </div>
+    <div class="advantage-item">
+      <div class="advantage-icon">&#10026;</div>
+      <div class="advantage-text">
+        <h4>Spiritual-Modern Demand</h4>
+        <p>Growing market of meaning-driven urban consumers.</p>
+      </div>
+    </div>
+    <div class="advantage-item">
+      <div class="advantage-icon">&#8595;</div>
+      <div class="advantage-text">
+        <h4>Low Additional CapEx</h4>
+        <p>Leverages existing infrastructure and workforce.</p>
+      </div>
+    </div>
+    <div class="advantage-item">
+      <div class="advantage-icon">&#8634;</div>
+      <div class="advantage-text">
+        <h4>Easy SKU Expansion</h4>
+        <p>New products from same material stream, minimal R&D.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-counter">14 / 14</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 14 — LAUNCH PLAN
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="slide slide--cover" id="slide-14" style="text-align:left; align-items:flex-start;">
+  <div class="glow" style="bottom:-150px; right:-100px; background:rgba(197,156,130,0.3);"></div>
+
+  <div class="slide-label">Launch Plan</div>
+  <h2>Operational within<br><span style="color:var(--accent);">60 days.</span></h2>
+
+  <div class="timeline" style="margin-top:32px;">
+    <div class="timeline-phase">
+      <div class="phase-label">Phase 1 &mdash; Days 1&ndash;30</div>
+      <ul class="feature-list">
+        <li>Finalize 9&ndash;12 launch SKUs across all three verticals</li>
+        <li>Define brand identity, packaging language, and photography direction</li>
+        <li>Begin batch production with existing CNC and labour capacity</li>
+        <li>Develop packaging: flat-pack boxes, unboxing inserts, branded tape</li>
+      </ul>
+    </div>
+    <div class="timeline-phase">
+      <div class="phase-label">Phase 2 &mdash; Days 31&ndash;60</div>
+      <ul class="feature-list">
+        <li>Product photography and content creation</li>
+        <li>Shopify store build and payment integration</li>
+        <li>Soft marketing activation: Instagram, email, interior client outreach</li>
+        <li>Cross-sell to existing Interior Plus client base</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top:56px; text-align:center; width:100%;">
+    <div class="divider" style="margin:0 auto 32px;"></div>
+    <img src="assets/GIK.png" alt="GIK Logo" class="logo-closing" style="margin:0 auto 20px; display:block;">
+    <h1 style="font-size:64px; margin-bottom:12px;">GOD IS KIND</h1>
+    <p style="font-size:16px; letter-spacing:0.15em; color:var(--beige); text-transform:uppercase;">
+      Reclaimed Design. Intentional Living.
+    </p>
+    <p style="font-size:14px; color:rgba(255,255,255,0.3); margin-top:16px;">
+      For inquiries: partners@interiorplus.in
+    </p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+  // Add watermark logo to all non-cover slides
+  document.querySelectorAll('.slide:not(.slide--cover)').forEach(slide => {
+    const logo = document.createElement('img');
+    logo.src = 'assets/GIK.png';
+    logo.alt = '';
+    logo.className = 'logo-watermark';
+    slide.appendChild(logo);
+  });
+
+  // Build navigation dots
+  const slides = document.querySelectorAll('.slide');
+  const nav = document.getElementById('nav');
+
+  slides.forEach((slide, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'nav-dot';
+    dot.title = `Slide ${i + 1}`;
+    dot.addEventListener('click', () => {
+      slide.scrollIntoView({ behavior: 'smooth' });
+    });
+    nav.appendChild(dot);
+  });
+
+  // Update active dot on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = [...slides].indexOf(entry.target);
+        document.querySelectorAll('.nav-dot').forEach((d, i) => {
+          d.classList.toggle('active', i === idx);
+        });
+      }
+    });
+  }, { threshold: 0.5 });
+
+  slides.forEach(s => observer.observe(s));
+
+  // Keyboard navigation
+  let currentSlide = 0;
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      currentSlide = Math.min(currentSlide + 1, slides.length - 1);
+      slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      currentSlide = Math.max(currentSlide - 1, 0);
+      slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // Sync currentSlide with scroll
+  const scrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        currentSlide = [...slides].indexOf(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  slides.forEach(s => scrollObserver.observe(s));
+
+  // Animate elements on scroll into view
+  const animElements = document.querySelectorAll('.animate-on-view');
+  const animObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.3 });
+  animElements.forEach(el => animObserver.observe(el));
+
+  // Animate bar fills when their slide is visible
+  const barObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const bars = entry.target.querySelectorAll('.bar-fill');
+        bars.forEach((bar, i) => {
+          const w = bar.style.width;
+          bar.style.width = '0';
+          setTimeout(() => { bar.style.width = w; }, i * 150);
+        });
+        barObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.bar-chart-item').forEach(el => {
+    const parent = el.closest('.slide');
+    if (parent) barObserver.observe(parent);
+  });
+</script>
+
+</body>
+</html>

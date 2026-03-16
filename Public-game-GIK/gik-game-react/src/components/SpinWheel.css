@@ -1,0 +1,345 @@
+/* =============================================================================
+   SPIN WHEEL - PREMIUM 3D CINEMATIC DESIGN
+   ============================================================================= */
+
+.spin-wheel-wrapper {
+  position: relative;
+  width: 340px;
+  height: 340px;
+  margin: 20px 0;
+  animation: wheelEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+@keyframes wheelEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-180deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* =============================================================================
+   WHEEL POINTER - EPIC INDICATOR
+   ============================================================================= */
+
+.wheel-pointer {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+
+  /* Triangle */
+  width: 0;
+  height: 0;
+  border-left: 22px solid transparent;
+  border-right: 22px solid transparent;
+  border-top: 45px solid #FFD700;
+
+  /* Glow Effect */
+  filter:
+    drop-shadow(0 0 15px rgba(255, 215, 0, 0.8))
+    drop-shadow(0 5px 20px rgba(255, 215, 0, 0.5));
+
+  animation: pointerGlow 1.5s ease-in-out infinite;
+}
+
+.wheel-pointer::before {
+  content: '';
+  position: absolute;
+  top: -45px;
+  left: -12px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 25px solid #FFEA00;
+  opacity: 0.8;
+}
+
+@keyframes pointerGlow {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 15px rgba(255, 215, 0, 0.8))
+      drop-shadow(0 5px 20px rgba(255, 215, 0, 0.5));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 25px rgba(255, 215, 0, 1))
+      drop-shadow(0 8px 30px rgba(255, 215, 0, 0.7));
+  }
+}
+
+/* =============================================================================
+   WHEEL BORDER - REALISTIC 3D FRAME
+   ============================================================================= */
+
+.wheel-border {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 12px;
+  box-sizing: border-box;
+  position: relative;
+
+  /* Polished metallic wood-like frame */
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.3), transparent 50%),
+    linear-gradient(
+      135deg,
+      #8B4513 0%,
+      #D2691E 10%,
+      #CD853F 20%,
+      #DEB887 35%,
+      #D2691E 50%,
+      #8B4513 65%,
+      #CD853F 80%,
+      #DEB887 90%,
+      #8B4513 100%
+    );
+
+  /* Deep 3D Shadow Effect - casino wheel look */
+  box-shadow:
+    /* Outer rim highlight */
+    0 0 0 3px rgba(255, 215, 0, 0.4),
+    0 0 0 6px rgba(139, 69, 19, 0.8),
+    /* Ambient glow */
+    0 0 30px rgba(255, 215, 0, 0.3),
+    0 0 60px rgba(255, 215, 0, 0.15),
+    /* Drop shadow for depth */
+    0 15px 35px rgba(0, 0, 0, 0.5),
+    0 5px 15px rgba(0, 0, 0, 0.3),
+    /* Inner shadow for beveled look */
+    inset 0 -5px 15px rgba(0, 0, 0, 0.4),
+    inset 0 5px 10px rgba(255, 255, 255, 0.1);
+
+  /* Subtle animated shimmer */
+  background-size: 200% 200%;
+  animation: frameShimmer 6s ease-in-out infinite;
+}
+
+@keyframes frameShimmer {
+  0%, 100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+}
+
+/* =============================================================================
+   WHEEL SVG - THE SPINNING ELEMENT
+   ============================================================================= */
+
+.spin-wheel-svg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 100%);
+
+  /* Smooth Spin Animation - 60fps GPU accelerated */
+  transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+
+  /* Realistic inner shadow for depth */
+  box-shadow:
+    inset 0 0 40px rgba(0, 0, 0, 0.6),
+    inset 0 0 80px rgba(0, 0, 0, 0.4),
+    inset 0 5px 15px rgba(255, 255, 255, 0.05);
+}
+
+/* =============================================================================
+   SEGMENT TEXT STYLING
+   ============================================================================= */
+
+.wheel-text {
+  font-family: 'Bebas Neue', 'Arial Black', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.wheel-text.win-text {
+  font-size: 13px;
+}
+
+/* =============================================================================
+   EDGE PINS / BULBS - GLOWING EFFECT WHEN SPINNING
+   ============================================================================= */
+
+/* Default pin state - off */
+.pin-bulb {
+  fill: #C0C0C0;
+  stroke: #888;
+  stroke-width: 1;
+  will-change: fill, opacity;
+}
+
+/* Glowing state when spinning */
+.pin-bulb.glowing {
+  fill: #FFD700;
+  stroke: #FFAA00;
+  stroke-width: 1;
+  animation: bulbFlicker 0.2s ease-in-out infinite alternate;
+  will-change: fill, opacity;
+}
+
+/* Outer glow ring */
+.pin-glow-ring {
+  stroke: #FFD700;
+  stroke-width: 3;
+  opacity: 0.6;
+  animation: glowPulse 0.2s ease-in-out infinite alternate;
+}
+
+@keyframes bulbFlicker {
+  0% {
+    fill: #FFD700;
+    opacity: 0.8;
+  }
+  100% {
+    fill: #FFFF00;
+    opacity: 1;
+  }
+}
+
+@keyframes glowPulse {
+  0% {
+    stroke-opacity: 0.4;
+    stroke-width: 2;
+  }
+  100% {
+    stroke-opacity: 0.8;
+    stroke-width: 4;
+  }
+}
+
+/* Sequential lighting effect - chasing lights */
+.pin-glowing {
+  animation: none;
+}
+
+/* =============================================================================
+   CENTER LOGO - FIXED POSITION (DOESN'T SPIN)
+   ============================================================================= */
+
+.center-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  pointer-events: none;
+
+  /* Premium metallic center hub */
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.2), transparent 50%),
+    radial-gradient(circle, #2a2a2a 0%, #0d0d0d 70%, #000 100%);
+  border: 4px solid;
+  border-color: #555 #333 #222 #444;
+
+  /* Realistic 3D Effect - raised center hub */
+  box-shadow:
+    /* Outer gold ring glow */
+    0 0 0 2px rgba(255, 215, 0, 0.5),
+    0 0 15px rgba(255, 215, 0, 0.4),
+    0 0 30px rgba(255, 215, 0, 0.2),
+    /* Depth shadow */
+    0 6px 20px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    /* Inner highlight for dome effect */
+    inset 0 -10px 20px rgba(0, 0, 0, 0.5),
+    inset 0 5px 10px rgba(255, 255, 255, 0.08);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-logo-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.center-logo-text span {
+  font-family: 'Arial Black', 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  color: #FFD700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.8),
+    0 0 10px rgba(255, 215, 0, 0.6),
+    0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================= */
+
+@media (max-width: 400px) {
+  .spin-wheel-wrapper {
+    width: 290px;
+    height: 290px;
+  }
+
+  .wheel-pointer {
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-top: 38px solid #FFD700;
+  }
+
+  .wheel-pointer::before {
+    top: -38px;
+    left: -10px;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 20px solid #FFEA00;
+  }
+
+  .wheel-border {
+    padding: 10px;
+  }
+
+  .center-logo {
+    width: 70px;
+    height: 70px;
+  }
+
+  .center-logo-text span {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 340px) {
+  .spin-wheel-wrapper {
+    width: 260px;
+    height: 260px;
+  }
+
+  .center-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .center-logo-text span {
+    font-size: 10px;
+  }
+}

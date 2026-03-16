@@ -1,0 +1,242 @@
+/* =============================================================================
+   FLOATING 3D T-SHIRT COMPONENT
+   Premium soft-shaded, realistic floating T-shirts with depth
+   ============================================================================= */
+
+.floating-tshirt-3d {
+  position: fixed;
+  width: 100px;
+  height: 100px;
+  z-index: 0;
+  pointer-events: none;
+  perspective: 500px;
+  transform-style: preserve-3d;
+}
+
+.tshirt-svg {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: tshirt3DFloat 10s ease-in-out infinite;
+}
+
+/* Position Variations */
+.floating-tshirt-3d.top-left {
+  top: 3%;
+  left: 3%;
+  animation: float3D-TL 12s ease-in-out infinite;
+}
+
+.floating-tshirt-3d.top-right {
+  top: 5%;
+  right: 3%;
+  animation: float3D-TR 14s ease-in-out infinite;
+}
+
+.floating-tshirt-3d.bottom-left {
+  bottom: 8%;
+  left: 5%;
+  animation: float3D-BL 11s ease-in-out infinite;
+}
+
+.floating-tshirt-3d.bottom-right {
+  bottom: 3%;
+  right: 3%;
+  animation: float3D-BR 13s ease-in-out infinite;
+}
+
+/* 3D Float Animation - Top Left */
+@keyframes float3D-TL {
+  0%, 100% {
+    transform:
+      translateY(0)
+      translateX(0)
+      rotateX(10deg)
+      rotateY(-15deg)
+      rotateZ(-5deg)
+      scale(1);
+    opacity: 0.25;
+  }
+  25% {
+    transform:
+      translateY(-20px)
+      translateX(10px)
+      rotateX(-5deg)
+      rotateY(10deg)
+      rotateZ(5deg)
+      scale(1.05);
+    opacity: 0.35;
+  }
+  50% {
+    transform:
+      translateY(-10px)
+      translateX(-5px)
+      rotateX(15deg)
+      rotateY(-10deg)
+      rotateZ(-3deg)
+      scale(0.98);
+    opacity: 0.3;
+  }
+  75% {
+    transform:
+      translateY(-25px)
+      translateX(5px)
+      rotateX(-10deg)
+      rotateY(5deg)
+      rotateZ(8deg)
+      scale(1.02);
+    opacity: 0.32;
+  }
+}
+
+/* 3D Float Animation - Top Right */
+@keyframes float3D-TR {
+  0%, 100% {
+    transform:
+      translateY(0)
+      translateX(0)
+      rotateX(-10deg)
+      rotateY(15deg)
+      rotateZ(5deg)
+      scale(1);
+    opacity: 0.2;
+  }
+  25% {
+    transform:
+      translateY(-15px)
+      translateX(-10px)
+      rotateX(10deg)
+      rotateY(-5deg)
+      rotateZ(-8deg)
+      scale(1.08);
+    opacity: 0.3;
+  }
+  50% {
+    transform:
+      translateY(-30px)
+      translateX(5px)
+      rotateX(-15deg)
+      rotateY(20deg)
+      rotateZ(3deg)
+      scale(0.95);
+    opacity: 0.25;
+  }
+  75% {
+    transform:
+      translateY(-20px)
+      translateX(-8px)
+      rotateX(5deg)
+      rotateY(-15deg)
+      rotateZ(-5deg)
+      scale(1.03);
+    opacity: 0.28;
+  }
+}
+
+/* 3D Float Animation - Bottom Left */
+@keyframes float3D-BL {
+  0%, 100% {
+    transform:
+      translateY(0)
+      translateX(0)
+      rotateX(15deg)
+      rotateY(10deg)
+      rotateZ(8deg)
+      scale(1);
+    opacity: 0.22;
+  }
+  25% {
+    transform:
+      translateY(-25px)
+      translateX(15px)
+      rotateX(-10deg)
+      rotateY(-15deg)
+      rotateZ(-5deg)
+      scale(1.1);
+    opacity: 0.32;
+  }
+  50% {
+    transform:
+      translateY(-15px)
+      translateX(-10px)
+      rotateX(20deg)
+      rotateY(5deg)
+      rotateZ(10deg)
+      scale(0.92);
+    opacity: 0.26;
+  }
+  75% {
+    transform:
+      translateY(-35px)
+      translateX(8px)
+      rotateX(-5deg)
+      rotateY(12deg)
+      rotateZ(-3deg)
+      scale(1.05);
+    opacity: 0.3;
+  }
+}
+
+/* 3D Float Animation - Bottom Right */
+@keyframes float3D-BR {
+  0%, 100% {
+    transform:
+      translateY(0)
+      translateX(0)
+      rotateX(-12deg)
+      rotateY(-10deg)
+      rotateZ(-8deg)
+      scale(1);
+    opacity: 0.2;
+  }
+  25% {
+    transform:
+      translateY(-18px)
+      translateX(-12px)
+      rotateX(8deg)
+      rotateY(15deg)
+      rotateZ(6deg)
+      scale(1.06);
+    opacity: 0.28;
+  }
+  50% {
+    transform:
+      translateY(-28px)
+      translateX(8px)
+      rotateX(-18deg)
+      rotateY(-8deg)
+      rotateZ(-4deg)
+      scale(0.96);
+    opacity: 0.24;
+  }
+  75% {
+    transform:
+      translateY(-12px)
+      translateX(-5px)
+      rotateX(12deg)
+      rotateY(18deg)
+      rotateZ(10deg)
+      scale(1.04);
+    opacity: 0.26;
+  }
+}
+
+/* Responsive - Hide on very small screens */
+@media (max-width: 500px) {
+  .floating-tshirt-3d {
+    width: 70px;
+    height: 70px;
+    opacity: 0.15;
+  }
+
+  .floating-tshirt-3d.bottom-left,
+  .floating-tshirt-3d.bottom-right {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .floating-tshirt-3d {
+    display: none;
+  }
+}

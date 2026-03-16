@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Core Colors - High Contrast */
+  --primary-yellow: #FFD700;
+  --neon-yellow: #FFEA00;
+  --accent-orange: #FF6B35;
+  --accent-purple: #9B59B6;
+  --neon-purple: #B24BF3;
+  --accent-pink: #FF69B4;
+  --neon-cyan: #00F5FF;
+  --dark: #0a0a0a;
+  --darker: #050505;
+  --white: #ffffff;
+
+  /* Glow Effects */
+  --glow-yellow: 0 0 40px rgba(255, 215, 0, 0.6), 0 0 80px rgba(255, 215, 0, 0.3);
+  --glow-purple: 0 0 40px rgba(178, 75, 243, 0.5), 0 0 80px rgba(178, 75, 243, 0.2);
+  --glow-cyan: 0 0 30px rgba(0, 245, 255, 0.4);
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--darker);
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--white);
+}
+
+.app {
+  min-height: 100vh;
+  position: relative;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(178, 75, 243, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(255, 215, 0, 0.1) 0%, transparent 40%),
+    radial-gradient(ellipse 60% 40% at 20% 100%, rgba(255, 107, 53, 0.08) 0%, transparent 40%),
+    linear-gradient(180deg, #0a0a0a 0%, #0f0f1a 50%, #0a0a0a 100%);
+}
+
+/* Film Grain Overlay */
+.app::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Cinematic Light Beams */
+.bg-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Animated Gradient Orbs */
+.bg-animation::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(178, 75, 243, 0.3) 0%, transparent 25%),
+    radial-gradient(circle at 70% 80%, rgba(255, 215, 0, 0.2) 0%, transparent 25%);
+  animation: orbFloat 20s ease-in-out infinite;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(5%, 5%) rotate(120deg); }
+  66% { transform: translate(-5%, 2%) rotate(240deg); }
+}
+
+/* Floating Particles - More Epic */
+.bg-animation span {
+  position: absolute;
+  border-radius: 50%;
+  animation: particleFloat 12s infinite ease-in-out;
+  filter: blur(1px);
+}
+
+.bg-animation span:nth-child(1) {
+  width: 6px;
+  height: 6px;
+  left: 10%;
+  top: 20%;
+  background: var(--neon-yellow);
+  box-shadow: 0 0 20px var(--neon-yellow), 0 0 40px var(--neon-yellow);
+  animation-delay: 0s;
+}
+
+.bg-animation span:nth-child(2) {
+  width: 4px;
+  height: 4px;
+  left: 85%;
+  top: 15%;
+  background: var(--neon-cyan);
+  box-shadow: 0 0 15px var(--neon-cyan);
+  animation-delay: 2s;
+}
+
+.bg-animation span:nth-child(3) {
+  width: 8px;
+  height: 8px;
+  left: 50%;
+  top: 70%;
+  background: var(--neon-purple);
+  box-shadow: 0 0 25px var(--neon-purple), 0 0 50px var(--neon-purple);
+  animation-delay: 4s;
+}
+
+.bg-animation span:nth-child(4) {
+  width: 5px;
+  height: 5px;
+  left: 20%;
+  top: 80%;
+  background: var(--accent-orange);
+  box-shadow: 0 0 20px var(--accent-orange);
+  animation-delay: 1s;
+}
+
+.bg-animation span:nth-child(5) {
+  width: 3px;
+  height: 3px;
+  left: 90%;
+  top: 60%;
+  background: var(--primary-yellow);
+  box-shadow: 0 0 15px var(--primary-yellow);
+  animation-delay: 3s;
+}
+
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.8;
+  }
+  25% {
+    transform: translateY(-30px) translateX(15px) scale(1.2);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-10px) translateX(-10px) scale(0.8);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(-40px) translateX(5px) scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+/* 3D T-Shirts are now in FloatingTshirt.jsx component */
+
+/* Main Container */
+.container {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Cinematic Vignette */
+.container::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Light Streak Animation */
+@keyframes lightStreak {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(200%) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+/* Selection Color */
+::selection {
+  background: var(--primary-yellow);
+  color: var(--dark);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary-yellow), var(--accent-orange));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--neon-yellow), var(--primary-yellow));
+}

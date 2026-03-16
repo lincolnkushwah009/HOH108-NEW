@@ -1,0 +1,116 @@
+.review-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.review-screen .brand-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  background: linear-gradient(135deg, #FFD700, #FF6B35);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  margin-bottom: 30px;
+  letter-spacing: 4px;
+}
+
+.review-screen .form-container {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 25px;
+  padding: 30px;
+}
+
+.review-screen .form-container h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 25px;
+  color: #FFD700;
+}
+
+.review-text {
+  text-align: center;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.review-text strong {
+  color: #FFD700;
+}
+
+.star-rating {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 30px 0;
+}
+
+.star-rating .star {
+  font-size: 2.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255,255,255,0.3);
+}
+
+.star-rating .star:hover,
+.star-rating .star.active {
+  color: #FFD700;
+  transform: scale(1.2);
+}
+
+.review-screen .submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #FFD700, #FF6B35);
+  border: none;
+  padding: 18px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+  color: #1a1a1a;
+  border-radius: 15px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+
+.review-screen .submit-btn:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5);
+}
+
+.review-screen .submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.skip-text {
+  text-align: center;
+  margin-top: 15px;
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 400px) {
+  .review-screen .form-container {
+    padding: 20px;
+  }
+
+  .star-rating .star {
+    font-size: 2rem;
+  }
+}

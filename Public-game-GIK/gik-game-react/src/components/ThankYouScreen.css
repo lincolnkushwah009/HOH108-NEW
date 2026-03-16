@@ -1,0 +1,84 @@
+.thank-you-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.thank-you-screen .big-emoji {
+  font-size: 5rem;
+  display: block;
+  margin-bottom: 30px;
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.thank-you-screen h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #FFD700, #FF6B35);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 20px;
+}
+
+.thank-you-screen .message {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  opacity: 0.9;
+  margin-bottom: 30px;
+}
+
+.thank-you-screen .pickup-info {
+  background: linear-gradient(135deg, #9B59B6, #FF69B4);
+  padding: 20px 30px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(155, 89, 182, 0.4); }
+  50% { transform: scale(1.02); box-shadow: 0 6px 30px rgba(155, 89, 182, 0.6); }
+}
+
+.thank-you-screen .kindness-quote {
+  margin-top: 20px;
+  font-style: italic;
+  opacity: 0.8;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.thank-you-screen .kindness-quote strong {
+  color: #FFD700;
+  font-style: normal;
+}
+
+@media (max-width: 400px) {
+  .thank-you-screen .big-emoji {
+    font-size: 4rem;
+  }
+
+  .thank-you-screen h2 {
+    font-size: 2rem;
+  }
+
+  .thank-you-screen .message {
+    font-size: 1rem;
+  }
+}
