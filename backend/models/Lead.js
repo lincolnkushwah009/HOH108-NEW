@@ -327,7 +327,25 @@ const leadSchema = new mongoose.Schema({
         default: false
       } // True after qualification - only Sales can edit
     },
-    // Design Department (assigned by Design Head only)
+    // ACM - Assistant Client Manager (from Design team, assigned by Sales Head)
+    acm: {
+      employee: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      employeeName: String,
+      assignedAt: Date,
+      assignedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      assignedByName: String,
+      isActive: {
+        type: Boolean,
+        default: true
+      }
+    },
+    // Design Department (assigned by ACM)
     design: {
       employee: {
         type: mongoose.Schema.Types.ObjectId,

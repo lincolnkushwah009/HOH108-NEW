@@ -88,7 +88,7 @@ export async function collectRecipients({ assignedOwner, previousOwner, lead }) 
 
   // 3. Department assignment owners on the lead + their direct manager
   if (lead?.departmentAssignments) {
-    for (const dept of ['preSales', 'crm', 'sales']) {
+    for (const dept of ['preSales', 'crm', 'sales', 'acm']) {
       const emp = lead.departmentAssignments[dept]?.employee
       if (emp) {
         const empId = emp.toString()

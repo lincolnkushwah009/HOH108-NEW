@@ -737,10 +737,15 @@ export const leadWorkflowAPI = {
   getWorkflow: (id) => apiRequest(`/leads/${id}/workflow`),
   transferToSales: (id) =>
     apiRequest(`/leads/${id}/transfer-to-sales`, { method: 'POST' }),
-  assignSalesExecutive: (id, executiveId) =>
+  assignSalesExecutive: (id, executiveId, acmId) =>
     apiRequest(`/leads/${id}/assign-sales-executive`, {
       method: 'POST',
-      body: JSON.stringify({ executiveId }),
+      body: JSON.stringify({ executiveId, ...(acmId ? { acmId } : {}) }),
+    }),
+  assignDesigner: (id, designerId) =>
+    apiRequest(`/leads/${id}/assign-designer`, {
+      method: 'POST',
+      body: JSON.stringify({ designerId }),
     }),
   setDisposition: (id, data) =>
     apiRequest(`/leads/${id}/disposition`, {

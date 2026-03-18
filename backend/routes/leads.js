@@ -16,6 +16,7 @@ import { getDispositionCategory, validateDisposition, getDispositionTree } from 
 import { notifyLeadEvent } from '../utils/notificationService.js'
 import { maskPhone, shouldMaskPhone } from '../utils/phoneMask.js'
 import { uploadFloorPlan } from '../middleware/upload.js'
+import SalesOrder from '../models/SalesOrder.js'
 
 const router = express.Router()
 
@@ -905,9 +906,73 @@ router.put('/:id/status',
 
       await lead.save()
 
+      // Auto-create Sales Order when lead is won
+      let salesOrder = null
+      if (status === 'won') {
+        try {
+          // Check if a sales order already exists for this lead
+          const existingOrder = await SalesOrder.findOne({ lead: lead._id })
+          if (!existingOrder) {
+            // Map lead service to valid SalesOrder category
+            const validCategories = ['interior', 'construction', 'renovation', 'education', 'ods', 'other']
+            const serviceToCategory = (lead.service || '').toLowerCase().trim()
+            const category = validCategories.includes(serviceToCategory) ? serviceToCategory : 'interior'
+
+            // salesPerson is required - ensure we have one
+            const salesPersonId = lead.departmentAssignments.sales?.employee || req.user._id
+            const salesPersonName = lead.departmentAssignments.sales?.employeeName || req.user.name
+
+            salesOrder = await SalesOrder.create({
+              lead: lead._id,
+              company: lead.company,
+              title: `Sales Order - ${lead.name}`,
+              category,
+              clientInfo: {
+                name: lead.name,
+                email: lead.email,
+                phone: lead.phone,
+                city: lead.location?.city,
+                address: lead.location?.address
+              },
+              siteLocation: {
+                city: lead.location?.city,
+                address: lead.location?.address
+              },
+              status: 'draft',
+              createdBy: req.user._id,
+              createdByName: req.user.name,
+              salesPerson: salesPersonId,
+              salesPersonName: salesPersonName,
+              activities: [{
+                action: 'created',
+                description: `Sales order auto-created from won lead "${lead.name}"`,
+                performedBy: req.user._id,
+                performedByName: req.user.name
+              }]
+            })
+
+            // Link sales order back to lead
+            lead.salesOrder = salesOrder._id
+            await lead.save()
+
+            lead.activities.push({
+              action: 'sales_order_created',
+              description: `Sales Order ${salesOrder.salesOrderId || salesOrder._id} auto-created`,
+              performedBy: req.user._id,
+              performedByName: req.user.name
+            })
+            await lead.save()
+          }
+        } catch (soErr) {
+          console.error('Failed to auto-create sales order:', soErr.message)
+          // Don't fail the status update if sales order creation fails
+        }
+      }
+
       res.json({
         success: true,
-        data: lead
+        data: lead,
+        ...(salesOrder ? { salesOrder } : {})
       })
     } catch (error) {
       res.status(500).json({
@@ -1025,13 +1090,62 @@ router.post('/:id/convert',
       // Convert to customer using the model method
       const customer = await lead.convertToCustomer(req.user._id, req.user.name)
 
+      // Auto-create Sales Order if not already created
+      let salesOrder = null
+      try {
+        const existingOrder = await SalesOrder.findOne({ lead: lead._id })
+        if (!existingOrder) {
+          const validCategories = ['interior', 'construction', 'renovation', 'education', 'ods', 'other']
+          const serviceToCategory = (lead.service || '').toLowerCase().trim()
+          const category = validCategories.includes(serviceToCategory) ? serviceToCategory : 'interior'
+          const salesPersonId = lead.departmentAssignments.sales?.employee || req.user._id
+          const salesPersonName = lead.departmentAssignments.sales?.employeeName || req.user.name
+
+          salesOrder = await SalesOrder.create({
+            lead: lead._id,
+            company: lead.company,
+            customer: customer._id,
+            title: `Sales Order - ${lead.name}`,
+            category,
+            clientInfo: {
+              name: lead.name,
+              email: lead.email,
+              phone: lead.phone,
+              city: lead.location?.city,
+              address: lead.location?.address
+            },
+            siteLocation: {
+              city: lead.location?.city,
+              address: lead.location?.address
+            },
+            status: 'draft',
+            createdBy: req.user._id,
+            createdByName: req.user.name,
+            salesPerson: salesPersonId,
+            salesPersonName: salesPersonName,
+            activities: [{
+              action: 'created',
+              description: `Sales order auto-created from converted lead "${lead.name}"`,
+              performedBy: req.user._id,
+              performedByName: req.user.name
+            }]
+          })
+
+          lead.salesOrder = salesOrder._id
+          await lead.save()
+        }
+      } catch (soErr) {
+        console.error('Failed to auto-create sales order on convert:', soErr.message)
+      }
+
       await lead.populate('customer', 'name customerId')
 
       res.json({
         success: true,
         data: {
           lead,
-          customer
+          customer,
+          ...(salesOrder ? { salesOrder } : {})
         },
         message: 'Lead converted to customer successfully'
       })
@@ -1559,16 +1673,41 @@ router.put('/:id/qualify',
 
       await lead.qualify(req.user._id, req.user.name, notes)
 
-      // Notify hierarchy
+      // Notify presales hierarchy
       notifyLeadEvent({
         companyId: lead.company,
         lead,
         event: 'lead_qualified',
         title: 'Lead Qualified',
-        message: `Lead "${lead.name}" has been qualified by ${req.user.name}.`,
+        message: `Lead "${lead.name}" has been qualified by ${req.user.name}. Qualified ID: ${lead.qualifiedLeadId || 'N/A'}`,
         assignedOwner: lead.departmentAssignments.preSales?.employee || lead.assignedTo,
         performedBy: req.user._id
       })
+
+      // Also notify all Sales Heads/Managers so lead appears in their bucket
+      try {
+        const salesHeads = await User.find({
+          company: lead.company,
+          role: { $in: ['sales_manager', 'company_admin'] },
+          isActive: true
+        }).select('_id')
+        if (salesHeads.length > 0) {
+          const { notifyEvent } = await import('../utils/notificationService.js')
+          notifyEvent({
+            companyId: lead.company,
+            event: 'lead_qualified_for_sales',
+            entityType: 'lead',
+            entityId: lead._id,
+            title: 'New Qualified Lead',
+            message: `Lead "${lead.name}" (${lead.qualifiedLeadId || lead.leadId}) has been qualified by Pre-Sales and is ready for assignment. Please assign a Sales Executive and ACM.`,
+            recipientUserIds: salesHeads.map(u => u._id),
+            performedBy: req.user._id,
+            metadata: { leadId: lead.leadId, qualifiedLeadId: lead.qualifiedLeadId, city: lead.location?.city }
+          })
+        }
+      } catch (notifErr) {
+        console.error('Failed to notify sales heads:', notifErr.message)
+      }
 
       res.json({
         success: true,
@@ -2310,14 +2449,18 @@ router.post('/:id/assign-sales-executive',
   requirePermission(PERMISSIONS.LEADS_ASSIGN),
   async (req, res) => {
     try {
-      const { executiveId } = req.body
+      const { executiveId, acmId } = req.body
 
       // Only sales_manager or higher can do this
       if (!['super_admin', 'company_admin', 'sales_manager'].includes(req.user.role)) {
         return res.status(403).json({
           success: false,
-          message: 'Only Sales Manager can assign sales executives'
+          message: 'Only Sales Head can assign sales executives'
         })
+      }
+
+      if (!executiveId) {
+        return res.status(400).json({ success: false, message: 'Sales Executive is required' })
       }
 
       const lead = await Lead.findById(req.params.id)
@@ -2337,6 +2480,15 @@ router.post('/:id/assign-sales-executive',
         return res.status(400).json({ success: false, message: 'Sales executive not found' })
       }
 
+      // Look up ACM if provided
+      let acm = null
+      if (acmId) {
+        acm = await User.findById(acmId)
+        if (!acm) {
+          return res.status(400).json({ success: false, message: 'ACM not found' })
+        }
+      }
+
       const previousAssignee = lead.assignedTo
 
       // Update the sales assignment to the executive
@@ -2351,6 +2503,23 @@ router.post('/:id/assign-sales-executive',
       }
       lead.assignedTo = executive._id
 
+      // Assign ACM (from design team)
+      if (acm) {
+        lead.departmentAssignments.acm = {
+          employee: acm._id,
+          employeeName: acm.name,
+          assignedAt: new Date(),
+          assignedBy: req.user._id,
+          assignedByName: req.user.name,
+          isActive: true
+        }
+        // Add ACM to team members
+        const isAcmMember = lead.teamMembers.some(tm => tm.user?.toString() === acm._id.toString())
+        if (!isAcmMember) {
+          lead.teamMembers.push({ user: acm._id, role: 'collaborator', assignedBy: req.user._id })
+        }
+      }
+
       const isMember = lead.teamMembers.some(tm => tm.user?.toString() === executive._id.toString())
       if (!isMember) {
         lead.teamMembers.push({ user: executive._id, role: 'owner', assignedBy: req.user._id })
@@ -2358,31 +2527,52 @@ router.post('/:id/assign-sales-executive',
 
       lead.activities.push({
         action: 'assigned',
-        description: `Sales Manager ${req.user.name} assigned lead to Sales Executive: ${executive.name}`,
+        description: `Sales Head ${req.user.name} assigned lead to Sales Executive: ${executive.name}${acm ? `, ACM: ${acm.name}` : ''}`,
         performedBy: req.user._id,
         performedByName: req.user.name,
-        newValue: { department: 'sales', employee: executive._id, employeeName: executive.name }
+        newValue: {
+          department: 'sales',
+          employee: executive._id,
+          employeeName: executive.name,
+          ...(acm ? { acm: acm._id, acmName: acm.name } : {})
+        }
       })
       lead.lastActivityAt = new Date()
 
       await lead.save()
 
-      // Notify
+      // Notify sales executive
       notifyLeadEvent({
         companyId: lead.company,
         lead,
         event: 'lead_assigned',
         title: 'Lead Assigned to You',
-        message: `Sales Manager ${req.user.name} assigned lead "${lead.name}" to you.`,
+        message: `Sales Head ${req.user.name} assigned lead "${lead.name}" to you.${acm ? ` ACM: ${acm.name}` : ''}`,
         assignedOwner: executive._id,
         previousOwner: previousAssignee,
         performedBy: req.user._id
       })
 
+      // Notify ACM
+      if (acm) {
+        const { notifyEvent } = await import('../utils/notificationService.js')
+        notifyEvent({
+          companyId: lead.company,
+          event: 'acm_assigned',
+          entityType: 'lead',
+          entityId: lead._id,
+          title: 'Assigned as ACM',
+          message: `You have been assigned as ACM for lead "${lead.name}". Sales Executive: ${executive.name}. Please assign a designer.`,
+          recipientUserIds: [acm._id],
+          performedBy: req.user._id,
+          metadata: { leadId: lead.leadId, salesExecutive: executive.name }
+        })
+      }
+
       res.json({
         success: true,
         data: lead,
-        message: `Lead assigned to ${executive.name}`
+        message: `Lead assigned to ${executive.name}${acm ? ` with ACM ${acm.name}` : ''}`
       })
     } catch (error) {
       res.status(500).json({ success: false, message: error.message })
@@ -2404,31 +2594,36 @@ router.post('/:id/floor-plan',
   uploadFloorPlan.single('floorPlan'),
   async (req, res) => {
     try {
-      const lead = await Lead.findById(req.params.id)
-      if (!lead) {
-        return res.status(404).json({ success: false, message: 'Lead not found' })
-      }
-
       if (!req.file) {
         return res.status(400).json({ success: false, message: 'No file uploaded' })
       }
 
-      lead.floorPlan = `/uploads/floor-plans/${req.file.filename}`
+      const floorPlanPath = `/uploads/floor-plans/${req.file.filename}`
 
-      lead.activities.push({
-        action: 'document_added',
-        description: `Floor plan uploaded: ${req.file.originalname}`,
-        performedBy: req.user._id,
-        performedByName: req.user.name,
-        metadata: {
-          fileName: req.file.originalname,
-          fileSize: req.file.size,
-          mimeType: req.file.mimetype
-        }
-      })
-      lead.lastActivityAt = new Date()
+      const lead = await Lead.findByIdAndUpdate(
+        req.params.id,
+        {
+          $set: { floorPlan: floorPlanPath, lastActivityAt: new Date() },
+          $push: {
+            activities: {
+              action: 'document_added',
+              description: `Floor plan uploaded: ${req.file.originalname}`,
+              performedBy: req.user._id,
+              performedByName: req.user.name,
+              metadata: {
+                fileName: req.file.originalname,
+                fileSize: req.file.size,
+                mimeType: req.file.mimetype
+              }
+            }
+          }
+        },
+        { new: true }
+      )
 
-      await lead.save()
+      if (!lead) {
+        return res.status(404).json({ success: false, message: 'Lead not found' })
+      }
 
       res.json({
         success: true,
@@ -2646,25 +2841,14 @@ router.put('/:id/requirement-meeting/status',
 // ==========================================
 
 /**
- * @desc    Assign designer to a lead (Design Head only)
+ * @desc    Assign designer to a lead (ACM, Design Head, or admin)
  * @route   POST /api/leads/:id/assign-designer
- * @access  Private (design_head, admin only)
+ * @access  Private (ACM assigned to this lead, design_head, admin)
  */
 router.post('/:id/assign-designer',
-  requirePermission(PERMISSIONS.LEADS_ASSIGN),
+  requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
-      // Only Design Head or admin can assign
-      const isDesignHead = req.user.approvalAuthority?.approverRole === 'design_head'
-      const isAdmin = ['super_admin', 'company_admin'].includes(req.user.role)
-
-      if (!isDesignHead && !isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Only Design Head can assign design team members'
-        })
-      }
-
       const { designerId } = req.body
       if (!designerId) {
         return res.status(400).json({ success: false, message: 'Designer ID is required' })
@@ -2675,7 +2859,19 @@ router.post('/:id/assign-designer',
         return res.status(404).json({ success: false, message: 'Lead not found' })
       }
 
-      if (!['meeting_status', 'cold', 'warm', 'hot'].includes(lead.primaryStatus)) {
+      // ACM assigned to this lead, Design Head, or admin can assign
+      const isDesignHead = req.user.approvalAuthority?.approverRole === 'design_head'
+      const isAdmin = ['super_admin', 'company_admin'].includes(req.user.role)
+      const isACM = lead.departmentAssignments?.acm?.employee?.toString() === req.user._id.toString()
+
+      if (!isDesignHead && !isAdmin && !isACM) {
+        return res.status(403).json({
+          success: false,
+          message: 'Only ACM or Design Head can assign designers'
+        })
+      }
+
+      if (!['qualified', 'meeting_status', 'cold', 'warm', 'hot'].includes(lead.primaryStatus)) {
         return res.status(400).json({
           success: false,
           message: 'Designer can only be assigned to leads in the sales pipeline'
@@ -2708,7 +2904,7 @@ router.post('/:id/assign-designer',
 
       lead.activities.push({
         action: 'assigned',
-        description: `Designer ${designer.name} assigned by Design Head ${req.user.name}`,
+        description: `Designer ${designer.name} assigned by ${req.user.name}`,
         performedBy: req.user._id,
         performedByName: req.user.name,
         newValue: { department: 'design', employee: designer._id, employeeName: designer.name }
