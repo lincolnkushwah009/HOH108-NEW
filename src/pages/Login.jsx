@@ -443,9 +443,14 @@ function CustomerDashboard({ customer, token, onLogout }) {
                             background: COLORS.card, position: 'relative',
                           }}>
                             <div style={{ width: '100%', paddingTop: '100%', position: 'relative', background: COLORS.cardLight }}>
-                              <img src={media.url} alt={media.caption || 'Site photo'}
-                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                                onError={(e) => { e.target.style.display = 'none' }} />
+                              {(media.mediaType === 'video' || media.mimeType?.startsWith('video/')) ? (
+                                <video src={media.url?.startsWith('http') ? media.url : `https://hoh108.com${media.url}`}
+                                  controls style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                <img src={media.url?.startsWith('http') ? media.url : `https://hoh108.com${media.url}`} alt={media.caption || 'Site photo'}
+                                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                                  onError={(e) => { e.target.style.display = 'none' }} />
+                              )}
                               {media.category && (
                                 <span style={{
                                   position: 'absolute', top: 8, left: 8, padding: '3px 8px', borderRadius: 6,

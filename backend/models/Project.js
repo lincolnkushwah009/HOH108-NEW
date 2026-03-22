@@ -738,19 +738,32 @@ const projectSchema = new mongoose.Schema({
     }
   }],
 
-  // Images (for portfolio)
+  // Images & Videos (site media + portfolio)
   images: [{
     url: String,
     caption: String,
     type: {
       type: String,
-      enum: ['before', 'during', 'after', 'design', 'render'],
-      default: 'after'
+      enum: ['before', 'during', 'after', 'design', 'render', 'progress', 'quality', 'handover'],
+      default: 'during'
     },
+    mediaType: {
+      type: String,
+      enum: ['image', 'video', 'document'],
+      default: 'image'
+    },
+    mimeType: String,
+    originalName: String,
+    fileSize: Number,
     isMain: {
       type: Boolean,
       default: false
     },
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    uploadedByName: String,
     uploadedAt: {
       type: Date,
       default: Date.now

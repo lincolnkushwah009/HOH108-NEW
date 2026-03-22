@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   Calendar, IndianRupee, Users, CheckCircle, Clock, GanttChart, Edit,
   ListTodo, Wallet, Play, Layers, MapPin, Building2, User, Target,
-  TrendingUp, ArrowRight, FileText, ChevronRight, Plus, Trash2
+  TrendingUp, ArrowRight, FileText, ChevronRight, Plus, Trash2, Camera, Upload, X
 } from 'lucide-react'
 import { projectsAPI, customersAPI, usersAPI, projectWorkflowAPI } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
@@ -68,6 +68,10 @@ const ProjectDetail = () => {
   const [customers, setCustomers] = useState([])
   const [users, setUsers] = useState([])
   const [workflowCompletion, setWorkflowCompletion] = useState(null)
+  const [siteMedia, setSiteMedia] = useState([])
+  const [uploadingMedia, setUploadingMedia] = useState(false)
+  const [mediaCategory, setMediaCategory] = useState('during')
+  const [mediaCaption, setMediaCaption] = useState('')
   const [showMilestoneModal, setShowMilestoneModal] = useState(false)
   const [editingMilestone, setEditingMilestone] = useState(null)
   const [milestoneForm, setMilestoneForm] = useState({
@@ -89,6 +93,7 @@ const ProjectDetail = () => {
     loadCustomers()
     loadUsers()
     loadWorkflowCompletion()
+    loadSiteMedia()
   }, [id])
 
   const loadProject = async () => {
@@ -126,6 +131,47 @@ const ProjectDetail = () => {
       setWorkflowCompletion(response.data)
     } catch (err) {
       console.log('Workflow not initialized:', err.message)
+    }
+  }
+
+  const loadSiteMedia = async () => {
+    try {
+      const response = await projectsAPI.getSiteMedia(id)
+      setSiteMedia(response.data || [])
+    } catch (err) {
+      console.log('No site media:', err.message)
+    }
+  }
+
+  const handleMediaUpload = async (e) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setUploadingMedia(true)
+    try {
+      const formData = new FormData()
+      for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i])
+      }
+      formData.append('category', mediaCategory)
+      formData.append('caption', mediaCaption)
+      await projectsAPI.uploadSiteMedia(id, formData)
+      setMediaCaption('')
+      e.target.value = ''
+      await loadSiteMedia()
+      await loadProject()
+    } catch (err) {
+      setError(err.message || 'Upload failed')
+    } finally {
+      setUploadingMedia(false)
+    }
+  }
+
+  const handleDeleteMedia = async (mediaId) => {
+    try {
+      await projectsAPI.deleteSiteMedia(id, mediaId)
+      await loadSiteMedia()
+    } catch (err) {
+      setError(err.message)
     }
   }
 
@@ -717,6 +763,82 @@ const ProjectDetail = () => {
                   </div>
                 </div>
               )}
+
+              {/* Site Media Upload Card */}
+              <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+                <div style={{ padding: '20px 24px', borderBottom: '1px solid #f3f4f6', background: '#f9fafb' }}>
+                  <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '12px', margin: 0 }}>
+                    <div style={{ height: '32px', width: '32px', borderRadius: '8px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Camera style={{ height: '16px', width: '16px', color: '#d97706' }} />
+                    </div>
+                    Site Media ({siteMedia.length})
+                  </h3>
+                </div>
+                <div style={{ padding: '20px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                    <select value={mediaCategory} onChange={e => setMediaCategory(e.target.value)}
+                      style={{ flex: 1, padding: '8px 10px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', background: '#fff' }}>
+                      <option value="before">Before</option>
+                      <option value="during">During</option>
+                      <option value="after">After</option>
+                      <option value="progress">Progress</option>
+                      <option value="quality">Quality</option>
+                      <option value="handover">Handover</option>
+                    </select>
+                  </div>
+                  <input type="text" value={mediaCaption} onChange={e => setMediaCaption(e.target.value)}
+                    placeholder="Caption (optional)" style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px', marginBottom: '12px', boxSizing: 'border-box' }} />
+                  <label style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px',
+                    borderRadius: '10px', border: '2px dashed #d1d5db', cursor: 'pointer', fontSize: '13px',
+                    fontWeight: '600', color: '#6b7280', background: '#f9fafb', marginBottom: '16px',
+                  }}>
+                    <Upload style={{ height: '16px', width: '16px' }} />
+                    {uploadingMedia ? 'Uploading...' : 'Upload Photos / Videos'}
+                    <input type="file" multiple accept="image/*,video/*,.pdf" onChange={handleMediaUpload}
+                      style={{ display: 'none' }} disabled={uploadingMedia} />
+                  </label>
+                  {siteMedia.length > 0 ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                      {siteMedia.slice(0, 9).map((media, idx) => {
+                        const isVideo = media.mediaType === 'video' || media.mimeType?.startsWith('video/')
+                        const mediaUrl = media.url?.startsWith('http') ? media.url : `https://hoh108.com${media.url}`
+                        return (
+                          <div key={media._id || idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                            <div style={{ paddingTop: '100%', position: 'relative', background: '#f3f4f6' }}>
+                              {isVideo ? (
+                                <video src={mediaUrl} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                <img src={mediaUrl} alt={media.caption || ''} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                                  onError={e => { e.target.style.display = 'none' }} />
+                              )}
+                              {isVideo && (
+                                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 24, height: 24, background: 'rgba(0,0,0,0.6)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <Play style={{ height: 12, width: 12, color: '#fff' }} />
+                                </div>
+                              )}
+                              <span style={{ position: 'absolute', bottom: 4, left: 4, fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', textTransform: 'uppercase' }}>
+                                {media.type || 'during'}
+                              </span>
+                              <button onClick={() => handleDeleteMedia(media._id)} style={{
+                                position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: '50%',
+                                background: 'rgba(239,68,68,0.8)', border: 'none', cursor: 'pointer', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center', padding: 0,
+                              }}>
+                                <X style={{ height: 10, width: 10, color: '#fff' }} />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <p style={{ textAlign: 'center', fontSize: '13px', color: '#9ca3af', padding: '8px 0' }}>No site media uploaded yet</p>
+                  )}
+                  {siteMedia.length > 9 && <p style={{ textAlign: 'center', fontSize: '12px', color: '#6b7280', marginTop: '8px' }}>+{siteMedia.length - 9} more</p>}
+                </div>
+              </div>
+
             </div>
           </div>
         )}

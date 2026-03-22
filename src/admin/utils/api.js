@@ -254,6 +254,21 @@ export const projectsAPI = {
   toggleFeatured: (id) =>
     apiRequest(`/projects/${id}/featured`, { method: 'PUT' }),
   getKanbanDetail: (id) => apiRequest(`/projects/${id}/kanban-detail`),
+  getSiteMedia: (id) => apiRequest(`/projects/${id}/site-media`),
+  uploadSiteMedia: (id, formData) => {
+    const token = localStorage.getItem('hoh108_admin_token')
+    const companyId = localStorage.getItem('hoh108_active_company')
+    return fetch(`${API_BASE_URL}/projects/${id}/site-media`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-Company-Id': companyId,
+      },
+      body: formData,
+    }).then(r => r.json())
+  },
+  deleteSiteMedia: (projectId, mediaId) =>
+    apiRequest(`/projects/${projectId}/site-media/${mediaId}`, { method: 'DELETE' }),
 }
 
 // Users API
