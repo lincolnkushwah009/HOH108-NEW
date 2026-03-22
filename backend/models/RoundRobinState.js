@@ -9,12 +9,12 @@ const roundRobinStateSchema = new mongoose.Schema({
   city: {
     type: String,
     required: true,
-    enum: ['Bengaluru', 'Mysuru', 'Hyderabad']
+    enum: ['Bengaluru', 'Mysuru', 'Hyderabad', 'All']
   },
   department: {
     type: String,
     required: true,
-    enum: ['pre_sales', 'sales_closure']
+    enum: ['pre_sales', 'sales_closure', 'crm', 'design', 'operations']
   },
   // Optional showroom/branch (Experience Center) for branch-level round-robin
   showroom: {

@@ -12,7 +12,7 @@ import {
   canModifyResource,
   PERMISSIONS
 } from '../middleware/rbac.js'
-import { getNextAssignee } from '../utils/roundRobinService.js'
+import { getNextAssignee, autoAssignCRM, autoAssignDesigner } from '../utils/roundRobinService.js'
 import { getDispositionCategory, validateDisposition, getDispositionTree } from '../config/dispositions.js'
 import { notifyLeadEvent } from '../utils/notificationService.js'
 import { maskPhone, shouldMaskPhone } from '../utils/phoneMask.js'
@@ -2989,6 +2989,134 @@ router.post('/:id/assign-designer',
         success: true,
         data: { design: lead.departmentAssignments.design },
         message: `Designer ${designer.name} assigned successfully`
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
+    }
+  }
+)
+
+/**
+ * @desc    Auto-assign designer via round-robin based on lead city
+ * @route   POST /api/leads/:id/auto-assign-designer
+ * @access  Private
+ */
+router.post('/:id/auto-assign-designer',
+  requireModulePermission('leads', 'edit'),
+  async (req, res) => {
+    try {
+      const lead = await Lead.findById(req.params.id)
+      if (!lead) {
+        return res.status(404).json({ success: false, message: 'Lead not found' })
+      }
+
+      const city = lead.location?.city
+      if (!city) {
+        return res.status(400).json({ success: false, message: 'Lead has no city. Cannot auto-assign designer.' })
+      }
+
+      const assignee = await autoAssignDesigner(lead.company, city)
+      if (!assignee) {
+        return res.status(400).json({ success: false, message: `No available designers found for ${city}. Please assign manually.` })
+      }
+
+      lead.departmentAssignments.design = {
+        employee: assignee.userId,
+        employeeName: assignee.userName,
+        assignedAt: new Date(),
+        assignedBy: req.user._id,
+        assignedByName: `${req.user.name} (Auto Round-Robin)`,
+        isActive: true
+      }
+
+      if (!lead.dateTracking) lead.dateTracking = {}
+      lead.dateTracking.designMeetingDate = new Date()
+
+      const isMember = lead.teamMembers.some(tm => tm.user?.toString() === assignee.userId.toString())
+      if (!isMember) {
+        lead.teamMembers.push({ user: assignee.userId, role: 'collaborator', assignedBy: req.user._id })
+      }
+
+      lead.activities.push({
+        action: 'assigned',
+        description: `Designer ${assignee.userName} auto-assigned via round-robin (${city})`,
+        performedBy: req.user._id,
+        performedByName: req.user.name,
+        newValue: { department: 'design', employee: assignee.userId, employeeName: assignee.userName }
+      })
+      lead.lastActivityAt = new Date()
+
+      await lead.save()
+
+      try {
+        notifyLeadEvent({
+          companyId: lead.company,
+          lead,
+          event: 'lead_assigned',
+          recipientUserIds: [assignee.userId],
+          performedBy: req.user._id
+        })
+      } catch (e) {}
+
+      res.json({
+        success: true,
+        data: { design: lead.departmentAssignments.design },
+        message: `Designer ${assignee.userName} auto-assigned for ${city}`
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
+    }
+  }
+)
+
+/**
+ * @desc    Auto-assign CRM coordinator via round-robin based on lead city
+ * @route   POST /api/leads/:id/auto-assign-crm
+ * @access  Private
+ */
+router.post('/:id/auto-assign-crm',
+  requireModulePermission('leads', 'edit'),
+  async (req, res) => {
+    try {
+      const lead = await Lead.findById(req.params.id)
+      if (!lead) {
+        return res.status(404).json({ success: false, message: 'Lead not found' })
+      }
+
+      const city = lead.location?.city
+      if (!city) {
+        return res.status(400).json({ success: false, message: 'Lead has no city. Cannot auto-assign CRM.' })
+      }
+
+      const assignee = await autoAssignCRM(lead.company, city)
+      if (!assignee) {
+        return res.status(400).json({ success: false, message: `No available CRM coordinators for ${city}. Please assign manually.` })
+      }
+
+      lead.departmentAssignments.crm = {
+        employee: assignee.userId,
+        employeeName: assignee.userName,
+        assignedAt: new Date(),
+        assignedBy: req.user._id,
+        assignedByName: `${req.user.name} (Auto Round-Robin)`,
+        isActive: true
+      }
+
+      lead.activities.push({
+        action: 'assigned',
+        description: `CRM coordinator ${assignee.userName} auto-assigned via round-robin (${city})`,
+        performedBy: req.user._id,
+        performedByName: req.user.name,
+        newValue: { department: 'crm', employee: assignee.userId, employeeName: assignee.userName }
+      })
+      lead.lastActivityAt = new Date()
+
+      await lead.save()
+
+      res.json({
+        success: true,
+        data: { crm: lead.departmentAssignments.crm },
+        message: `CRM coordinator ${assignee.userName} auto-assigned for ${city}`
       })
     } catch (error) {
       res.status(500).json({ success: false, message: error.message })
