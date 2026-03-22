@@ -5,7 +5,7 @@ import {
   ListTodo, Wallet, Play, Layers, MapPin, Building2, User, Target,
   TrendingUp, ArrowRight, FileText, ChevronRight, Plus, Trash2, Camera, Upload, X
 } from 'lucide-react'
-import { projectsAPI, customersAPI, usersAPI, projectWorkflowAPI } from '../../utils/api'
+import { projectsAPI, customersAPI, usersAPI, projectWorkflowAPI, projectWalletAPI } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
 import { Button, Badge, Avatar, Tabs, Modal, Input, Select } from '../../components/ui'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
@@ -72,6 +72,8 @@ const ProjectDetail = () => {
   const [uploadingMedia, setUploadingMedia] = useState(false)
   const [mediaCategory, setMediaCategory] = useState('during')
   const [mediaCaption, setMediaCaption] = useState('')
+  const [walletData, setWalletData] = useState(null)
+  const [walletLoading, setWalletLoading] = useState(false)
   const [showMilestoneModal, setShowMilestoneModal] = useState(false)
   const [editingMilestone, setEditingMilestone] = useState(null)
   const [milestoneForm, setMilestoneForm] = useState({
@@ -94,6 +96,7 @@ const ProjectDetail = () => {
     loadUsers()
     loadWorkflowCompletion()
     loadSiteMedia()
+    loadWallet()
   }, [id])
 
   const loadProject = async () => {
@@ -131,6 +134,18 @@ const ProjectDetail = () => {
       setWorkflowCompletion(response.data)
     } catch (err) {
       console.log('Workflow not initialized:', err.message)
+    }
+  }
+
+  const loadWallet = async () => {
+    setWalletLoading(true)
+    try {
+      const response = await projectWalletAPI.getWallet(id)
+      setWalletData(response.data)
+    } catch (err) {
+      console.log('Wallet not available:', err.message)
+    } finally {
+      setWalletLoading(false)
     }
   }
 
@@ -339,6 +354,7 @@ const ProjectDetail = () => {
     { id: 'milestones', label: 'Milestones', count: project.milestones?.length || 0 },
     { id: 'team', label: 'Team', count: project.teamMembers?.length || 0 },
     { id: 'payments', label: 'Payments', count: project.payments?.length || 0 },
+    { id: 'wallet', label: 'Wallet' },
   ]
 
   const completedMilestones = project.milestones?.filter(m => m.status === 'completed').length || 0
@@ -982,6 +998,152 @@ const ProjectDetail = () => {
           </div>
         )}
       </div>
+
+      {/* Wallet Tab */}
+      {activeTab === 'wallet' && (
+        <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+          {walletLoading ? (
+            <div style={{ padding: '60px', textAlign: 'center', color: '#9ca3af' }}>Loading wallet...</div>
+          ) : !walletData ? (
+            <div style={{ padding: '60px', textAlign: 'center', color: '#9ca3af' }}>
+              <Wallet style={{ height: 48, width: 48, margin: '0 auto 12px', opacity: 0.3 }} />
+              <p>No wallet data available</p>
+            </div>
+          ) : (
+            <>
+              {/* Wallet Summary Cards */}
+              <div style={{ padding: '24px', borderBottom: '1px solid #f3f4f6' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+                  {[
+                    { label: 'Project Value', value: walletData.wallet.agreedAmount, color: '#6366f1', bg: '#eef2ff' },
+                    { label: 'Money In', value: walletData.wallet.moneyIn, color: '#10b981', bg: '#ecfdf5' },
+                    { label: 'Money Out', value: walletData.wallet.moneyOut, color: '#ef4444', bg: '#fef2f2' },
+                    { label: 'Wallet Balance', value: walletData.wallet.walletBalance, color: walletData.wallet.walletBalance >= 0 ? '#10b981' : '#ef4444', bg: walletData.wallet.walletBalance >= 0 ? '#ecfdf5' : '#fef2f2' },
+                  ].map((card, i) => (
+                    <div key={i} style={{ background: card.bg, borderRadius: '14px', padding: '20px', border: `1px solid ${card.color}20` }}>
+                      <p style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280', margin: '0 0 8px', textTransform: 'uppercase' }}>{card.label}</p>
+                      <p style={{ fontSize: '24px', fontWeight: 700, color: card.color, margin: 0 }}>
+                        {'\u20b9'}{(card.value || 0).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginTop: '16px' }}>
+                  <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 4px' }}>Customer Pending</p>
+                    <p style={{ fontSize: '18px', fontWeight: 700, color: '#f59e0b', margin: 0 }}>{'\u20b9'}{(walletData.wallet.customerPending || 0).toLocaleString('en-IN')}</p>
+                  </div>
+                  <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 4px' }}>Vendor Committed (Unpaid)</p>
+                    <p style={{ fontSize: '18px', fontWeight: 700, color: '#8b5cf6', margin: 0 }}>{'\u20b9'}{(walletData.wallet.committedNotPaid || 0).toLocaleString('en-IN')}</p>
+                  </div>
+                  <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 4px' }}>Profit Margin</p>
+                    <p style={{ fontSize: '18px', fontWeight: 700, color: walletData.wallet.profitMargin >= 0 ? '#10b981' : '#ef4444', margin: 0 }}>{walletData.wallet.profitMargin}%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Money In Section */}
+              <div style={{ padding: '24px', borderBottom: '1px solid #f3f4f6' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#10b981', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <TrendingUp style={{ height: 16, width: 16 }} /> MONEY IN (Customer Payments)
+                </h3>
+                {(walletData.moneyIn.milestones || []).length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {walletData.moneyIn.milestones.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f9fafb', borderRadius: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: m.status === 'paid' ? '#10b981' : m.collectedAmount > 0 ? '#f59e0b' : '#d1d5db' }} />
+                          <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{m.name}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 24 }}>
+                          <span style={{ fontSize: 13, color: '#6b7280' }}>{'\u20b9'}{(m.amount || 0).toLocaleString('en-IN')}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#10b981' }}>{'\u20b9'}{(m.collectedAmount || 0).toLocaleString('en-IN')}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, padding: '2px 10px', borderRadius: 6, background: m.status === 'paid' ? '#dcfce7' : '#fef3c7', color: m.status === 'paid' ? '#16a34a' : '#92400e' }}>
+                            {m.status?.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: '#9ca3af', fontSize: 13 }}>No customer payment milestones configured</p>
+                )}
+              </div>
+
+              {/* Money Out Section */}
+              <div style={{ padding: '24px', borderBottom: '1px solid #f3f4f6' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#ef4444', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ArrowRight style={{ height: 16, width: 16 }} /> MONEY OUT (Vendor Payments)
+                </h3>
+                {(walletData.moneyOut.vendorMilestones || []).length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {walletData.moneyOut.vendorMilestones.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f9fafb', borderRadius: '10px' }}>
+                        <div>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{m.vendor?.name || 'Vendor'}</span>
+                          <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 8 }}>{m.name} {m.purchaseOrder?.poNumber ? `(${m.purchaseOrder.poNumber})` : ''}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 24 }}>
+                          <span style={{ fontSize: 13, color: '#6b7280' }}>{'\u20b9'}{(m.amount || 0).toLocaleString('en-IN')}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#ef4444' }}>{'\u20b9'}{(m.paidAmount || 0).toLocaleString('en-IN')}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, padding: '2px 10px', borderRadius: 6, background: m.status === 'paid' ? '#dcfce7' : m.status === 'partially_paid' ? '#fef3c7' : '#f3f4f6', color: m.status === 'paid' ? '#16a34a' : m.status === 'partially_paid' ? '#92400e' : '#6b7280' }}>
+                            {(m.status || 'pending').replace(/_/g, ' ').toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (walletData.moneyOut.purchaseOrders || []).length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {walletData.moneyOut.purchaseOrders.map((po, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f9fafb', borderRadius: '10px' }}>
+                        <div>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{po.vendor?.name || 'Vendor'}</span>
+                          <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 8 }}>{po.poNumber}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 16 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{'\u20b9'}{(po.poTotal || 0).toLocaleString('en-IN')}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, padding: '2px 10px', borderRadius: 6, background: '#e0e7ff', color: '#4338ca' }}>{po.status?.toUpperCase()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: '#9ca3af', fontSize: 13 }}>No vendor payments recorded</p>
+                )}
+              </div>
+
+              {/* Transaction Ledger */}
+              <div style={{ padding: '24px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#374151', margin: '0 0 16px' }}>Transaction Ledger</h3>
+                {(walletData.transactions || []).length > 0 ? (
+                  <div style={{ border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 100px 120px', padding: '10px 16px', background: '#f9fafb', fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase' }}>
+                      <span>Date</span><span>Description</span><span style={{ textAlign: 'right' }}>Amount</span><span style={{ textAlign: 'right' }}>Balance</span>
+                    </div>
+                    {walletData.transactions.slice(0, 20).map((txn, i) => (
+                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '100px 1fr 100px 120px', padding: '10px 16px', borderTop: '1px solid #f3f4f6', fontSize: 13 }}>
+                        <span style={{ color: '#6b7280' }}>{txn.date ? new Date(txn.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '-'}</span>
+                        <span style={{ color: '#374151' }}>{txn.description}</span>
+                        <span style={{ textAlign: 'right', fontWeight: 600, color: txn.type === 'credit' ? '#10b981' : '#ef4444' }}>
+                          {txn.type === 'credit' ? '+' : '-'}{'\u20b9'}{(txn.amount || 0).toLocaleString('en-IN')}
+                        </span>
+                        <span style={{ textAlign: 'right', fontWeight: 600, color: txn.balance >= 0 ? '#374151' : '#ef4444' }}>
+                          {'\u20b9'}{(txn.balance || 0).toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', padding: 20 }}>No transactions yet</p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Edit Project Modal */}
       <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Project">

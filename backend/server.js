@@ -117,6 +117,9 @@ import materialConsumptionRoutes from './routes/materialConsumption.js'
 // QC Master Routes
 import qcMasterRoutes from './routes/qcMaster.js'
 
+// Project Wallet Routes
+import projectWalletRoutes from './routes/projectWallet.js'
+
 // MDM (Master Data Management) Routes
 import mdmRoutes from './routes/mdm.js'
 
@@ -348,6 +351,9 @@ app.use('/api/material-consumption', materialConsumptionRoutes)
 
 // QC Master Routes
 app.use('/api/qc-master', qcMasterRoutes)
+
+// Project Wallet Routes
+app.use('/api/project-wallet', projectWalletRoutes)
 
 // MDM (Master Data Management) Routes
 app.use('/api/mdm', mdmRoutes)

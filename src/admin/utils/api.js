@@ -271,6 +271,16 @@ export const projectsAPI = {
     apiRequest(`/projects/${projectId}/site-media/${mediaId}`, { method: 'DELETE' }),
 }
 
+// Project Wallet API
+export const projectWalletAPI = {
+  getWallet: (projectId) => apiRequest(`/project-wallet/${projectId}`),
+  recordVendorPayment: (projectId, data) =>
+    apiRequest(`/project-wallet/${projectId}/vendor-payment`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+}
+
 // Users API
 export const usersAPI = {
   getAll: (params = {}) => {
