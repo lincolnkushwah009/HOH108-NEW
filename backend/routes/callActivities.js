@@ -627,17 +627,47 @@ router.get('/stats/me',
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
-      const { startDate, endDate } = req.query
+      const userId = req.user._id
+      const companyQuery = companyScopedQuery(req)
 
-      const stats = await CallActivity.getUserCallStats(
-        req.user._id,
-        startDate ? new Date(startDate) : undefined,
-        endDate ? new Date(endDate) : undefined
-      )
+      // Today's date range
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      // Build user filter (admins see all, others see own)
+      const userFilter = ['super_admin', 'company_admin', 'sales_manager'].includes(req.user.role)
+        ? companyQuery
+        : { ...companyQuery, calledBy: userId }
+
+      // Count calls made today (completed calls)
+      const todayCalls = await CallActivity.countDocuments({
+        ...userFilter,
+        status: { $in: ['completed', 'no_answer', 'busy', 'voicemail', 'wrong_number'] },
+        createdAt: { $gte: today, $lt: tomorrow }
+      })
+
+      // Count scheduled meetings (future meetings from call activities)
+      const scheduledMeetings = await CallActivity.countDocuments({
+        ...userFilter,
+        'meetingScheduled.isScheduled': true,
+        'meetingScheduled.scheduledDate': { $gte: today }
+      })
+
+      // Also get outcome breakdown for additional stats
+      const outcomeStats = await CallActivity.aggregate([
+        { $match: { ...userFilter, createdAt: { $gte: today, $lt: tomorrow } } },
+        { $group: { _id: '$outcome', count: { $sum: 1 } } }
+      ])
 
       res.json({
         success: true,
-        data: stats
+        data: {
+          todayCalls,
+          scheduledMeetings,
+          outcomeBreakdown: outcomeStats
+        }
       })
     } catch (error) {
       res.status(500).json({

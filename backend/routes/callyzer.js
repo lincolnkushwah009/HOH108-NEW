@@ -832,8 +832,8 @@ router.get('/dashboard',
   setCompanyContext,
   async (req, res) => {
     try {
-      const { startDate, endDate } = req.query
-      console.log('[Callyzer Dashboard] Fetching dashboard for dates:', startDate, '-', endDate, 'user:', req.user.email || req.user._id)
+      const { startDate, endDate, empNumber, callType } = req.query
+      console.log('[Callyzer Dashboard] Fetching dashboard for dates:', startDate, '-', endDate, 'empNumber:', empNumber || 'all', 'callType:', callType || 'all', 'user:', req.user.email || req.user._id)
       const userRole = req.user.role || req.user.subDepartment
       const isPreSales = userRole === 'pre_sales' || req.user.subDepartment === 'pre_sales'
 
@@ -854,6 +854,8 @@ router.get('/dashboard',
           })
         }
         empFilter = [req.user.callyzerEmployeeNumber]
+      } else if (empNumber) {
+        empFilter = [empNumber]
       }
 
       const company = await Company.findById(req.activeCompany._id)
@@ -868,6 +870,7 @@ router.get('/dashboard',
 
           // Compute dashboard from call history (avoids rate limit issues with multiple API calls)
           const histOpts = { startDate, endDate, empNumbers: empFilter || undefined }
+          if (callType) histOpts.callTypes = [callType]
           const allCalls = await fetchAllCallyzerCalls(callyzer, histOpts)
 
           if (allCalls.length > 0) {
