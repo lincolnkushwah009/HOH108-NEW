@@ -220,6 +220,19 @@ router.put('/:id/approve', async (req, res) => {
 
     await invoice.save()
 
+    // Auto-post to General Ledger
+    try {
+      const LedgerActivityMapping = (await import('../models/LedgerActivityMapping.js')).default
+      await LedgerActivityMapping.executeMapping(
+        invoice.company,
+        'vendor_invoice_approved',
+        { amount: invoice.invoiceTotal, subTotal: invoice.subTotal, totalCGST: invoice.totalCGST, totalSGST: invoice.totalSGST, invoiceTotal: invoice.invoiceTotal, vendor: invoice.vendor, project: invoice.project, invoiceNumber: invoice.invoiceNumber },
+        req.user._id
+      )
+    } catch (glErr) {
+      console.error('GL auto-posting error (non-blocking):', glErr.message)
+    }
+
     res.json({ success: true, data: invoice })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
@@ -265,6 +278,19 @@ router.post('/:id/payments', async (req, res) => {
     })
 
     await invoice.save()
+
+    // Auto-post to General Ledger
+    try {
+      const LedgerActivityMapping = (await import('../models/LedgerActivityMapping.js')).default
+      await LedgerActivityMapping.executeMapping(
+        invoice.company,
+        'payment_outgoing_completed',
+        { amount: req.body.amount, method: req.body.paymentMethod, vendor: invoice.vendor, project: invoice.project, invoiceNumber: invoice.invoiceNumber, invoiceTotal: invoice.invoiceTotal },
+        req.user._id
+      )
+    } catch (glErr) {
+      console.error('GL auto-posting error (non-blocking):', glErr.message)
+    }
 
     res.json({ success: true, data: invoice })
   } catch (error) {

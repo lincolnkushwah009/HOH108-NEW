@@ -155,6 +155,7 @@ import AccessReviews from './pages/compliance/AccessReviews'
 import BankReconciliation from './pages/finance/BankReconciliation'
 import BudgetForecasting from './pages/finance/BudgetForecasting'
 import CreditDebitNotes from './pages/finance/CreditDebitNotes'
+import ProjectPnL from './pages/finance/ProjectPnL'
 
 // Operations
 import ChangeOrders from './pages/operations/ChangeOrders'
@@ -363,6 +364,7 @@ const AdminApp = () => {
                 <Route path="bank-reconciliation" element={<BankReconciliation />} />
                 <Route path="budget-forecasting" element={<BudgetForecasting />} />
                 <Route path="credit-debit-notes" element={<CreditDebitNotes />} />
+                <Route path="project-pnl" element={<ProjectPnL />} />
 
                 {/* Operations */}
                 <Route path="change-orders" element={<ChangeOrders />} />

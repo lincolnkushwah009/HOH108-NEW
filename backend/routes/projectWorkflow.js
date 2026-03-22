@@ -742,6 +742,19 @@ router.post('/payment-milestones/:id/payments',
         }]
       })
 
+      // Auto-post to General Ledger
+      try {
+        const LedgerActivityMapping = (await import('../models/LedgerActivityMapping.js')).default
+        await LedgerActivityMapping.executeMapping(
+          milestone.company,
+          'payment_incoming_completed',
+          { amount: req.body.amount, method: req.body.method, reference: receipt.paymentNumber, customer: milestone.customer, project: milestone.project },
+          req.user._id
+        )
+      } catch (glErr) {
+        console.error('GL auto-posting error (non-blocking):', glErr.message)
+      }
+
       res.json({
         success: true,
         data: milestone,

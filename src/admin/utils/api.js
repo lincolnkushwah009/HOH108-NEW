@@ -281,6 +281,12 @@ export const projectWalletAPI = {
     }),
 }
 
+// Project P&L API
+export const projectPnLAPI = {
+  getProjectPnL: (projectId) => apiRequest(`/project-wallet/${projectId}/pnl`),
+  getDashboard: () => apiRequest('/project-wallet/dashboard/pnl'),
+}
+
 // Users API
 export const usersAPI = {
   getAll: (params = {}) => {

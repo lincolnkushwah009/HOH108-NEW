@@ -199,6 +199,7 @@ export const navigation = [
       { id: 'ledger-master', label: 'Ledger Master', path: '/admin/ledger-master' },
       { id: 'ledger-mapping', label: 'Ledger Mapping', path: '/admin/ledger-mapping' },
       { id: 'aging-dashboard', label: 'Aging Dashboard', path: '/admin/aging-dashboard' },
+      { id: 'project-pnl', label: 'Project P&L', path: '/admin/project-pnl' },
     ],
   },
   {
