@@ -6,6 +6,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   getLeadQueryFilter,
   canAccessLead,
   canModifyResource,
@@ -16,6 +17,7 @@ import { getDispositionCategory, validateDisposition, getDispositionTree } from 
 import { notifyLeadEvent } from '../utils/notificationService.js'
 import { maskPhone, shouldMaskPhone } from '../utils/phoneMask.js'
 import { uploadFloorPlan } from '../middleware/upload.js'
+import Notification from '../models/Notification.js'
 import SalesOrder from '../models/SalesOrder.js'
 
 const router = express.Router()
@@ -163,16 +165,41 @@ router.post('/', async (req, res) => {
 
           await lead.save()
 
-          // Fire notification (non-blocking)
+          // Fire notification to presales assignee (non-blocking)
           notifyLeadEvent({
             companyId: company._id,
             lead,
             event: 'lead_assigned',
             title: `New Lead Assigned - ${city}`,
-            message: `A new lead "${lead.name}" from ${city} has been assigned to you via round-robin.`,
+            message: `A new lead "${lead.name}" from ${city} has been assigned to ${assignee.userName} (Pre-Sales) via round-robin.`,
             assignedOwner: assignee.userId,
             performedBy: null
           })
+
+          // Also notify Sales Head / Sales Managers about the new website lead
+          try {
+            const salesTeam = await User.find({
+              company: company._id,
+              role: { $in: ['sales_manager'] },
+              isActive: true
+            }).select('_id').lean()
+            if (salesTeam.length > 0) {
+              const salesIds = salesTeam.map(u => u._id.toString())
+              await Notification.notifyUsers(salesIds, {
+                company: company._id,
+                type: 'info',
+                category: 'lead',
+                title: `New Website Lead - ${city}`,
+                message: `New lead "${lead.name}" from ${websiteSource || 'Website'} (${city}) assigned to Pre-Sales: ${assignee.userName}.`,
+                entityType: 'lead',
+                entityId: lead._id,
+                actionUrl: `/admin/leads/${lead._id}`,
+                metadata: { event: 'new_website_lead', leadId: lead.leadId, assignedTo: assignee.userName, source: websiteSource }
+              })
+            }
+          } catch (salesNotifyErr) {
+            console.error('Sales notification error:', salesNotifyErr.message)
+          }
         }
       } catch (assignErr) {
         console.error('Auto-assignment error:', assignErr.message)
@@ -203,6 +230,7 @@ router.use(setCompanyContext)
  * @access  Private
  */
 router.get('/',
+  requireModulePermission('leads', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -327,6 +355,7 @@ router.get('/',
  * @access  Private
  */
 router.get('/dispositions/config',
+  requireModulePermission('leads', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -365,6 +394,7 @@ router.get('/dispositions/config',
  * @access  Private
  */
 router.get('/:id',
+  requireModulePermission('leads', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -431,6 +461,7 @@ router.get('/:id',
  * @access  Private
  */
 router.get('/:id/journey',
+  requireModulePermission('leads', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -486,6 +517,7 @@ router.get('/:id/journey',
  * @access  Private
  */
 router.post('/admin',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_CREATE),
   async (req, res) => {
     try {
@@ -549,6 +581,7 @@ router.post('/admin',
  * @access  Private
  */
 router.put('/:id',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -714,6 +747,7 @@ router.put('/:id',
  * @access  Private
  */
 router.delete('/:id',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_DELETE),
   async (req, res) => {
     try {
@@ -764,6 +798,7 @@ router.delete('/:id',
  * @access  Private
  */
 router.post('/:id/notes',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -839,6 +874,7 @@ router.post('/:id/notes',
  * @access  Private
  */
 router.put('/:id/status',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -989,6 +1025,7 @@ router.put('/:id/status',
  * @access  Private
  */
 router.post('/:id/activities',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -1060,6 +1097,7 @@ router.post('/:id/activities',
  * @access  Private
  */
 router.post('/:id/convert',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_CONVERT),
   async (req, res) => {
     try {
@@ -1164,6 +1202,7 @@ router.post('/:id/convert',
  * @access  Private
  */
 router.put('/:id/assign',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_ASSIGN),
   async (req, res) => {
     try {
@@ -1252,6 +1291,7 @@ router.put('/:id/assign',
  * @access  Private
  */
 router.post('/bulk',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_IMPORT),
   async (req, res) => {
     try {
@@ -1383,6 +1423,7 @@ router.post('/bulk',
  * @access  Private
  */
 router.get('/:id/team',
+  requireModulePermission('leads', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -1445,6 +1486,7 @@ router.get('/:id/team',
  * @access  Private
  */
 router.put('/:id/disposition',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -1542,6 +1584,7 @@ router.put('/:id/disposition',
  * @access  Private
  */
 router.post('/:id/assign-department',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_ASSIGN),
   async (req, res) => {
     try {
@@ -1649,6 +1692,7 @@ router.post('/:id/assign-department',
  * @access  Private
  */
 router.put('/:id/qualify',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -1729,6 +1773,7 @@ router.put('/:id/qualify',
  * @access  Private
  */
 router.post('/:id/schedule-meeting',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -1797,6 +1842,7 @@ router.post('/:id/schedule-meeting',
  * @access  Private
  */
 router.put('/:id/meeting/complete',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -1844,6 +1890,7 @@ router.put('/:id/meeting/complete',
  * @access  Private
  */
 router.put('/:id/rnr',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -1897,6 +1944,7 @@ router.put('/:id/rnr',
  * @access  Private
  */
 router.put('/:id/future-prospect',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -1960,6 +2008,7 @@ router.put('/:id/future-prospect',
  * @access  Private
  */
 router.put('/:id/lost',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -2013,6 +2062,7 @@ router.put('/:id/lost',
  * @access  Private
  */
 router.put('/:id/reactivate',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -2073,6 +2123,7 @@ router.put('/:id/reactivate',
  * @access  Private
  */
 router.put('/:id/secondary-status',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -2136,6 +2187,7 @@ router.put('/:id/secondary-status',
  * @access  Private (Sales team only)
  */
 router.put('/:id/lock-presales',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -2195,6 +2247,7 @@ router.put('/:id/lock-presales',
  * @access  Private
  */
 router.get('/department/:department',
+  requireModulePermission('leads', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -2247,6 +2300,7 @@ router.get('/department/:department',
  * @access  Private
  */
 router.get('/:id/workflow',
+  requireModulePermission('leads', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -2317,6 +2371,7 @@ router.get('/:id/workflow',
  * @access  Private
  */
 router.post('/:id/transfer-to-sales',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -2446,6 +2501,7 @@ router.post('/:id/transfer-to-sales',
  * @access  Private (sales_manager+ only)
  */
 router.post('/:id/assign-sales-executive',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_ASSIGN),
   async (req, res) => {
     try {
@@ -2590,6 +2646,7 @@ router.post('/:id/assign-sales-executive',
  * @access  Private
  */
 router.post('/:id/floor-plan',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   uploadFloorPlan.single('floorPlan'),
   async (req, res) => {
@@ -2646,6 +2703,7 @@ router.post('/:id/floor-plan',
  * @access  Private (sales_manager, design_head, admin only)
  */
 router.put('/:id/revised-budget',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -2722,6 +2780,7 @@ router.put('/:id/revised-budget',
  * @access  Private
  */
 router.post('/:id/requirement-meeting',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -2792,6 +2851,7 @@ router.post('/:id/requirement-meeting',
  * @access  Private
  */
 router.put('/:id/requirement-meeting/status',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -2846,6 +2906,7 @@ router.put('/:id/requirement-meeting/status',
  * @access  Private (ACM assigned to this lead, design_head, admin)
  */
 router.post('/:id/assign-designer',
+  requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {

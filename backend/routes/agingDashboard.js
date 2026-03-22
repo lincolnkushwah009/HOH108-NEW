@@ -5,6 +5,7 @@ import VendorInvoice from '../models/VendorInvoice.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -12,6 +13,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('aging_dashboard', 'view'))
 
 // Helper: unpaid/partially-paid/overdue filter
 const unpaidStatuses = ['unpaid', 'partially_paid', 'overdue']

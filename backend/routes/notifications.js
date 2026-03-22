@@ -1,5 +1,5 @@
 import express from 'express'
-import { protect, setCompanyContext, requirePermission, PERMISSIONS } from '../middleware/rbac.js'
+import { protect, setCompanyContext, requirePermission, requireModulePermission, PERMISSIONS } from '../middleware/rbac.js'
 import Notification from '../models/Notification.js'
 
 const router = express.Router()
@@ -7,6 +7,7 @@ const router = express.Router()
 // All routes require authentication
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('notifications_module', 'view'))
 
 /**
  * @desc    Get all notifications for user

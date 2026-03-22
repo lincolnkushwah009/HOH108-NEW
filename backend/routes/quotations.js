@@ -3,6 +3,7 @@ import Quotation from '../models/Quotation.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -12,7 +13,7 @@ router.use(protect)
 router.use(setCompanyContext)
 
 // Get all quotations
-router.get('/', async (req, res) => {
+router.get('/', requireModulePermission('quotations', 'view'), async (req, res) => {
   try {
     const {
       status,
@@ -87,7 +88,7 @@ router.get('/', async (req, res) => {
 })
 
 // Get single quotation
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireModulePermission('quotations', 'view'), async (req, res) => {
   try {
     const quotation = await Quotation.findOne({
       _id: req.params.id,
@@ -113,7 +114,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Create quotation
-router.post('/', async (req, res) => {
+router.post('/', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const quotation = await Quotation.create({
       ...req.body,
@@ -139,7 +140,7 @@ router.post('/', async (req, res) => {
 })
 
 // Update quotation
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const quotation = await Quotation.findOne({
       _id: req.params.id,
@@ -174,7 +175,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // Send quotation to customer
-router.put('/:id/send', async (req, res) => {
+router.put('/:id/send', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const quotation = await Quotation.findOne({
       _id: req.params.id,
@@ -203,7 +204,7 @@ router.put('/:id/send', async (req, res) => {
 })
 
 // Mark as viewed
-router.put('/:id/viewed', async (req, res) => {
+router.put('/:id/viewed', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const quotation = await Quotation.findOne({
       _id: req.params.id,
@@ -234,7 +235,7 @@ router.put('/:id/viewed', async (req, res) => {
 })
 
 // Accept quotation
-router.put('/:id/accept', async (req, res) => {
+router.put('/:id/accept', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const quotation = await Quotation.findOne({
       _id: req.params.id,
@@ -263,7 +264,7 @@ router.put('/:id/accept', async (req, res) => {
 })
 
 // Reject quotation
-router.put('/:id/reject', async (req, res) => {
+router.put('/:id/reject', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const { reason } = req.body
 
@@ -295,7 +296,7 @@ router.put('/:id/reject', async (req, res) => {
 })
 
 // Create revision
-router.post('/:id/revision', async (req, res) => {
+router.post('/:id/revision', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const quotation = await Quotation.findOne({
       _id: req.params.id,
@@ -319,7 +320,7 @@ router.post('/:id/revision', async (req, res) => {
 })
 
 // Add negotiation
-router.post('/:id/negotiate', async (req, res) => {
+router.post('/:id/negotiate', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const { proposedAmount, notes, proposedBy } = req.body
 
@@ -356,7 +357,7 @@ router.post('/:id/negotiate', async (req, res) => {
 })
 
 // Convert to sales order
-router.post('/:id/convert', async (req, res) => {
+router.post('/:id/convert', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const quotation = await Quotation.findOne({
       _id: req.params.id,
@@ -387,7 +388,7 @@ router.post('/:id/convert', async (req, res) => {
 })
 
 // Delete quotation
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireModulePermission('quotations', 'edit'), async (req, res) => {
   try {
     const quotation = await Quotation.findOneAndDelete({
       _id: req.params.id,

@@ -3,6 +3,7 @@ import LedgerActivityMapping from '../models/LedgerActivityMapping.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -10,6 +11,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('ledger_mapping', 'view'))
 
 /**
  * @route   GET /api/ledger-mappings

@@ -3,6 +3,7 @@ import SalesDispatch from '../models/SalesDispatch.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -16,7 +17,7 @@ router.use(setCompanyContext)
  * @desc    List all sales dispatches
  * @access  Private
  */
-router.get('/', async (req, res) => {
+router.get('/', requireModulePermission('dispatches', 'view'), async (req, res) => {
   try {
     const { salesOrder, customer, status, page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = req.query
 
@@ -58,7 +59,7 @@ router.get('/', async (req, res) => {
  * @desc    Get single dispatch
  * @access  Private
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireModulePermission('dispatches', 'view'), async (req, res) => {
   try {
     const dispatch = await SalesDispatch.findOne({
       _id: req.params.id,
@@ -84,7 +85,7 @@ router.get('/:id', async (req, res) => {
  * @desc    Create a new sales dispatch
  * @access  Private
  */
-router.post('/', async (req, res) => {
+router.post('/', requireModulePermission('dispatches', 'edit'), async (req, res) => {
   try {
     const dispatch = await SalesDispatch.create({
       ...req.body,
@@ -108,7 +109,7 @@ router.post('/', async (req, res) => {
  * @desc    Update a sales dispatch
  * @access  Private
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireModulePermission('dispatches', 'edit'), async (req, res) => {
   try {
     const dispatch = await SalesDispatch.findOne({
       _id: req.params.id,
@@ -140,7 +141,7 @@ router.put('/:id', async (req, res) => {
  * @desc    Set dispatch status to 'dispatched'
  * @access  Private
  */
-router.post('/:id/dispatch', async (req, res) => {
+router.post('/:id/dispatch', requireModulePermission('dispatches', 'edit'), async (req, res) => {
   try {
     const dispatch = await SalesDispatch.findOne({
       _id: req.params.id,
@@ -182,7 +183,7 @@ router.post('/:id/dispatch', async (req, res) => {
  * @desc    Confirm delivery of dispatch
  * @access  Private
  */
-router.post('/:id/confirm-delivery', async (req, res) => {
+router.post('/:id/confirm-delivery', requireModulePermission('dispatches', 'edit'), async (req, res) => {
   try {
     const dispatch = await SalesDispatch.findOne({
       _id: req.params.id,

@@ -6,6 +6,7 @@ import Package from '../models/Package.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -26,7 +27,7 @@ router.use(setCompanyContext)
 // ==================== BOQ ITEMS ====================
 
 // Get all BOQ items (master list)
-router.get('/items', async (req, res) => {
+router.get('/items', requireModulePermission('boq_generator', 'view'), async (req, res) => {
   try {
     const { category, search, active = 'true' } = req.query
     const queryFilter = companyScopedQuery(req)
@@ -50,7 +51,7 @@ router.get('/items', async (req, res) => {
 })
 
 // Create BOQ item
-router.post('/items', async (req, res) => {
+router.post('/items', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const item = new BOQItem({
       ...req.body,
@@ -65,7 +66,7 @@ router.post('/items', async (req, res) => {
 })
 
 // Update BOQ item
-router.put('/items/:id', async (req, res) => {
+router.put('/items/:id', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const item = await BOQItem.findOneAndUpdate(
       { _id: req.params.id, company: req.activeCompany._id },
@@ -82,7 +83,7 @@ router.put('/items/:id', async (req, res) => {
 })
 
 // Delete BOQ item
-router.delete('/items/:id', async (req, res) => {
+router.delete('/items/:id', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const item = await BOQItem.findOneAndDelete({
       _id: req.params.id,
@@ -98,7 +99,7 @@ router.delete('/items/:id', async (req, res) => {
 })
 
 // Bulk create BOQ items (for initial setup)
-router.post('/items/bulk', async (req, res) => {
+router.post('/items/bulk', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const { items } = req.body
     const createdItems = await BOQItem.insertMany(
@@ -117,7 +118,7 @@ router.post('/items/bulk', async (req, res) => {
 // ==================== PACKAGES ====================
 
 // Get all packages
-router.get('/packages', async (req, res) => {
+router.get('/packages', requireModulePermission('boq_generator', 'view'), async (req, res) => {
   try {
     const queryFilter = companyScopedQuery(req)
     queryFilter.isActive = true
@@ -132,7 +133,7 @@ router.get('/packages', async (req, res) => {
 })
 
 // Create package
-router.post('/packages', async (req, res) => {
+router.post('/packages', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const pkg = new Package({
       ...req.body,
@@ -147,7 +148,7 @@ router.post('/packages', async (req, res) => {
 })
 
 // Update package
-router.put('/packages/:id', async (req, res) => {
+router.put('/packages/:id', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const pkg = await Package.findOneAndUpdate(
       { _id: req.params.id, company: req.activeCompany._id },
@@ -164,7 +165,7 @@ router.put('/packages/:id', async (req, res) => {
 })
 
 // Delete package
-router.delete('/packages/:id', async (req, res) => {
+router.delete('/packages/:id', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const pkg = await Package.findOneAndDelete({
       _id: req.params.id,
@@ -180,7 +181,7 @@ router.delete('/packages/:id', async (req, res) => {
 })
 
 // Seed default packages
-router.post('/packages/seed', async (req, res) => {
+router.post('/packages/seed', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const existingCount = await Package.countDocuments({ company: req.activeCompany._id })
     if (existingCount > 0) {
@@ -211,7 +212,7 @@ router.post('/packages/seed', async (req, res) => {
 // ==================== BOQ QUOTES ====================
 
 // Get all BOQ quotes
-router.get('/', async (req, res) => {
+router.get('/', requireModulePermission('boq_generator', 'view'), async (req, res) => {
   try {
     const {
       status,
@@ -282,7 +283,7 @@ router.get('/', async (req, res) => {
 })
 
 // Get single BOQ quote
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireModulePermission('boq_generator', 'view'), async (req, res) => {
   try {
     const quote = await BOQQuote.findOne({
       _id: req.params.id,
@@ -303,7 +304,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Create BOQ quote
-router.post('/', async (req, res) => {
+router.post('/', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const quote = new BOQQuote({
       ...req.body,
@@ -320,7 +321,7 @@ router.post('/', async (req, res) => {
 })
 
 // Update BOQ quote
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const quote = await BOQQuote.findOne({
       _id: req.params.id,
@@ -346,7 +347,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // Delete BOQ quote
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const quote = await BOQQuote.findOneAndDelete({
       _id: req.params.id,
@@ -365,7 +366,7 @@ router.delete('/:id', async (req, res) => {
 })
 
 // Get cost config for item + package combination
-router.get('/cost-config/:itemId/:packageCode', async (req, res) => {
+router.get('/cost-config/:itemId/:packageCode', requireModulePermission('boq_generator', 'view'), async (req, res) => {
   try {
     const { itemId, packageCode } = req.params
 
@@ -397,7 +398,7 @@ router.get('/cost-config/:itemId/:packageCode', async (req, res) => {
 })
 
 // Get all items with pricing for a specific package
-router.get('/items-with-pricing/:packageCode', async (req, res) => {
+router.get('/items-with-pricing/:packageCode', requireModulePermission('boq_generator', 'view'), async (req, res) => {
   try {
     const { packageCode } = req.params
     const queryFilter = companyScopedQuery(req)
@@ -425,7 +426,7 @@ router.get('/items-with-pricing/:packageCode', async (req, res) => {
 })
 
 // Seed sample BOQ items
-router.post('/items/seed', async (req, res) => {
+router.post('/items/seed', requireModulePermission('boq_generator', 'edit'), async (req, res) => {
   try {
     const existingCount = await BOQItem.countDocuments({ company: req.activeCompany._id })
     if (existingCount > 0) {
@@ -621,7 +622,7 @@ router.post('/items/seed', async (req, res) => {
 // ==================== PDF GENERATION ====================
 
 // Generate PDF for quote (without saving to DB) - HOH108 Style
-router.post('/generate-pdf', async (req, res) => {
+router.post('/generate-pdf', requireModulePermission('boq_generator', 'view'), async (req, res) => {
   try {
     const {
       clientName,
@@ -952,7 +953,7 @@ router.post('/generate-pdf', async (req, res) => {
 })
 
 // Generate PDF for saved quote
-router.get('/:id/pdf', async (req, res) => {
+router.get('/:id/pdf', requireModulePermission('boq_generator', 'view'), async (req, res) => {
   try {
     const quote = await BOQQuote.findOne({
       _id: req.params.id,

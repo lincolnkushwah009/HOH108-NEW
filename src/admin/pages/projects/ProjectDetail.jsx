@@ -619,13 +619,18 @@ const ProjectDetail = () => {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div
+                      onClick={handleEdit}
+                      style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', padding: '8px', borderRadius: '12px', transition: 'background 0.2s' }}
+                      onMouseOver={(e) => e.currentTarget.style.background = '#f9fafb'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
                       <div style={{ height: '56px', width: '56px', borderRadius: '12px', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e5e7eb' }}>
                         <User style={{ height: '28px', width: '28px', color: '#9ca3af' }} />
                       </div>
                       <div>
                         <p style={{ color: '#6b7280', fontWeight: '600', margin: 0 }}>No manager assigned</p>
-                        <p style={{ fontSize: '13px', color: '#9ca3af', margin: '4px 0 0 0' }}>Click edit to assign</p>
+                        <p style={{ fontSize: '13px', color: '#C59C82', margin: '4px 0 0 0', textDecoration: 'underline' }}>Click to assign</p>
                       </div>
                     </div>
                   )}

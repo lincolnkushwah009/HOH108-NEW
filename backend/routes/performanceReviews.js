@@ -3,11 +3,13 @@ import mongoose from 'mongoose'
 import PerformanceReview from '../models/PerformanceReview.js'
 import KRA from '../models/KRA.js'
 import User from '../models/User.js'
-import { protect, authorize } from '../middleware/auth.js'
+import { protect, setCompanyContext, authorize, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('reviews', 'view'))
 
 /**
  * ===========================================

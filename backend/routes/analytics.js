@@ -12,6 +12,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
@@ -20,6 +21,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('analytics_overview', 'view'))
 
 // GET /sales-pipeline - Aggregate leads by status, count + totalValue per stage
 router.get('/sales-pipeline', async (req, res) => {

@@ -20,16 +20,21 @@ function Header() {
   ]
 
   useEffect(() => {
-    // Check for logged in user
+    // Check for logged in user or customer
     const storedUser = localStorage.getItem('hoh108_user')
+    const storedCustomer = localStorage.getItem('hoh108_customer')
     if (storedUser) {
       setUser(JSON.parse(storedUser))
+    } else if (storedCustomer) {
+      setUser(JSON.parse(storedCustomer))
     }
   }, [])
 
   const handleLogout = () => {
     localStorage.removeItem('hoh108_token')
     localStorage.removeItem('hoh108_user')
+    localStorage.removeItem('hoh108_customer_token')
+    localStorage.removeItem('hoh108_customer')
     setUser(null)
     setShowDropdown(false)
     navigate('/')

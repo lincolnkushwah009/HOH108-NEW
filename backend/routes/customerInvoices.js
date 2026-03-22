@@ -4,6 +4,7 @@ import Payment from '../models/Payment.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -11,6 +12,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('customer_invoices', 'view'))
 
 // Get all customer invoices
 router.get('/', async (req, res) => {

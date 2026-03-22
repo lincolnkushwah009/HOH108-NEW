@@ -14,10 +14,38 @@ import {
 import Customer from '../models/Customer.js'
 import Lead from '../models/Lead.js'
 import SalesOrder from '../models/SalesOrder.js'
+import PaymentMilestone from '../models/PaymentMilestone.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
 const router = express.Router()
+
+// Customer auth middleware - verifies customer portal JWT tokens
+const protectCustomer = async (req, res, next) => {
+  let token
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1]
+  }
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'Not authorized' })
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    if (decoded.type === 'customer') {
+      const customer = await Customer.findById(decoded.id)
+      if (!customer || !customer.portalAccess?.enabled) {
+        return res.status(401).json({ success: false, message: 'Customer account not found or disabled' })
+      }
+      req.customer = customer
+      req.activeCompany = { _id: decoded.companyId || customer.company }
+      return next()
+    }
+    // Fall through to standard user auth if not a customer token
+    return protect(req, res, next)
+  } catch (err) {
+    return res.status(401).json({ success: false, message: 'Invalid token' })
+  }
+}
 
 // Customer Portal Login (public - no auth required)
 router.post('/login', async (req, res) => {
@@ -68,8 +96,7 @@ router.post('/login', async (req, res) => {
   }
 })
 
-router.use(protect)
-router.use(setCompanyContext)
+router.use(protectCustomer)
 
 // List customer's invoices
 router.get('/invoices', async (req, res) => {
@@ -464,7 +491,13 @@ router.get('/journey', async (req, res) => {
 
     // Get projects
     const projects = await Project.find({ customer: customerId })
-      .select('projectId title stage status timeline createdAt')
+      .select('projectId title stage status category priority description financials budget timeline specifications location teamMembers departmentAssignments createdAt')
+      .populate('projectManager', 'name phone designation avatar')
+      .populate('teamMembers.user', 'name phone designation avatar')
+      .populate('departmentAssignments.design.lead', 'name phone designation')
+      .populate('departmentAssignments.design.team', 'name phone designation')
+      .populate('departmentAssignments.operations.lead', 'name phone designation')
+      .populate('departmentAssignments.operations.team', 'name phone designation')
       .sort({ createdAt: -1 })
 
     // Get design iterations
@@ -477,6 +510,14 @@ router.get('/journey', async (req, res) => {
       .select('invoiceNumber invoiceDate dueDate invoiceTotal paidAmount balanceAmount status paymentStatus')
       .sort({ invoiceDate: -1 })
 
+    // Get payment milestones for all customer projects
+    const projectIds = projects.map(p => p._id)
+    const paymentMilestones = projectIds.length > 0
+      ? await PaymentMilestone.find({ project: { $in: projectIds } })
+          .select('name description amount collectedAmount status percentage dueDate project payments order')
+          .sort({ order: 1, percentage: 1 })
+      : []
+
     res.json({
       success: true,
       data: {
@@ -486,6 +527,7 @@ router.get('/journey', async (req, res) => {
         projects,
         designIterations,
         invoices,
+        paymentMilestones,
         timeline: buildJourneyTimeline(lead, salesOrders, projects, designIterations, invoices)
       }
     })

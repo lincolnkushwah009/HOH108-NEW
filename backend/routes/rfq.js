@@ -4,6 +4,7 @@ import Material from '../models/Material.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -11,6 +12,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('rfq', 'view'))
 
 // Get all RFQs
 router.get('/', async (req, res) => {
@@ -360,9 +362,13 @@ router.get('/vendor/:vendorId', async (req, res) => {
   }
 })
 
-// Delete RFQ (only draft)
+// Delete RFQ (Super Admin only)
 router.delete('/:id', async (req, res) => {
   try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ success: false, message: 'Only super admin can delete' })
+    }
+
     const rfq = await RequestForQuotation.findOneAndDelete({
       _id: req.params.id,
       company: req.activeCompany._id,

@@ -5,6 +5,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
@@ -13,6 +14,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('purchase_orders', 'view'))
 
 // Get all purchase orders
 router.get('/', async (req, res) => {
@@ -349,9 +351,13 @@ router.put('/:id/cancel', async (req, res) => {
   }
 })
 
-// Delete purchase order (only drafts)
+// Delete purchase order (Super Admin only)
 router.delete('/:id', async (req, res) => {
   try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ success: false, message: 'Only super admin can delete' })
+    }
+
     const order = await PurchaseOrder.findOneAndDelete({
       _id: req.params.id,
       company: req.activeCompany._id,

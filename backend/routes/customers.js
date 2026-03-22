@@ -1,4 +1,5 @@
 import express from 'express'
+import bcrypt from 'bcryptjs'
 import Customer from '../models/Customer.js'
 import Lead from '../models/Lead.js'
 import Company from '../models/Company.js'
@@ -6,6 +7,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   getCustomerQueryFilter,
   canAccessCustomer,
   canModifyResource,
@@ -24,6 +26,7 @@ router.use(setCompanyContext)
  * @access  Private
  */
 router.get('/',
+  requireModulePermission('customers', 'view'),
   requirePermission(PERMISSIONS.CUSTOMERS_VIEW),
   async (req, res) => {
     try {
@@ -92,6 +95,7 @@ router.get('/',
  * @access  Private
  */
 router.get('/:id',
+  requireModulePermission('customers', 'view'),
   requirePermission(PERMISSIONS.CUSTOMERS_VIEW),
   async (req, res) => {
     try {
@@ -136,6 +140,7 @@ router.get('/:id',
  * @access  Private
  */
 router.post('/',
+  requireModulePermission('customers', 'edit'),
   requirePermission(PERMISSIONS.CUSTOMERS_CREATE),
   async (req, res) => {
     try {
@@ -186,6 +191,7 @@ router.post('/',
  * @access  Private
  */
 router.put('/:id',
+  requireModulePermission('customers', 'edit'),
   requirePermission(PERMISSIONS.CUSTOMERS_EDIT),
   async (req, res) => {
     try {
@@ -262,6 +268,7 @@ router.put('/:id',
  * @access  Private/Admin
  */
 router.delete('/:id',
+  requireModulePermission('customers', 'edit'),
   requirePermission(PERMISSIONS.CUSTOMERS_DELETE),
   async (req, res) => {
     try {
@@ -312,6 +319,7 @@ router.delete('/:id',
  * @access  Private
  */
 router.post('/:id/notes',
+  requireModulePermission('customers', 'edit'),
   requirePermission(PERMISSIONS.CUSTOMERS_VIEW),
   async (req, res) => {
     try {
@@ -371,6 +379,7 @@ router.post('/:id/notes',
  * @access  Private
  */
 router.get('/:id/projects',
+  requireModulePermission('customers', 'view'),
   requirePermission(PERMISSIONS.CUSTOMERS_VIEW),
   async (req, res) => {
     try {
@@ -416,6 +425,7 @@ router.get('/:id/projects',
  * @access  Private
  */
 router.post('/:id/projects',
+  requireModulePermission('customers', 'edit'),
   requirePermission(PERMISSIONS.CUSTOMERS_EDIT),
   async (req, res) => {
     try {
@@ -507,6 +517,7 @@ router.post('/:id/projects',
  * @access  Private/Admin
  */
 router.post('/:id/update-metrics',
+  requireModulePermission('customers', 'edit'),
   requirePermission(PERMISSIONS.CUSTOMERS_EDIT),
   async (req, res) => {
     try {
@@ -541,6 +552,7 @@ router.post('/:id/update-metrics',
  * @access  Private
  */
 router.get('/segments/summary',
+  requireModulePermission('customers', 'view'),
   requirePermission(PERMISSIONS.ANALYTICS_VIEW),
   async (req, res) => {
     try {
@@ -567,6 +579,88 @@ router.get('/segments/summary',
         success: false,
         message: error.message
       })
+    }
+  }
+)
+
+// Enable/Disable portal access for customer
+router.put('/:id/portal-access',
+  requireModulePermission('customers', 'edit'),
+  async (req, res) => {
+    try {
+      const { enabled, password } = req.body
+      const customer = await Customer.findById(req.params.id).select('+portalAccess.password')
+
+      if (!customer) {
+        return res.status(404).json({ success: false, message: 'Customer not found' })
+      }
+
+      if (!customer.email) {
+        return res.status(400).json({
+          success: false,
+          message: 'Customer must have an email address to enable portal access'
+        })
+      }
+
+      if (!customer.portalAccess) {
+        customer.portalAccess = {}
+      }
+
+      customer.portalAccess.enabled = enabled
+
+      if (enabled && password) {
+        const salt = await bcrypt.genSalt(10)
+        customer.portalAccess.password = await bcrypt.hash(password, salt)
+      }
+
+      await customer.save()
+
+      res.json({
+        success: true,
+        message: `Customer portal access ${enabled ? 'enabled' : 'disabled'} successfully`,
+        data: {
+          _id: customer._id,
+          name: customer.name,
+          email: customer.email,
+          portalAccess: { enabled: customer.portalAccess.enabled }
+        }
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
+    }
+  }
+)
+
+// Reset customer portal password
+router.put('/:id/reset-portal-password',
+  requireModulePermission('customers', 'edit'),
+  async (req, res) => {
+    try {
+      const { password } = req.body
+      if (!password) {
+        return res.status(400).json({ success: false, message: 'Password is required' })
+      }
+
+      const customer = await Customer.findById(req.params.id).select('+portalAccess.password')
+      if (!customer) {
+        return res.status(404).json({ success: false, message: 'Customer not found' })
+      }
+
+      if (!customer.portalAccess) {
+        customer.portalAccess = {}
+      }
+
+      const salt = await bcrypt.genSalt(10)
+      customer.portalAccess.password = await bcrypt.hash(password, salt)
+      customer.portalAccess.enabled = true
+      await customer.save()
+
+      res.json({
+        success: true,
+        message: 'Customer portal password reset successfully'
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
     }
   }
 )

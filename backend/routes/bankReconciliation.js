@@ -5,6 +5,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
@@ -13,6 +14,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('bank_reconciliation', 'view'))
 
 // POST / - Create reconciliation session
 router.post('/', async (req, res) => {

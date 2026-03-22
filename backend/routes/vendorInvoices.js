@@ -3,6 +3,7 @@ import VendorInvoice from '../models/VendorInvoice.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -10,6 +11,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('vendor_invoices', 'view'))
 
 // Get all vendor invoices
 router.get('/', async (req, res) => {

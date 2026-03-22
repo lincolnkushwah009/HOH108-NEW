@@ -1,10 +1,16 @@
 import express from 'express'
 import StockTake from '../models/StockTake.js'
-import { protect } from '../middleware/auth.js'
+import {
+  protect,
+  setCompanyContext,
+  requireModulePermission
+} from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('stock_takes', 'view'))
 
 // Get all stock takes
 router.get('/', async (req, res) => {

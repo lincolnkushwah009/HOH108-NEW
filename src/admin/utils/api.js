@@ -117,23 +117,38 @@ export const leadsAPI = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  // Floor plan upload (FormData - no Content-Type header)
-  uploadFloorPlan: async (id, file) => {
-    const formData = new FormData()
-    formData.append('floorPlan', file)
-    const token = localStorage.getItem('hoh108_admin_token')
-    const companyId = localStorage.getItem('hoh108_active_company')
-    const response = await fetch(`${API_BASE_URL}/leads/${id}/floor-plan`, {
-      method: 'POST',
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...(companyId && { 'X-Company-Id': companyId }),
-      },
-      body: formData,
+  // Floor plan upload (FormData with progress tracking via XHR)
+  uploadFloorPlan: (id, file, onProgress) => {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData()
+      formData.append('floorPlan', file)
+      const token = localStorage.getItem('hoh108_admin_token')
+      const companyId = localStorage.getItem('hoh108_active_company')
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', `${API_BASE_URL}/leads/${id}/floor-plan`)
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      if (companyId) xhr.setRequestHeader('X-Company-Id', companyId)
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress(Math.round((e.loaded / e.total) * 100))
+        }
+      }
+      xhr.onload = () => {
+        if (xhr.status === 0) {
+          return reject(new Error('Upload blocked by browser — please try again'))
+        }
+        try {
+          const data = JSON.parse(xhr.responseText)
+          if (xhr.status >= 200 && xhr.status < 300) resolve(data)
+          else reject(new Error(data.message || `Upload failed (${xhr.status})`))
+        } catch {
+          reject(new Error(`Upload failed (${xhr.status}) — server returned unexpected response`))
+        }
+      }
+      xhr.onerror = () => reject(new Error('Network error — check your connection and try again'))
+      xhr.ontimeout = () => reject(new Error('Upload timed out — file may be too large'))
+      xhr.send(formData)
     })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Upload failed')
-    return data
   },
   // Revised budget (role-restricted)
   updateRevisedBudget: (id, data) =>
@@ -204,6 +219,16 @@ export const customersAPI = {
     apiRequest(`/customers/${customerId}/projects`, {
       method: 'POST',
       body: JSON.stringify({ projectId }),
+    }),
+  enablePortalAccess: (id, data) =>
+    apiRequest(`/customers/${id}/portal-access`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  resetPortalPassword: (id, password) =>
+    apiRequest(`/customers/${id}/reset-portal-password`, {
+      method: 'PUT',
+      body: JSON.stringify({ password }),
     }),
 }
 

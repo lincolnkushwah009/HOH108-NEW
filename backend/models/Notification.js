@@ -150,7 +150,7 @@ notificationSchema.statics.createNotification = async function({
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + expiresInDays)
 
-  return this.create({
+  const doc = await this.create({
     company,
     recipient,
     type,
@@ -165,16 +165,44 @@ notificationSchema.statics.createNotification = async function({
     metadata,
     expiresAt
   })
+
+  // Push real-time via Socket.IO
+  try {
+    const { emitToUser } = await import('../utils/socketService.js')
+    emitToUser(recipient.toString(), 'notification', doc.toObject())
+  } catch (e) {
+    // Socket not available
+  }
+
+  return doc
 }
 
 // Static method to notify multiple users
 notificationSchema.statics.notifyUsers = async function(userIds, notificationData) {
-  const notifications = userIds.map(userId => ({
+  const now = Date.now()
+  const expiresAt = new Date()
+  expiresAt.setDate(expiresAt.getDate() + 30)
+
+  const notifications = userIds.map((userId, i) => ({
     ...notificationData,
-    recipient: userId
+    recipient: userId,
+    notificationId: `NTF-${now}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+    expiresAt
   }))
 
-  return this.insertMany(notifications)
+  const docs = await this.insertMany(notifications)
+
+  // Push real-time via Socket.IO
+  try {
+    const { emitToUser } = await import('../utils/socketService.js')
+    for (const doc of docs) {
+      emitToUser(doc.recipient.toString(), 'notification', doc.toObject())
+    }
+  } catch (e) {
+    // Socket not available — notifications still saved in DB
+  }
+
+  return docs
 }
 
 // Instance method to mark as read

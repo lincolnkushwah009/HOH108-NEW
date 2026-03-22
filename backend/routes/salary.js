@@ -4,6 +4,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   PERMISSIONS
 } from '../middleware/rbac.js'
 
@@ -12,6 +13,7 @@ const router = express.Router()
 // All routes protected
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('salary_management', 'view'))
 
 /**
  * @desc    Get employee salary details

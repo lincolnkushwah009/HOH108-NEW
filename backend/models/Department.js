@@ -129,6 +129,12 @@ const departmentSchema = new mongoose.Schema({
     unpaid: { type: Number, default: 30 }
   },
 
+  // Implementation SPOC
+  implementationSPOC: {
+    type: String,
+    trim: true
+  },
+
   // Cost Center
   costCenter: {
     type: String

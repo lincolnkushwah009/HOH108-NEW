@@ -1,10 +1,12 @@
 import express from 'express'
 import KRA from '../models/KRA.js'
-import { protect } from '../middleware/auth.js'
+import { protect, setCompanyContext, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('kra_master', 'view'))
 
 // Get all KRAs
 router.get('/', async (req, res) => {

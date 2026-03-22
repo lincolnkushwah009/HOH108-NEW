@@ -5,6 +5,7 @@ import VendorPerformance from '../models/VendorPerformance.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -12,6 +13,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('goods_receipt_grn', 'view'))
 
 // Get all goods receipts
 router.get('/', async (req, res) => {
@@ -349,9 +351,13 @@ router.put('/:id/accept', async (req, res) => {
   }
 })
 
-// Delete goods receipt
+// Delete goods receipt (Super Admin only)
 router.delete('/:id', async (req, res) => {
   try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ success: false, message: 'Only super admin can delete' })
+    }
+
     const receipt = await GoodsReceipt.findOneAndDelete({
       _id: req.params.id,
       company: req.activeCompany._id,

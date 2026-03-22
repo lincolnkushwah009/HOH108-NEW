@@ -228,7 +228,7 @@ app.use('/api/leads', (req, res, next) => {
   if (req.method === 'POST' || req.method === 'OPTIONS') {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, X-Company-Id');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Company-Id');
   }
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
@@ -396,6 +396,26 @@ app.use('/api/vendor-payment-milestones', vendorPaymentMilestoneRoutes)
 app.use('/api/sales-dispatches', salesDispatchRoutes)
 app.use('/api/sales-three-way-match', salesThreeWayMatchRoutes)
 app.use('/api/aging', agingDashboardRoutes)
+
+// ============================================
+// Alias routes for frontend compatibility
+// These map alternative paths to existing route handlers
+// ============================================
+app.use('/api/kra-master', kraRoutes)              // Alias: frontend may hit /kra-master or /kras
+app.use('/api/accounts-receivable', customerInvoiceRoutes)  // AR is filtered customer invoices
+app.use('/api/accounts-payable', vendorInvoiceRoutes)       // AP is filtered vendor invoices
+// Ledger master: frontend calls /api/general-ledger/ledger-master (already mounted)
+// Add a direct redirect for /api/ledger-master to the GL ledger-master sub-route
+app.get('/api/ledger-master', (req, res, next) => {
+  req.url = '/ledger-master' + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '')
+  generalLedgerRoutes(req, res, next)
+})
+app.get('/api/ledger-master/:id/transactions', (req, res, next) => {
+  req.url = `/ledger-master/${req.params.id}/transactions` + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '')
+  generalLedgerRoutes(req, res, next)
+})
+app.use('/api/budget-forecasting', budgetForecastRoutes)    // Alias: frontend may use -forecasting
+app.use('/api/compliance', soxComplianceRoutes)             // Compliance dashboard alias
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -161,7 +161,7 @@ export const uploadFloorPlan = multer({
   storage: floorPlanStorage,
   fileFilter: floorPlanFilter,
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15MB max
+    fileSize: 100 * 1024 * 1024, // 100MB max
     files: 1
   }
 })

@@ -8,20 +8,23 @@ import {
   toggleFeatured,
   getProjectKanbanDetail
 } from '../controllers/projectController.js'
-import { protect, authorize } from '../middleware/auth.js'
-import { setCompanyContext } from '../middleware/rbac.js'
+import { protect, setCompanyContext, authorize, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
-// Public routes (also works with authenticated users for company context)
-router.get('/', protect, setCompanyContext, getProjects)
-router.get('/:id/kanban-detail', protect, setCompanyContext, getProjectKanbanDetail)
-router.get('/:id', getProject)
+// All routes require auth + company context
+router.use(protect)
+router.use(setCompanyContext)
 
-// Protected routes
-router.post('/', protect, setCompanyContext, authorize('admin', 'superadmin'), createProject)
-router.put('/:id', protect, setCompanyContext, authorize('admin', 'superadmin'), updateProject)
-router.delete('/:id', protect, setCompanyContext, authorize('admin', 'superadmin'), deleteProject)
-router.put('/:id/featured', protect, setCompanyContext, authorize('admin', 'superadmin'), toggleFeatured)
+// Read routes - require module view permission
+router.get('/', requireModulePermission('all_projects', 'view'), getProjects)
+router.get('/:id/kanban-detail', requireModulePermission('all_projects', 'view'), getProjectKanbanDetail)
+router.get('/:id', requireModulePermission('all_projects', 'view'), getProject)
+
+// Write routes - require module edit permission + elevated roles
+router.post('/', authorize('super_admin', 'company_admin', 'project_manager', 'operations', 'sales_manager'), requireModulePermission('all_projects', 'edit'), createProject)
+router.put('/:id', authorize('super_admin', 'company_admin', 'project_manager', 'operations', 'sales_manager', 'site_engineer'), requireModulePermission('all_projects', 'edit'), updateProject)
+router.delete('/:id', authorize('super_admin', 'company_admin'), deleteProject)
+router.put('/:id/featured', authorize('super_admin', 'company_admin'), toggleFeatured)
 
 export default router

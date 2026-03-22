@@ -8,6 +8,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   canAccessLead,
   companyScopedQuery,
   PERMISSIONS
@@ -26,6 +27,7 @@ router.use(setCompanyContext)
  * @access  Private
  */
 router.get('/',
+  requireModulePermission('sales_orders', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -109,6 +111,7 @@ router.get('/',
  * @access  Private
  */
 router.get('/:id',
+  requireModulePermission('sales_orders', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -155,6 +158,7 @@ router.get('/:id',
  * @access  Private
  */
 router.post('/',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -258,6 +262,7 @@ router.post('/',
  * @access  Private
  */
 router.put('/:id',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -333,6 +338,7 @@ router.put('/:id',
  * @access  Private
  */
 router.post('/:id/boq',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -374,6 +380,7 @@ router.post('/:id/boq',
  * @access  Private
  */
 router.post('/:id/bom',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -415,6 +422,7 @@ router.post('/:id/bom',
  * @access  Private
  */
 router.put('/:id/submit',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -479,6 +487,7 @@ router.put('/:id/submit',
  * @access  Private
  */
 router.post('/:id/negotiate',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -534,6 +543,7 @@ router.post('/:id/negotiate',
  * @access  Private (Manager+)
  */
 router.put('/:id/approve',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_CONVERT),
   async (req, res) => {
     try {
@@ -578,6 +588,7 @@ router.put('/:id/approve',
  * @access  Private (Manager+)
  */
 router.put('/:id/reject',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_CONVERT),
   async (req, res) => {
     try {
@@ -627,6 +638,7 @@ router.put('/:id/reject',
  * @access  Private
  */
 router.post('/:id/close-won',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_CONVERT),
   async (req, res) => {
     try {
@@ -715,6 +727,7 @@ router.post('/:id/close-won',
  * @access  Private
  */
 router.put('/:id/cancel',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -787,6 +800,7 @@ router.put('/:id/cancel',
  * @access  Private
  */
 router.get('/stats/summary',
+  requireModulePermission('sales_orders', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -839,6 +853,7 @@ router.get('/stats/summary',
  * @access  Private
  */
 router.post('/subsequent',
+  requireModulePermission('sales_orders', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {

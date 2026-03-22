@@ -7,6 +7,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   canAccessLead,
   companyScopedQuery,
   PERMISSIONS
@@ -24,6 +25,7 @@ router.use(setCompanyContext)
  * @access  Private
  */
 router.get('/',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -98,6 +100,7 @@ router.get('/',
  * @access  Private
  */
 router.get('/lead/:leadId',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -150,6 +153,7 @@ router.get('/lead/:leadId',
  * @access  Private
  */
 router.get('/:id',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -193,6 +197,7 @@ router.get('/:id',
  * @access  Private
  */
 router.post('/',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -292,6 +297,7 @@ router.post('/',
  * @access  Private
  */
 router.put('/:id/complete',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -394,6 +400,7 @@ router.put('/:id/complete',
  * @access  Private
  */
 router.post('/:id/schedule-meeting',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -470,6 +477,7 @@ router.post('/:id/schedule-meeting',
  * @access  Private
  */
 router.put('/:id/meeting-status',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -534,6 +542,7 @@ router.put('/:id/meeting-status',
  * @access  Private
  */
 router.post('/:id/recording',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -574,6 +583,7 @@ router.post('/:id/recording',
  * @access  Private
  */
 router.get('/stats/user/:userId',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -613,6 +623,7 @@ router.get('/stats/user/:userId',
  * @access  Private
  */
 router.get('/stats/me',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -643,6 +654,7 @@ router.get('/stats/me',
  * @access  Private
  */
 router.get('/scheduled/today',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {

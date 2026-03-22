@@ -1,10 +1,12 @@
 import express from 'express'
 import RoleTemplate from '../models/RoleTemplate.js'
-import { protect } from '../middleware/auth.js'
+import { protect, setCompanyContext, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('role_templates', 'view'))
 
 // Get all role templates
 router.get('/', async (req, res) => {

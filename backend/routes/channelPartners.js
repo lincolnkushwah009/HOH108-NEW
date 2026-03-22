@@ -5,6 +5,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
@@ -15,7 +16,7 @@ router.use(protect)
 router.use(setCompanyContext)
 
 // Get all channel partners
-router.get('/', async (req, res) => {
+router.get('/', requireModulePermission('channel_partners', 'view'), async (req, res) => {
   try {
     const {
       status,
@@ -64,7 +65,7 @@ router.get('/', async (req, res) => {
 })
 
 // Get single channel partner
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireModulePermission('channel_partners', 'view'), async (req, res) => {
   try {
     const query = { _id: req.params.id }
     if (req.activeCompany?._id) {
@@ -86,7 +87,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Create channel partner
-router.post('/', requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
+router.post('/', requireModulePermission('channel_partners', 'edit'), requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
   try {
     if (!req.activeCompany?._id) {
       return res.status(400).json({
@@ -120,7 +121,7 @@ router.post('/', requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => 
 })
 
 // Update channel partner
-router.put('/:id', requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
+router.put('/:id', requireModulePermission('channel_partners', 'edit'), requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
   try {
     if (!req.activeCompany?._id) {
       return res.status(400).json({
@@ -156,7 +157,7 @@ router.put('/:id', requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) =
 })
 
 // Soft delete channel partner (set status to inactive)
-router.delete('/:id', requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
+router.delete('/:id', requireModulePermission('channel_partners', 'edit'), requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
   try {
     if (!req.activeCompany?._id) {
       return res.status(400).json({
@@ -192,7 +193,7 @@ router.delete('/:id', requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res
 })
 
 // Enable portal access + set initial password
-router.post('/:id/enable-portal', requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
+router.post('/:id/enable-portal', requireModulePermission('channel_partners', 'edit'), requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
   try {
     if (!req.activeCompany?._id) {
       return res.status(400).json({
@@ -262,7 +263,7 @@ router.post('/:id/enable-portal', requirePermission(PERMISSIONS.LEADS_EDIT), asy
 })
 
 // Update incentive config
-router.put('/:id/incentive', requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
+router.put('/:id/incentive', requireModulePermission('channel_partners', 'edit'), requirePermission(PERMISSIONS.LEADS_EDIT), async (req, res) => {
   try {
     if (!req.activeCompany?._id) {
       return res.status(400).json({
@@ -305,7 +306,7 @@ router.put('/:id/incentive', requirePermission(PERMISSIONS.LEADS_EDIT), async (r
 })
 
 // Get leads submitted by a specific channel partner
-router.get('/:id/leads', async (req, res) => {
+router.get('/:id/leads', requireModulePermission('channel_partners', 'view'), async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query
 

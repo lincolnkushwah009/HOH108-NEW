@@ -6,6 +6,7 @@ import Project from '../models/Project.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -13,6 +14,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('work_orders', 'view'))
 
 // Get all work orders
 router.get('/', async (req, res) => {

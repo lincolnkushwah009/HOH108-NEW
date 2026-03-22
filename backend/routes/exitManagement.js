@@ -1,10 +1,12 @@
 import express from 'express'
 import ExitManagement from '../models/ExitManagement.js'
-import { protect } from '../middleware/auth.js'
+import { protect, setCompanyContext, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('exit_management', 'view'))
 
 // Get all exit records
 router.get('/', async (req, res) => {

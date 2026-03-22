@@ -1,5 +1,5 @@
 import express from 'express'
-import { protect, setCompanyContext, requirePermission, PERMISSIONS } from '../middleware/rbac.js'
+import { protect, setCompanyContext, requirePermission, requireModulePermission, PERMISSIONS } from '../middleware/rbac.js'
 import KPIConfig from '../models/KPIConfig.js'
 import Lead from '../models/Lead.js'
 import Customer from '../models/Customer.js'
@@ -10,6 +10,7 @@ const router = express.Router()
 // All routes require authentication
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('kpi_master', 'view'))
 
 /**
  * @desc    Get all KPI configurations
