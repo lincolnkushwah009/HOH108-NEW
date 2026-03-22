@@ -281,6 +281,71 @@ const customerSchema = new mongoose.Schema({
   }],
 
   // ============================================
+  // KYC VERIFICATION (Indian Compliance)
+  // ============================================
+  kyc: {
+    status: {
+      type: String,
+      enum: ['not_started', 'pending', 'documents_submitted', 'verified', 'rejected'],
+      default: 'not_started'
+    },
+    // Aadhar
+    aadhar: {
+      number: String, // Last 4 digits stored, full number hashed
+      numberHash: { type: String, select: false },
+      name: String,
+      isVerified: { type: Boolean, default: false },
+      verifiedAt: Date,
+      documentUrl: String,
+    },
+    // PAN
+    pan: {
+      number: String, // e.g., ABCDE1234F
+      name: String,
+      isVerified: { type: Boolean, default: false },
+      verifiedAt: Date,
+      documentUrl: String,
+    },
+    // GST (for business customers)
+    gst: {
+      number: String,
+      isVerified: { type: Boolean, default: false },
+      documentUrl: String,
+    },
+    // Address Proof
+    addressProof: {
+      type: { type: String, enum: ['aadhar', 'passport', 'voter_id', 'driving_license', 'utility_bill'] },
+      documentUrl: String,
+      isVerified: { type: Boolean, default: false },
+    },
+    // Verification metadata
+    verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    verifiedAt: Date,
+    rejectionReason: String,
+    remarks: String,
+    consentGiven: { type: Boolean, default: false },
+    consentDate: Date,
+    consentIP: String,
+  },
+
+  // ============================================
+  // PAYMENT GATEWAY (PhonePe Merchant)
+  // ============================================
+  paymentGateway: {
+    phonePeCustomerId: String, // PhonePe customer reference
+    preferredPaymentMethod: {
+      type: String,
+      enum: ['upi', 'card', 'netbanking', 'wallet', 'emi'],
+      default: 'upi'
+    },
+    savedInstruments: [{
+      type: { type: String, enum: ['upi', 'card'] },
+      identifier: String, // UPI VPA or masked card number
+      isDefault: { type: Boolean, default: false }
+    }],
+  },
+
+  // ============================================
   // PORTAL ACCESS
   // ============================================
   portalAccess: {

@@ -19,6 +19,9 @@ import DailyProgressReport from '../models/DailyProgressReport.js'
 import ProjectTaskInstance from '../models/ProjectTaskInstance.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
+import { initiatePayment, checkPaymentStatus, verifyChecksum } from '../utils/phonePeService.js'
+import { uploadSiteMedia } from '../middleware/upload.js'
 
 const router = express.Router()
 
@@ -668,6 +671,315 @@ router.get('/profile', async (req, res) => {
     }
 
     res.json({ success: true, data: customer })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// ============================================
+// KYC VERIFICATION ENDPOINTS
+// ============================================
+
+// Submit KYC documents
+router.post('/kyc/submit', uploadSiteMedia.fields([
+  { name: 'aadhar_doc', maxCount: 1 },
+  { name: 'pan_doc', maxCount: 1 },
+  { name: 'address_doc', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const customerId = req.customer?._id || req.body.customerId
+    const customer = await Customer.findById(customerId)
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Customer not found' })
+    }
+
+    const { aadharNumber, panNumber, gstNumber, addressProofType, consent } = req.body
+
+    if (!consent || consent !== 'true') {
+      return res.status(400).json({ success: false, message: 'KYC consent is required as per Indian regulations' })
+    }
+
+    // Validate Aadhar (12 digits)
+    if (aadharNumber && !/^\d{12}$/.test(aadharNumber.replace(/\s/g, ''))) {
+      return res.status(400).json({ success: false, message: 'Invalid Aadhar number. Must be 12 digits.' })
+    }
+
+    // Validate PAN (AAAAA9999A format)
+    if (panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(panNumber.toUpperCase())) {
+      return res.status(400).json({ success: false, message: 'Invalid PAN number. Format: ABCDE1234F' })
+    }
+
+    // Initialize KYC
+    if (!customer.kyc) customer.kyc = {}
+
+    // Aadhar
+    if (aadharNumber) {
+      const clean = aadharNumber.replace(/\s/g, '')
+      customer.kyc.aadhar = {
+        number: 'XXXX-XXXX-' + clean.slice(-4), // Store masked
+        numberHash: crypto.createHash('sha256').update(clean).digest('hex'),
+        name: customer.name,
+        isVerified: false,
+        documentUrl: req.files?.aadhar_doc?.[0] ? `/uploads/site-media/${req.files.aadhar_doc[0].filename}` : customer.kyc.aadhar?.documentUrl
+      }
+    }
+
+    // PAN
+    if (panNumber) {
+      customer.kyc.pan = {
+        number: panNumber.toUpperCase(),
+        name: customer.name,
+        isVerified: false,
+        documentUrl: req.files?.pan_doc?.[0] ? `/uploads/site-media/${req.files.pan_doc[0].filename}` : customer.kyc.pan?.documentUrl
+      }
+    }
+
+    // GST
+    if (gstNumber) {
+      customer.kyc.gst = { number: gstNumber.toUpperCase(), isVerified: false }
+    }
+
+    // Address Proof
+    if (addressProofType) {
+      customer.kyc.addressProof = {
+        type: addressProofType,
+        documentUrl: req.files?.address_doc?.[0] ? `/uploads/site-media/${req.files.address_doc[0].filename}` : customer.kyc.addressProof?.documentUrl,
+        isVerified: false
+      }
+    }
+
+    customer.kyc.status = 'documents_submitted'
+    customer.kyc.consentGiven = true
+    customer.kyc.consentDate = new Date()
+    customer.kyc.consentIP = req.ip
+
+    await customer.save()
+
+    res.json({
+      success: true,
+      message: 'KYC documents submitted successfully. Verification in progress.',
+      data: {
+        status: customer.kyc.status,
+        aadhar: customer.kyc.aadhar?.number ? { number: customer.kyc.aadhar.number, isVerified: false } : null,
+        pan: customer.kyc.pan?.number ? { number: customer.kyc.pan.number, isVerified: false } : null,
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// Get KYC status
+router.get('/kyc/status', async (req, res) => {
+  try {
+    const customerId = req.customer?._id || req.query.customerId
+    const customer = await Customer.findById(customerId).select('kyc name email')
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Customer not found' })
+    }
+
+    const kyc = customer.kyc || {}
+    const isComplete = kyc.aadhar?.isVerified && kyc.pan?.isVerified
+
+    res.json({
+      success: true,
+      data: {
+        status: kyc.status || 'not_started',
+        isComplete,
+        canMakePayments: isComplete || kyc.status === 'verified',
+        aadhar: kyc.aadhar ? { number: kyc.aadhar.number, isVerified: kyc.aadhar.isVerified } : null,
+        pan: kyc.pan ? { number: kyc.pan.number, isVerified: kyc.pan.isVerified } : null,
+        gst: kyc.gst ? { number: kyc.gst.number, isVerified: kyc.gst.isVerified } : null,
+        addressProof: kyc.addressProof ? { type: kyc.addressProof.type, isVerified: kyc.addressProof.isVerified } : null,
+        consentGiven: kyc.consentGiven,
+        consentDate: kyc.consentDate
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// ============================================
+// PHONEPE PAYMENT ENDPOINTS
+// ============================================
+
+// Initiate milestone payment via PhonePe
+router.post('/payment/initiate', async (req, res) => {
+  try {
+    const customerId = req.customer?._id || req.body.customerId
+    const { milestoneId } = req.body
+
+    const customer = await Customer.findById(customerId)
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Customer not found' })
+    }
+
+    // Check KYC
+    const kycStatus = customer.kyc?.status
+    const kycVerified = customer.kyc?.aadhar?.isVerified || customer.kyc?.pan?.isVerified || kycStatus === 'verified'
+    if (!kycVerified && kycStatus !== 'documents_submitted') {
+      return res.status(403).json({
+        success: false,
+        message: 'KYC verification required before making payments. Please submit your Aadhar/PAN documents.',
+        kycRequired: true
+      })
+    }
+
+    // Get milestone
+    const milestone = await PaymentMilestone.findById(milestoneId)
+    if (!milestone) {
+      return res.status(404).json({ success: false, message: 'Payment milestone not found' })
+    }
+
+    if (milestone.status === 'paid') {
+      return res.status(400).json({ success: false, message: 'This milestone is already paid' })
+    }
+
+    const payableAmount = (milestone.totalAmount || milestone.amount) - (milestone.collectedAmount || 0)
+    if (payableAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'No balance amount to pay' })
+    }
+
+    // Generate unique transaction ID
+    const txnId = `HOH-${milestone.project?.toString().slice(-6)}-${milestone._id.toString().slice(-6)}-${Date.now()}`
+
+    // Initiate PhonePe payment
+    const paymentResult = await initiatePayment({
+      merchantTransactionId: txnId,
+      amount: payableAmount,
+      customerName: customer.name,
+      customerPhone: customer.phone,
+      customerEmail: customer.email,
+      purpose: `${milestone.name} - Project Payment`
+    })
+
+    // Store transaction reference on milestone
+    if (!milestone.pendingTransactions) milestone.pendingTransactions = []
+    milestone.pendingTransactions = milestone.pendingTransactions || []
+    milestone.markModified('pendingTransactions')
+    // Store in activities instead since pendingTransactions may not be in schema
+    milestone.activities = milestone.activities || []
+    milestone.activities.push({
+      action: 'payment_initiated',
+      description: `PhonePe payment initiated: ${txnId} for ₹${payableAmount.toLocaleString('en-IN')}`,
+      performedByName: customer.name,
+      createdAt: new Date()
+    })
+    await milestone.save()
+
+    res.json({
+      success: true,
+      data: {
+        merchantTransactionId: txnId,
+        amount: payableAmount,
+        milestone: milestone.name,
+        paymentUrl: paymentResult.paymentUrl,
+        gatewayConfigured: !!paymentResult.paymentUrl,
+        message: paymentResult.paymentUrl
+          ? 'Redirecting to PhonePe for payment...'
+          : 'PhonePe gateway pending configuration. Payment recorded for manual processing.'
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// PhonePe payment callback (server-to-server)
+router.post('/payment/callback', async (req, res) => {
+  try {
+    const { response: responseBase64 } = req.body
+    const checksum = req.headers['x-verify']
+
+    // Verify checksum
+    if (checksum && !verifyChecksum(responseBase64, checksum)) {
+      return res.status(400).json({ success: false, message: 'Invalid checksum' })
+    }
+
+    // Decode response
+    const decodedResponse = JSON.parse(Buffer.from(responseBase64 || '', 'base64').toString())
+    const { merchantTransactionId, transactionId, amount, state, responseCode } = decodedResponse?.data || {}
+
+    if (state === 'COMPLETED' && responseCode === 'SUCCESS') {
+      // Parse milestone from transaction ID: HOH-{projectSuffix}-{milestoneSuffix}-{timestamp}
+      // Find milestone by matching transaction in activities
+      const milestones = await PaymentMilestone.find({
+        'activities.description': { $regex: merchantTransactionId }
+      })
+
+      for (const milestone of milestones) {
+        const amountInRupees = amount / 100
+        await milestone.addPayment({
+          amount: amountInRupees,
+          method: 'phonepe',
+          referenceNumber: transactionId,
+          remarks: `PhonePe payment: ${merchantTransactionId}`
+        }, null, 'PhonePe Gateway')
+      }
+    }
+
+    res.json({ success: true })
+  } catch (error) {
+    console.error('PhonePe callback error:', error.message)
+    res.json({ success: true }) // Always return success to PhonePe
+  }
+})
+
+// Check payment status
+router.get('/payment/status/:transactionId', async (req, res) => {
+  try {
+    const status = await checkPaymentStatus(req.params.transactionId)
+    res.json({ success: true, data: status })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// Get payment-ready milestones for customer
+router.get('/payment/milestones', async (req, res) => {
+  try {
+    const customerId = req.customer?._id || req.query.customerId
+    const customer = await Customer.findById(customerId).select('kyc')
+
+    const kycVerified = customer?.kyc?.status === 'verified' ||
+      customer?.kyc?.aadhar?.isVerified || customer?.kyc?.pan?.isVerified ||
+      customer?.kyc?.status === 'documents_submitted'
+
+    // Get all projects for this customer
+    const projects = await Project.find({ customer: customerId }).select('_id projectId title')
+    const projectIds = projects.map(p => p._id)
+
+    const milestones = await PaymentMilestone.find({
+      project: { $in: projectIds },
+      status: { $nin: ['paid', 'waived', 'cancelled'] }
+    })
+      .select('name amount totalAmount collectedAmount pendingAmount status percentage dueDate project order')
+      .sort({ order: 1 })
+
+    res.json({
+      success: true,
+      data: {
+        kycVerified,
+        kycStatus: customer?.kyc?.status || 'not_started',
+        milestones: milestones.map(m => {
+          const proj = projects.find(p => p._id.toString() === m.project?.toString())
+          return {
+            _id: m._id,
+            name: m.name,
+            projectId: proj?.projectId,
+            projectTitle: proj?.title,
+            amount: m.totalAmount || m.amount,
+            collected: m.collectedAmount || 0,
+            pending: (m.totalAmount || m.amount) - (m.collectedAmount || 0),
+            status: m.status,
+            percentage: m.percentage,
+            dueDate: m.dueDate,
+            canPay: kycVerified && m.status !== 'paid'
+          }
+        })
+      }
+    })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
