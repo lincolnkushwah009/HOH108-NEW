@@ -279,6 +279,7 @@ export const projectWalletAPI = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  getEmployeeCosts: (projectId) => apiRequest(`/project-wallet/${projectId}/employee-costs`),
 }
 
 // Project P&L API

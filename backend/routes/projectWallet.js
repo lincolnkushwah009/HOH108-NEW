@@ -7,6 +7,7 @@ import PurchaseOrder from '../models/PurchaseOrder.js'
 import VendorInvoice from '../models/VendorInvoice.js'
 import CustomerInvoice from '../models/CustomerInvoice.js'
 import LaborEntry from '../models/LaborEntry.js'
+import User from '../models/User.js'
 
 const router = express.Router()
 
@@ -448,9 +449,40 @@ router.get('/:projectId/pnl', requireModulePermission('all_projects', 'view'), a
     const grossProfit = revenue - cogs
     const grossMargin = revenue > 0 ? parseFloat((grossProfit / revenue * 100).toFixed(1)) : 0
 
+    // --- EMPLOYEE COSTS (allocated from salary based on effort) ---
+    let employeeCost = 0
+    try {
+      // Quick employee cost calculation (simplified version of full endpoint)
+      const projectDoc = await Project.findById(projectId)
+        .select('projectManager originalLead departmentAssignments')
+        .populate('projectManager', 'salary.ctc')
+
+      const hourlyFromCtc = (ctc) => ctc > 0 ? ctc / (12 * 22 * 8) : 0
+
+      // PM cost estimate
+      if (projectDoc?.projectManager?.salary?.ctc) {
+        employeeCost += 40 * hourlyFromCtc(projectDoc.projectManager.salary.ctc)
+      }
+
+      // Design iteration hours
+      const DesignIteration = (await import('../models/DesignIteration.js')).default
+      const designIterations = await DesignIteration.find({ project: projectId })
+        .select('timeline.actualHours timeline.estimatedHours designer')
+        .populate('designer', 'salary.ctc')
+      designIterations.forEach(di => {
+        const hrs = di.timeline?.actualHours || di.timeline?.estimatedHours || 8
+        if (di.designer?.salary?.ctc) employeeCost += hrs * hourlyFromCtc(di.designer.salary.ctc)
+      })
+
+      // Labor entries (already have cost)
+      employeeCost += laborEntries.reduce((s, le) => s + (le.cost?.totalCost || 0), 0)
+    } catch (e) {
+      console.error('Employee cost calc error:', e.message)
+    }
+
     // --- OPERATING EXPENSES ---
     const contingencyUsed = project.budget?.contingencyUsed || 0
-    const opex = contingencyUsed
+    const opex = contingencyUsed + employeeCost
 
     // --- NET PROFIT ---
     const netProfit = grossProfit - opex
@@ -509,6 +541,7 @@ router.get('/:projectId/pnl', requireModulePermission('all_projects', 'view'), a
           grossMargin,
           opex: {
             total: opex,
+            employeeCost: Math.round(employeeCost),
             contingencyUsed
           },
           netProfit,
@@ -528,6 +561,295 @@ router.get('/:projectId/pnl', requireModulePermission('all_projects', 'view'), a
     })
   } catch (error) {
     console.error('Project P&L Error:', error)
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// ============================================
+// GET /api/project-wallet/:projectId/employee-costs
+// Employee cost allocation across project lifecycle
+// ============================================
+router.get('/:projectId/employee-costs', requireModulePermission('all_projects', 'view'), async (req, res) => {
+  try {
+    const { projectId } = req.params
+
+    const project = await Project.findById(projectId)
+      .select('projectId title originalLead customer projectManager teamMembers departmentAssignments')
+      .populate('projectManager', 'name email designation salary.ctc salary.grossSalary')
+      .populate('teamMembers.user', 'name email designation salary.ctc salary.grossSalary')
+      .populate('departmentAssignments.design.lead', 'name email designation salary.ctc salary.grossSalary')
+      .populate('departmentAssignments.design.team.user', 'name email designation salary.ctc salary.grossSalary')
+      .populate('departmentAssignments.operations.lead', 'name email designation salary.ctc salary.grossSalary')
+      .populate('departmentAssignments.operations.team.user', 'name email designation salary.ctc salary.grossSalary')
+
+    if (!project) {
+      return res.status(404).json({ success: false, message: 'Project not found' })
+    }
+
+    // Helper: calculate hourly cost from CTC
+    const hourlyRate = (user) => {
+      const ctc = user?.salary?.ctc || user?.salary?.grossSalary || 0
+      return ctc > 0 ? ctc / (12 * 22 * 8) : 0 // Monthly CTC / 22 working days / 8 hours
+    }
+
+    const employeeMap = {} // userId → aggregated cost data
+
+    const addEmployee = (user, phase, hours, cost, activity) => {
+      if (!user || !user._id) return
+      const uid = user._id.toString()
+      if (!employeeMap[uid]) {
+        employeeMap[uid] = {
+          _id: uid,
+          name: user.name || 'Unknown',
+          email: user.email || '',
+          designation: user.designation || '',
+          ctc: user.salary?.ctc || 0,
+          hourlyRate: hourlyRate(user),
+          phases: {},
+          totalHours: 0,
+          totalCost: 0,
+          activities: []
+        }
+      }
+      if (!employeeMap[uid].phases[phase]) {
+        employeeMap[uid].phases[phase] = { hours: 0, cost: 0, activities: [] }
+      }
+      employeeMap[uid].phases[phase].hours += hours
+      employeeMap[uid].phases[phase].cost += cost
+      if (activity) employeeMap[uid].phases[phase].activities.push(activity)
+      employeeMap[uid].totalHours += hours
+      employeeMap[uid].totalCost += cost
+    }
+
+    // --- 1. PRE-SALES PHASE: Call activities on the original lead ---
+    if (project.originalLead) {
+      try {
+        const Lead = (await import('../models/Lead.js')).default
+        const CallActivity = (await import('../models/CallActivity.js')).default
+
+        const lead = await Lead.findById(project.originalLead)
+          .select('departmentAssignments createdBy assignedTo')
+          .populate('departmentAssignments.preSales.employee', 'name email designation salary.ctc salary.grossSalary')
+          .populate('departmentAssignments.crm.employee', 'name email designation salary.ctc salary.grossSalary')
+          .populate('createdBy', 'name email designation salary.ctc salary.grossSalary')
+
+        // Pre-sales employee assigned to lead
+        if (lead?.departmentAssignments?.preSales?.employee) {
+          const emp = lead.departmentAssignments.preSales.employee
+          // Estimate hours: from assignedAt to qualification (or 2 weeks default)
+          const assignedAt = lead.departmentAssignments.preSales.assignedAt
+          const estimatedDays = 10 // average pre-sales engagement
+          const estimatedHours = estimatedDays * 2 // 2 hours/day on a lead
+          const cost = estimatedHours * hourlyRate(emp)
+          addEmployee(emp, 'Pre-Sales', estimatedHours, cost, 'Lead qualification & follow-up')
+        }
+
+        // CRM coordinator
+        if (lead?.departmentAssignments?.crm?.employee) {
+          const emp = lead.departmentAssignments.crm.employee
+          const estimatedHours = 5 // CRM coordination
+          addEmployee(emp, 'Pre-Sales', estimatedHours, estimatedHours * hourlyRate(emp), 'CRM coordination')
+        }
+
+        // Call activities - actual tracked effort
+        const calls = await CallActivity.find({ lead: project.originalLead })
+          .select('calledBy duration status')
+          .populate('calledBy', 'name email designation salary.ctc salary.grossSalary')
+
+        calls.forEach(call => {
+          if (call.calledBy) {
+            const hours = (call.duration || 300) / 3600 // duration in seconds → hours (5 min default)
+            const cost = hours * hourlyRate(call.calledBy)
+            addEmployee(call.calledBy, 'Pre-Sales', hours, cost, `Call (${call.status})`)
+          }
+        })
+      } catch (e) {
+        console.error('Pre-sales cost error:', e.message)
+      }
+    }
+
+    // --- 2. SALES PHASE: Quotation & Sales Order effort ---
+    try {
+      const SalesOrder = (await import('../models/SalesOrder.js')).default
+      const Quotation = (await import('../models/Quotation.js')).default
+
+      const quotations = await Quotation.find({ project: projectId })
+        .select('preparedBy createdBy quotationDate')
+        .populate('preparedBy', 'name email designation salary.ctc salary.grossSalary')
+        .populate('createdBy', 'name email designation salary.ctc salary.grossSalary')
+
+      quotations.forEach(q => {
+        const emp = q.preparedBy || q.createdBy
+        if (emp) {
+          const hours = 4 // avg hours per quotation preparation
+          addEmployee(emp, 'Sales', hours, hours * hourlyRate(emp), 'Quotation preparation')
+        }
+      })
+
+      const salesOrders = await SalesOrder.find({ project: projectId })
+        .select('createdBy')
+        .populate('createdBy', 'name email designation salary.ctc salary.grossSalary')
+
+      salesOrders.forEach(so => {
+        if (so.createdBy) {
+          const hours = 3 // avg hours per SO
+          addEmployee(so.createdBy, 'Sales', hours, hours * hourlyRate(so.createdBy), 'Sales order processing')
+        }
+      })
+
+      // Sales department assignment from lead
+      if (project.originalLead) {
+        const Lead = (await import('../models/Lead.js')).default
+        const lead = await Lead.findById(project.originalLead)
+          .select('departmentAssignments.sales.employee')
+          .populate('departmentAssignments.sales.employee', 'name email designation salary.ctc salary.grossSalary')
+
+        if (lead?.departmentAssignments?.sales?.employee) {
+          const emp = lead.departmentAssignments.sales.employee
+          const hours = 15 // avg total sales effort per project
+          addEmployee(emp, 'Sales', hours, hours * hourlyRate(emp), 'Sales management & closure')
+        }
+      }
+    } catch (e) {
+      console.error('Sales cost error:', e.message)
+    }
+
+    // --- 3. DESIGN PHASE: Design iterations ---
+    try {
+      const DesignIteration = (await import('../models/DesignIteration.js')).default
+
+      const iterations = await DesignIteration.find({ project: projectId })
+        .select('designer designTeam timeline.actualHours timeline.estimatedHours version phase')
+        .populate('designer', 'name email designation salary.ctc salary.grossSalary')
+        .populate('designTeam.user', 'name email designation salary.ctc salary.grossSalary')
+
+      iterations.forEach(di => {
+        const actualHours = di.timeline?.actualHours || di.timeline?.estimatedHours || 8
+        if (di.designer) {
+          addEmployee(di.designer, 'Design', actualHours, actualHours * hourlyRate(di.designer), `Design v${di.version} (${di.phase})`)
+        }
+        (di.designTeam || []).forEach(tm => {
+          if (tm.user) {
+            const memberHours = actualHours * 0.5 // team members ~50% of lead hours
+            addEmployee(tm.user, 'Design', memberHours, memberHours * hourlyRate(tm.user), `Design v${di.version} support`)
+          }
+        })
+      })
+
+      // Design lead from project assignment
+      if (project.departmentAssignments?.design?.lead) {
+        const lead = project.departmentAssignments.design.lead
+        if (lead?.name && !employeeMap[lead._id?.toString()]?.phases?.Design) {
+          const hours = 10 // design oversight
+          addEmployee(lead, 'Design', hours, hours * hourlyRate(lead), 'Design oversight & review')
+        }
+      }
+    } catch (e) {
+      console.error('Design cost error:', e.message)
+    }
+
+    // --- 4. PROJECT MANAGEMENT: PM and operations team ---
+    if (project.projectManager?.name) {
+      // Estimate PM hours based on project duration or default
+      const hours = 40 // avg PM hours per project
+      addEmployee(project.projectManager, 'Project Management', hours, hours * hourlyRate(project.projectManager), 'Project management & coordination')
+    }
+
+    if (project.departmentAssignments?.operations?.lead) {
+      const lead = project.departmentAssignments.operations.lead
+      if (lead?.name) {
+        const hours = 20 // operations oversight
+        addEmployee(lead, 'Project Management', hours, hours * hourlyRate(lead), 'Operations management')
+      }
+    }
+
+    ;(project.departmentAssignments?.operations?.team || []).forEach(tm => {
+      if (tm.user?.name) {
+        const hours = 15 // team member involvement
+        addEmployee(tm.user, 'Project Management', hours, hours * hourlyRate(tm.user), `${tm.role || 'Operations'} support`)
+      }
+    })
+
+    // --- 5. EXECUTION: Labor entries (actual tracked hours) ---
+    const laborEntries = await LaborEntry.find({
+      project: projectId,
+      status: { $in: ['approved', 'submitted', 'completed'] }
+    })
+      .select('employee hours.total cost.totalCost activity.name entryDate employeeDetails')
+      .populate('employee', 'name email designation salary.ctc salary.grossSalary')
+
+    laborEntries.forEach(le => {
+      if (le.employee) {
+        const hours = le.hours?.total || 0
+        const cost = le.cost?.totalCost || (hours * hourlyRate(le.employee))
+        addEmployee(le.employee, 'Execution', hours, cost, le.activity?.name || 'Site work')
+      }
+    })
+
+    // --- 6. PROCUREMENT: PO creators & approvers ---
+    const purchaseOrders = await PurchaseOrder.find({ project: projectId })
+      .select('createdBy approvedBy poNumber')
+      .populate('createdBy', 'name email designation salary.ctc salary.grossSalary')
+      .populate('approvedBy', 'name email designation salary.ctc salary.grossSalary')
+
+    purchaseOrders.forEach(po => {
+      if (po.createdBy) {
+        addEmployee(po.createdBy, 'Procurement', 2, 2 * hourlyRate(po.createdBy), `PO ${po.poNumber} creation`)
+      }
+      if (po.approvedBy && po.approvedBy._id?.toString() !== po.createdBy?._id?.toString()) {
+        addEmployee(po.approvedBy, 'Procurement', 1, 1 * hourlyRate(po.approvedBy), `PO ${po.poNumber} approval`)
+      }
+    })
+
+    // --- BUILD RESPONSE ---
+    const employees = Object.values(employeeMap).sort((a, b) => b.totalCost - a.totalCost)
+
+    // Phase summary
+    const phaseSummary = {}
+    employees.forEach(emp => {
+      Object.entries(emp.phases).forEach(([phase, data]) => {
+        if (!phaseSummary[phase]) phaseSummary[phase] = { hours: 0, cost: 0, employees: 0 }
+        phaseSummary[phase].hours += data.hours
+        phaseSummary[phase].cost += data.cost
+        phaseSummary[phase].employees += 1
+      })
+    })
+
+    const totalEmployeeCost = employees.reduce((s, e) => s + e.totalCost, 0)
+    const totalHours = employees.reduce((s, e) => s + e.totalHours, 0)
+
+    res.json({
+      success: true,
+      data: {
+        project: { projectId: project.projectId, title: project.title },
+        summary: {
+          totalEmployees: employees.length,
+          totalHours: parseFloat(totalHours.toFixed(1)),
+          totalCost: Math.round(totalEmployeeCost),
+          avgCostPerHour: totalHours > 0 ? Math.round(totalEmployeeCost / totalHours) : 0
+        },
+        phaseSummary: Object.entries(phaseSummary).map(([phase, data]) => ({
+          phase,
+          hours: parseFloat(data.hours.toFixed(1)),
+          cost: Math.round(data.cost),
+          employees: data.employees
+        })).sort((a, b) => {
+          const order = ['Pre-Sales', 'Sales', 'Design', 'Project Management', 'Procurement', 'Execution']
+          return order.indexOf(a.phase) - order.indexOf(b.phase)
+        }),
+        employees: employees.map(e => ({
+          ...e,
+          totalHours: parseFloat(e.totalHours.toFixed(1)),
+          totalCost: Math.round(e.totalCost),
+          hourlyRate: Math.round(e.hourlyRate),
+          phases: Object.fromEntries(
+            Object.entries(e.phases).map(([k, v]) => [k, { hours: parseFloat(v.hours.toFixed(1)), cost: Math.round(v.cost), activities: v.activities }])
+          )
+        }))
+      }
+    })
+  } catch (error) {
+    console.error('Employee cost allocation error:', error)
     res.status(500).json({ success: false, message: error.message })
   }
 })
