@@ -1,16 +1,16 @@
 import crypto from 'crypto'
 
 /**
- * PhonePe Payment Gateway Integration
- * Uses PhonePe Standard Checkout (PG) APIs
- * Docs: https://developer.phonepe.com/v1/reference/pay-api
+ * PhonePe Payment Gateway Integration - PG v2 API
+ * Uses Client ID + Client Secret + Client Version (new format)
+ * Docs: https://developer.phonepe.com/v1/reference/pay-api-1
  */
 
 const PHONEPE_CONFIG = {
-  merchantId: process.env.PHONEPE_MERCHANT_ID || '',
-  saltKey: process.env.PHONEPE_SALT_KEY || '',
-  saltIndex: process.env.PHONEPE_SALT_INDEX || '1',
-  // Use UAT for testing, production URL for live
+  clientId: process.env.PHONEPE_CLIENT_ID || '',
+  clientSecret: process.env.PHONEPE_CLIENT_SECRET || '',
+  clientVersion: process.env.PHONEPE_CLIENT_VERSION || '1',
+  // Production vs Sandbox
   baseUrl: process.env.PHONEPE_ENV === 'production'
     ? 'https://api.phonepe.com/apis/hermes'
     : 'https://api-preprod.phonepe.com/apis/pg-sandbox',
@@ -19,43 +19,42 @@ const PHONEPE_CONFIG = {
 }
 
 /**
- * Generate SHA256 checksum for PhonePe API
+ * Generate X-VERIFY header for PhonePe PG v2
+ * Format: SHA256(base64Payload + endpoint + clientSecret) + ### + clientVersion
  */
-function generateChecksum(payload, endpoint) {
-  const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64')
-  const string = base64Payload + endpoint + PHONEPE_CONFIG.saltKey
+function generateChecksum(base64Payload, endpoint) {
+  const string = base64Payload + endpoint + PHONEPE_CONFIG.clientSecret
   const sha256 = crypto.createHash('sha256').update(string).digest('hex')
-  return {
-    base64Payload,
-    checksum: sha256 + '###' + PHONEPE_CONFIG.saltIndex
-  }
+  return sha256 + '###' + PHONEPE_CONFIG.clientVersion
+}
+
+/**
+ * Generate checksum for status check (GET)
+ * Format: SHA256(endpoint + clientSecret) + ### + clientVersion
+ */
+function generateStatusChecksum(endpoint) {
+  const string = endpoint + PHONEPE_CONFIG.clientSecret
+  const sha256 = crypto.createHash('sha256').update(string).digest('hex')
+  return sha256 + '###' + PHONEPE_CONFIG.clientVersion
 }
 
 /**
  * Verify callback checksum from PhonePe
  */
 export function verifyChecksum(responseBase64, receivedChecksum) {
-  const string = responseBase64 + PHONEPE_CONFIG.saltKey
+  const string = responseBase64 + '/pg/v1/status' + PHONEPE_CONFIG.clientSecret
   const sha256 = crypto.createHash('sha256').update(string).digest('hex')
-  const expectedChecksum = sha256 + '###' + PHONEPE_CONFIG.saltIndex
-  return expectedChecksum === receivedChecksum
+  const expected = sha256 + '###' + PHONEPE_CONFIG.clientVersion
+  return expected === receivedChecksum
 }
 
 /**
- * Initiate a payment via PhonePe Standard Checkout
- * @param {object} opts
- * @param {string} opts.merchantTransactionId - Unique transaction ID (e.g., PM-projectId-milestoneId-timestamp)
- * @param {number} opts.amount - Amount in RUPEES (will be converted to paise)
- * @param {string} opts.customerName - Customer name
- * @param {string} opts.customerPhone - Customer mobile number
- * @param {string} opts.customerEmail - Customer email
- * @param {string} opts.purpose - Payment purpose description
- * @returns {object} { success, paymentUrl, merchantTransactionId }
+ * Initiate a payment via PhonePe Standard Checkout (PG v2)
  */
 export async function initiatePayment(opts) {
   try {
-    if (!PHONEPE_CONFIG.merchantId || !PHONEPE_CONFIG.saltKey) {
-      console.warn('PhonePe not configured. Set PHONEPE_MERCHANT_ID and PHONEPE_SALT_KEY in .env')
+    if (!PHONEPE_CONFIG.clientId || !PHONEPE_CONFIG.clientSecret) {
+      console.warn('PhonePe not configured. Set PHONEPE_CLIENT_ID and PHONEPE_CLIENT_SECRET in .env')
       return {
         success: false,
         message: 'Payment gateway not configured. Contact admin.',
@@ -74,10 +73,10 @@ export async function initiatePayment(opts) {
     } = opts
 
     const payload = {
-      merchantId: PHONEPE_CONFIG.merchantId,
+      merchantId: PHONEPE_CONFIG.clientId,
       merchantTransactionId,
       merchantUserId: `CUST_${customerPhone}`,
-      amount: Math.round(amount * 100), // Convert to paise
+      amount: Math.round(amount * 100), // Rupees to Paise
       redirectUrl: `${PHONEPE_CONFIG.redirectUrl}?txnId=${merchantTransactionId}&status=success`,
       redirectMode: 'REDIRECT',
       callbackUrl: PHONEPE_CONFIG.callbackUrl,
@@ -87,15 +86,16 @@ export async function initiatePayment(opts) {
       }
     }
 
+    const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64')
     const endpoint = '/pg/v1/pay'
-    const { base64Payload, checksum } = generateChecksum(payload, endpoint)
+    const checksum = generateChecksum(base64Payload, endpoint)
 
     const response = await fetch(`${PHONEPE_CONFIG.baseUrl}${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-VERIFY': checksum,
-        'X-MERCHANT-ID': PHONEPE_CONFIG.merchantId
+        'X-MERCHANT-ID': PHONEPE_CONFIG.clientId
       },
       body: JSON.stringify({ request: base64Payload })
     })
@@ -123,27 +123,23 @@ export async function initiatePayment(opts) {
 }
 
 /**
- * Check payment status
- * @param {string} merchantTransactionId
- * @returns {object} Payment status details
+ * Check payment status (PG v2)
  */
 export async function checkPaymentStatus(merchantTransactionId) {
   try {
-    if (!PHONEPE_CONFIG.merchantId || !PHONEPE_CONFIG.saltKey) {
+    if (!PHONEPE_CONFIG.clientId || !PHONEPE_CONFIG.clientSecret) {
       return { success: false, message: 'Payment gateway not configured' }
     }
 
-    const endpoint = `/pg/v1/status/${PHONEPE_CONFIG.merchantId}/${merchantTransactionId}`
-    const string = endpoint + PHONEPE_CONFIG.saltKey
-    const sha256 = crypto.createHash('sha256').update(string).digest('hex')
-    const checksum = sha256 + '###' + PHONEPE_CONFIG.saltIndex
+    const endpoint = `/pg/v1/status/${PHONEPE_CONFIG.clientId}/${merchantTransactionId}`
+    const checksum = generateStatusChecksum(endpoint)
 
     const response = await fetch(`${PHONEPE_CONFIG.baseUrl}${endpoint}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'X-VERIFY': checksum,
-        'X-MERCHANT-ID': PHONEPE_CONFIG.merchantId
+        'X-MERCHANT-ID': PHONEPE_CONFIG.clientId
       }
     })
 
@@ -153,7 +149,7 @@ export async function checkPaymentStatus(merchantTransactionId) {
       success: data.success,
       code: data.code,
       state: data.data?.state, // COMPLETED, PENDING, FAILED
-      amount: data.data?.amount ? data.data.amount / 100 : 0, // Paise to rupees
+      amount: data.data?.amount ? data.data.amount / 100 : 0,
       transactionId: data.data?.transactionId,
       merchantTransactionId: data.data?.merchantTransactionId,
       paymentInstrument: data.data?.paymentInstrument,
@@ -166,18 +162,18 @@ export async function checkPaymentStatus(merchantTransactionId) {
 }
 
 /**
- * Process refund
+ * Initiate refund (PG v2)
  */
 export async function initiateRefund(opts) {
   try {
-    if (!PHONEPE_CONFIG.merchantId || !PHONEPE_CONFIG.saltKey) {
+    if (!PHONEPE_CONFIG.clientId || !PHONEPE_CONFIG.clientSecret) {
       return { success: false, message: 'Payment gateway not configured' }
     }
 
     const { originalTransactionId, refundTransactionId, amount } = opts
 
     const payload = {
-      merchantId: PHONEPE_CONFIG.merchantId,
+      merchantId: PHONEPE_CONFIG.clientId,
       merchantUserId: 'SYSTEM',
       originalTransactionId,
       merchantTransactionId: refundTransactionId,
@@ -185,8 +181,9 @@ export async function initiateRefund(opts) {
       callbackUrl: PHONEPE_CONFIG.callbackUrl
     }
 
+    const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64')
     const endpoint = '/pg/v1/refund'
-    const { base64Payload, checksum } = generateChecksum(payload, endpoint)
+    const checksum = generateChecksum(base64Payload, endpoint)
 
     const response = await fetch(`${PHONEPE_CONFIG.baseUrl}${endpoint}`, {
       method: 'POST',
