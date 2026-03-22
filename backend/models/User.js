@@ -100,6 +100,98 @@ export const MODULE_PERMISSION_MAP = {
 // All module permission keys (for iteration)
 export const ALL_MODULE_PERMISSION_KEYS = Object.values(MODULE_PERMISSION_MAP).map(v => v.key)
 
+// ============================================
+// ONBOARDING CHECKLIST TEMPLATE (Indian Compliance)
+// ============================================
+export const ONBOARDING_CHECKLIST_TEMPLATE = [
+  // --- IDENTITY (KYC) ---
+  { category: 'identity', name: 'Aadhar Card', documentType: 'aadhar_card', isMandatory: true },
+  { category: 'identity', name: 'PAN Card', documentType: 'pan_card', isMandatory: true },
+  { category: 'identity', name: 'Passport Size Photo', documentType: 'photo', isMandatory: true },
+  { category: 'identity', name: 'Passport', documentType: 'passport', isMandatory: false },
+
+  // --- EMPLOYMENT ---
+  { category: 'employment', name: 'Resume / CV', documentType: 'resume', isMandatory: true },
+  { category: 'employment', name: 'Signed Offer Letter', documentType: 'offer_letter', isMandatory: true },
+  { category: 'employment', name: 'Relieving Letter (Previous)', documentType: 'relieving_letter_prev', isMandatory: true },
+  { category: 'employment', name: 'Experience Letter (Previous)', documentType: 'experience_letter_prev', isMandatory: true },
+  { category: 'employment', name: 'Last 3 Months Salary Slips', documentType: 'salary_slip_prev', isMandatory: true },
+  { category: 'employment', name: 'NDA Signed', documentType: 'nda_signed', isMandatory: true },
+  { category: 'employment', name: 'Code of Conduct Signed', documentType: 'code_of_conduct_signed', isMandatory: true },
+
+  // --- EDUCATION ---
+  { category: 'education', name: '10th Marksheet', documentType: 'education_certificate_10th', isMandatory: true },
+  { category: 'education', name: '12th Marksheet', documentType: 'education_certificate_12th', isMandatory: true },
+  { category: 'education', name: 'Graduation Certificate', documentType: 'education_certificate_graduation', isMandatory: true },
+  { category: 'education', name: 'Post-Graduation (if applicable)', documentType: 'education_certificate_post_graduation', isMandatory: false },
+
+  // --- BANKING ---
+  { category: 'banking', name: 'Bank Passbook (First Page)', documentType: 'bank_passbook', isMandatory: true },
+  { category: 'banking', name: 'Cancelled Cheque', documentType: 'cancelled_cheque', isMandatory: true },
+
+  // --- STATUTORY (PF / ESI / Gratuity) ---
+  { category: 'statutory', name: 'EPF Form 11 (New Member)', documentType: 'form_11', isMandatory: true },
+  { category: 'statutory', name: 'EPF Form 2 (Nomination)', documentType: 'form_2_nomination', isMandatory: true },
+  { category: 'statutory', name: 'Gratuity Form F (Nomination)', documentType: 'gratuity_nomination', isMandatory: true },
+  { category: 'statutory', name: 'PF Transfer Form 13 (if applicable)', documentType: 'pf_transfer_form_13', isMandatory: false },
+  { category: 'statutory', name: 'UAN Card (if existing)', documentType: 'uan_card', isMandatory: false },
+  { category: 'statutory', name: 'ESIC Form (if applicable)', documentType: 'esic_form', isMandatory: false },
+
+  // --- TAX (IT Declaration) ---
+  { category: 'tax', name: 'Form 12BB (Investment Declaration)', documentType: 'form_12bb', isMandatory: true },
+  { category: 'tax', name: 'Tax Regime Declaration (Old/New)', documentType: 'tax_regime_declaration', isMandatory: true },
+  { category: 'tax', name: 'Form 16 from Previous Employer', documentType: 'form_16', isMandatory: false },
+  { category: 'tax', name: 'Address Proof (Current)', documentType: 'address_proof', isMandatory: true },
+
+  // --- BACKGROUND VERIFICATION ---
+  { category: 'bgv', name: 'Background Verification Report', documentType: 'background_verification', isMandatory: true },
+  { category: 'bgv', name: 'Medical Fitness Certificate', documentType: 'medical_certificate', isMandatory: true },
+  { category: 'bgv', name: 'Police Verification (if applicable)', documentType: 'police_verification', isMandatory: false },
+]
+
+// ============================================
+// IT RETURNS DOCUMENT CHECKLIST (per Financial Year)
+// ============================================
+export const IT_RETURNS_CHECKLIST = [
+  // Employer must issue/collect these
+  { name: 'Form 12BB - Investment Declaration', documentType: 'form_12bb', isMandatory: true, deadline: 'April (start of FY)', issuedBy: 'employee' },
+  { name: 'Tax Regime Declaration', documentType: 'tax_regime_declaration', isMandatory: true, deadline: 'April (start of FY)', issuedBy: 'employee' },
+  { name: 'IT Declaration (Provisional)', documentType: 'it_declaration', isMandatory: true, deadline: 'April', issuedBy: 'employee' },
+  { name: 'IT Declaration (Revised)', documentType: 'it_declaration_revised', isMandatory: false, deadline: 'October', issuedBy: 'employee' },
+  { name: 'Investment Proofs Submission', documentType: 'it_declaration_final', isMandatory: true, deadline: 'January 31', issuedBy: 'employee' },
+
+  // Section 80C Proofs
+  { name: 'LIC Premium Receipt', documentType: 'proof_80c_lic', isMandatory: false, section: '80C', maxLimit: 150000 },
+  { name: 'PPF Passbook/Receipt', documentType: 'proof_80c_ppf', isMandatory: false, section: '80C', maxLimit: 150000 },
+  { name: 'ELSS Fund Statement', documentType: 'proof_80c_elss', isMandatory: false, section: '80C', maxLimit: 150000 },
+  { name: 'NPS Statement', documentType: 'proof_80c_nps', isMandatory: false, section: '80CCD(1B)', maxLimit: 50000 },
+  { name: 'Children Tuition Fee Receipt', documentType: 'proof_80c_tuition_fees', isMandatory: false, section: '80C', maxLimit: 150000 },
+  { name: 'Home Loan Principal Certificate', documentType: 'proof_80c_home_loan_principal', isMandatory: false, section: '80C', maxLimit: 150000 },
+
+  // Section 80D
+  { name: 'Health Insurance Premium (Self)', documentType: 'proof_80d_health_insurance', isMandatory: false, section: '80D', maxLimit: 25000 },
+  { name: 'Health Insurance Premium (Parents)', documentType: 'proof_80d_parents_health', isMandatory: false, section: '80D', maxLimit: 50000 },
+
+  // Section 24(b)
+  { name: 'Home Loan Interest Certificate', documentType: 'proof_24b_home_loan_interest', isMandatory: false, section: '24(b)', maxLimit: 200000 },
+  { name: 'Home Loan Sanction Letter', documentType: 'proof_home_loan_sanction', isMandatory: false, section: '24(b)' },
+
+  // HRA
+  { name: 'Rent Receipts (Monthly)', documentType: 'proof_hra_rent_receipt', isMandatory: false, section: '10(13A)' },
+  { name: 'Rental Agreement', documentType: 'proof_hra_rental_agreement', isMandatory: false, section: '10(13A)' },
+  { name: 'Landlord PAN (if rent > 1L/year)', documentType: 'proof_hra_landlord_pan', isMandatory: false, section: '10(13A)' },
+
+  // Employer-issued
+  { name: 'Form 16 (TDS Certificate)', documentType: 'form_16_generated', isMandatory: true, deadline: 'June 15', issuedBy: 'employer' },
+  { name: 'Form 16 Part A (from TRACES)', documentType: 'form_16_part_a', isMandatory: true, deadline: 'June 15', issuedBy: 'employer' },
+  { name: 'Form 16 Part B (Annexure)', documentType: 'form_16_part_b', isMandatory: true, deadline: 'June 15', issuedBy: 'employer' },
+  { name: 'Form 12BA (Perquisites)', documentType: 'form_12ba', isMandatory: false, deadline: 'June 15', issuedBy: 'employer' },
+  { name: 'Form 26AS / AIS Download', documentType: 'form_26as', isMandatory: true, deadline: 'Before ITR filing', issuedBy: 'IT Department' },
+
+  // Employee ITR
+  { name: 'ITR Acknowledgment', documentType: 'itr_acknowledgment', isMandatory: true, deadline: 'July 31', issuedBy: 'employee' },
+]
+
 // Module grouping for UI display
 export const MODULE_GROUPS = {
   'Sales & CRM': ['crm_dashboard', 'leads', 'call_activities', 'customers', 'sales_orders', 'quotations', 'boq_generator', 'dispatches', 'lead_scoring', 'surveys', 'sales_approvals', 'design_iterations', 'channel_partners'],
@@ -1035,44 +1127,142 @@ const userSchema = new mongoose.Schema({
     documentType: {
       type: String,
       enum: [
-        // T-2 Onboarding Documents
-        'aadhar_card',
-        'pan_card',
-        'passport',
-        'voter_id',
-        'driving_license',
-        'photo',
-        'resume',
-        'offer_letter',
-        'appointment_letter',
-        'joining_letter',
-        'relieving_letter_prev',
-        'experience_letter_prev',
-        'salary_slip_prev',
-        'education_certificate_10th',
-        'education_certificate_12th',
-        'education_certificate_graduation',
-        'education_certificate_post_graduation',
-        'education_certificate_other',
-        'bank_passbook',
-        'cancelled_cheque',
-        'address_proof',
-        'background_verification',
-        'medical_certificate',
-        'pf_form',
-        'esic_form',
-        'form_11',
-        'form_2_nomination',
-        'gratuity_nomination',
-        // Generated Documents
+        // ============================================
+        // MANDATORY ONBOARDING DOCUMENTS (Indian Compliance)
+        // ============================================
+
+        // --- Identity Proof (KYC) ---
+        'aadhar_card',                     // Aadhar Card (UID) - MANDATORY for PF/ESI
+        'pan_card',                        // PAN Card - MANDATORY for TDS
+        'passport',                        // Passport (if available)
+        'voter_id',                        // Voter ID
+        'driving_license',                 // Driving License
+
+        // --- Photographs ---
+        'photo',                           // Passport-size photograph
+        'photo_with_family',               // Family photo (for records)
+
+        // --- Employment Documents ---
+        'resume',                          // Resume / CV
+        'offer_letter',                    // Offer Letter (company issued)
+        'appointment_letter',              // Appointment Letter (company issued)
+        'joining_letter',                  // Joining Report
+        'relieving_letter_prev',           // Relieving Letter from previous employer - MANDATORY
+        'experience_letter_prev',          // Experience Letter from previous employer
+        'salary_slip_prev',               // Last 3 months salary slips - MANDATORY for BGV
+        'nda_signed',                      // Non-Disclosure Agreement
+        'code_of_conduct_signed',          // Company Code of Conduct acknowledgment
+
+        // --- Education Certificates ---
+        'education_certificate_10th',      // 10th Marksheet - MANDATORY
+        'education_certificate_12th',      // 12th Marksheet - MANDATORY
+        'education_certificate_graduation', // Degree Certificate - MANDATORY
+        'education_certificate_post_graduation', // PG Degree (if applicable)
+        'education_certificate_other',     // Diploma / Professional certification
+
+        // --- Address Proof ---
+        'address_proof',                   // Current address proof
+        'address_proof_permanent',         // Permanent address proof
+
+        // --- Banking ---
+        'bank_passbook',                   // Bank Passbook first page - MANDATORY for salary
+        'cancelled_cheque',                // Cancelled cheque - MANDATORY for salary
+
+        // --- Background Verification (BGV) ---
+        'background_verification',         // BGV Report
+        'police_verification',             // Police Verification Certificate
+        'reference_check',                 // Reference check report
+        'medical_certificate',             // Medical fitness certificate
+        'drug_test_report',                // Drug test (if required)
+
+        // --- Statutory Forms (PF / ESI / Gratuity) ---
+        'pf_form',                         // EPF Form (Composite Declaration)
+        'esic_form',                       // ESIC Form 1 (IP details)
+        'form_11',                         // EPF Form 11 (New member declaration) - MANDATORY
+        'form_2_nomination',               // EPF Form 2 (Nomination) - MANDATORY
+        'gratuity_nomination',             // Form F (Gratuity Nomination) - MANDATORY
+        'form_f_gratuity',                 // Gratuity Form F
+        'pf_transfer_form_13',             // Form 13 (PF Transfer from previous employer)
+        'uan_card',                        // Universal Account Number card
+
+        // ============================================
+        // INCOME TAX & TDS DOCUMENTS (Indian Compliance)
+        // ============================================
+
+        // --- IT Declaration ---
+        'form_12bb',                       // Form 12BB - Investment Declaration - MANDATORY for TDS
+        'it_declaration',                  // Annual IT Declaration (start of FY)
+        'it_declaration_revised',          // Revised IT Declaration (mid-year)
+        'it_declaration_final',            // Final IT Proofs (Jan-Feb)
+
+        // --- Section 80C Investment Proofs ---
+        'proof_80c_lic',                   // LIC Premium receipts
+        'proof_80c_ppf',                   // PPF Passbook / receipts
+        'proof_80c_elss',                  // ELSS Mutual Fund statement
+        'proof_80c_nps',                   // NPS Contribution (80CCD)
+        'proof_80c_tuition_fees',          // Children tuition fees receipts
+        'proof_80c_home_loan_principal',   // Home loan principal repayment
+        'proof_80c_sukanya',               // Sukanya Samriddhi Account
+        'proof_80c_fixed_deposit',         // 5-year Tax Saving FD receipt
+        'proof_80c_nsc',                   // National Savings Certificate
+
+        // --- Section 80D Medical Insurance ---
+        'proof_80d_health_insurance',      // Mediclaim / Health Insurance premium receipt
+        'proof_80d_parents_health',        // Parents health insurance
+        'proof_80d_preventive_checkup',    // Preventive health checkup bills
+
+        // --- Section 24(b) Home Loan Interest ---
+        'proof_24b_home_loan_interest',    // Home loan interest certificate
+        'proof_24b_home_loan_certificate', // Lender certificate (provisional/actual)
+        'proof_home_possession',           // Property possession letter
+        'proof_home_loan_sanction',        // Home loan sanction letter
+
+        // --- HRA Exemption (Section 10(13A)) ---
+        'proof_hra_rent_receipt',          // Monthly rent receipts
+        'proof_hra_rental_agreement',      // Rental agreement
+        'proof_hra_landlord_pan',          // Landlord PAN (if rent > 1L/year)
+
+        // --- Other IT Sections ---
+        'proof_80e_education_loan',        // Education loan interest certificate
+        'proof_80g_donations',             // Donation receipts (80G)
+        'proof_80tta_savings_interest',    // Savings account interest certificate
+        'proof_80ee_first_home',           // First-time home buyer extra deduction
+        'proof_80dd_disabled_dependent',   // Disability certificate for dependent
+        'proof_80ddb_medical_treatment',   // Medical treatment bills (specified diseases)
+        'proof_80u_own_disability',        // Own disability certificate
+
+        // --- Form 16 & IT Returns ---
+        'form_16',                         // Form 16 (TDS Certificate) - MANDATORY to issue
+        'form_16_part_a',                  // Form 16 Part A (TRACES)
+        'form_16_part_b',                  // Form 16 Part B (Annexure)
+        'form_12ba',                       // Statement of Perquisites (if applicable)
+        'itr_acknowledgment',              // ITR filing acknowledgment
+        'itr_form',                        // ITR Form (ITR-1/ITR-2)
+        'form_26as',                       // Tax Credit Statement (26AS / AIS)
+        'ais_tis',                         // Annual Information Statement / TIS
+
+        // --- TDS Related ---
+        'form_15g',                        // Form 15G (no TDS on interest - below threshold)
+        'form_15h',                        // Form 15H (no TDS - senior citizen)
+        'tds_challan',                     // TDS Challan (26QB/26QC)
+        'tax_regime_declaration',          // Old vs New Tax Regime declaration
+
+        // ============================================
+        // COMPANY GENERATED DOCUMENTS
+        // ============================================
         'relieving_letter',
         'experience_letter',
         'bonafide_certificate',
         'salary_certificate',
         'noc_letter',
         'appraisal_letter',
+        'increment_letter',
         'warning_letter',
+        'show_cause_notice',
         'termination_letter',
+        'full_and_final_statement',
+        'form_16_generated',              // Company-generated Form 16
+
         // Other
         'other'
       ],
@@ -1173,6 +1363,137 @@ const userSchema = new mongoose.Schema({
     }],
 
     lastUpdated: { type: Date }
+  },
+
+  // ============================================
+  // INCOME TAX & TDS COMPLIANCE (Indian)
+  // ============================================
+  taxDeclaration: {
+    // Financial Year
+    financialYear: { type: String, default: '2025-26' },
+    assessmentYear: { type: String, default: '2026-27' },
+
+    // Tax Regime Selection
+    taxRegime: {
+      type: String,
+      enum: ['old', 'new'],
+      default: 'new'  // New regime is default from FY 2023-24
+    },
+    regimeLocked: { type: Boolean, default: false }, // Once locked, cannot change in same FY
+
+    // Section 80C (Max 1,50,000)
+    section80C: {
+      lic: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      ppf: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      elss: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      nps: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      tuitionFees: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      homeLoanPrincipal: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      sukanyaSamriddhi: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      taxSaverFD: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      nsc: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      epfContribution: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      total: { type: Number, default: 0 }, // Max 1,50,000
+    },
+
+    // Section 80CCD(1B) - Additional NPS (Max 50,000)
+    section80CCD1B: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+
+    // Section 80D - Medical Insurance
+    section80D: {
+      selfAndFamily: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } }, // Max 25,000 (50,000 if senior)
+      parents: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } }, // Max 25,000 (50,000 if senior)
+      preventiveCheckup: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } }, // Max 5,000 (included in above)
+    },
+
+    // Section 24(b) - Home Loan Interest (Max 2,00,000 for self-occupied)
+    section24b: {
+      homeLoanInterest: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } },
+      lenderName: String,
+      lenderPAN: String,
+      propertyAddress: String,
+      loanAccountNumber: String,
+      isSelfOccupied: { type: Boolean, default: true },
+    },
+
+    // HRA Exemption (Section 10(13A))
+    hraExemption: {
+      monthlyRent: { type: Number, default: 0 },
+      landlordName: String,
+      landlordPAN: String, // Mandatory if annual rent > 1,00,000
+      rentalAddress: String,
+      rentReceiptsSubmitted: { type: Boolean, default: false },
+    },
+
+    // Other Sections
+    section80E: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } }, // Education loan interest
+    section80G: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } }, // Donations
+    section80TTA: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } }, // Savings interest (Max 10,000)
+    section80DD: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } }, // Disabled dependent
+    section80DDB: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } }, // Medical treatment
+    section80U: { declared: { type: Number, default: 0 }, actual: { type: Number, default: 0 }, proofSubmitted: { type: Boolean, default: false } }, // Own disability
+
+    // Income from Other Sources (for TDS calculation)
+    otherIncome: {
+      previousEmployerIncome: { type: Number, default: 0 }, // Salary from previous employer in same FY
+      letOutPropertyIncome: { type: Number, default: 0 },    // Rental income
+      fixedDepositInterest: { type: Number, default: 0 },    // FD interest
+      otherIncome: { type: Number, default: 0 },             // Any other taxable income
+    },
+
+    // TDS Computation
+    tdsComputation: {
+      totalIncome: { type: Number, default: 0 },
+      totalDeductions: { type: Number, default: 0 },
+      taxableIncome: { type: Number, default: 0 },
+      taxPayable: { type: Number, default: 0 },
+      surcharge: { type: Number, default: 0 },
+      educationCess: { type: Number, default: 0 },  // 4% Health & Education Cess
+      totalTax: { type: Number, default: 0 },
+      monthlyTDS: { type: Number, default: 0 },
+      tdsPaidYTD: { type: Number, default: 0 },      // Year-to-date TDS deducted
+      tdsBalance: { type: Number, default: 0 },       // Remaining TDS for the year
+      lastComputedAt: Date,
+    },
+
+    // Declaration Status
+    status: {
+      type: String,
+      enum: ['not_started', 'draft', 'submitted', 'approved', 'proofs_pending', 'proofs_submitted', 'verified', 'finalized'],
+      default: 'not_started'
+    },
+    submittedAt: Date,
+    approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    approvedAt: Date,
+    proofsDeadline: Date,
+    remarks: String,
+  },
+
+  // ============================================
+  // ONBOARDING CHECKLIST STATUS
+  // ============================================
+  onboardingChecklist: {
+    status: {
+      type: String,
+      enum: ['not_started', 'in_progress', 'completed'],
+      default: 'not_started'
+    },
+    completedPercentage: { type: Number, default: 0 },
+    items: [{
+      category: {
+        type: String,
+        enum: ['identity', 'employment', 'education', 'banking', 'statutory', 'tax', 'bgv', 'it_setup', 'policy']
+      },
+      name: String,
+      documentType: String, // links to documents[].documentType
+      isMandatory: { type: Boolean, default: true },
+      isCompleted: { type: Boolean, default: false },
+      completedAt: Date,
+      completedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      remarks: String
+    }],
+    startedAt: Date,
+    completedAt: Date
   }
 }, {
   timestamps: true
