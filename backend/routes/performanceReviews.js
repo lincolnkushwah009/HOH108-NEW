@@ -45,7 +45,7 @@ router.get('/', async (req, res) => {
 
     // Enhanced stats with rating band distribution
     const stats = await PerformanceReview.aggregate([
-      { $match: { company: mongoose.Types.ObjectId(req.user.company._id || req.user.company) } },
+      { $match: { company: new mongoose.Types.ObjectId(req.user.company._id || req.user.company) } },
       {
         $group: {
           _id: null,
@@ -734,7 +734,7 @@ router.get('/reports/distribution', authorize('admin', 'hr', 'manager'), async (
     const { reviewCycle } = req.query
 
     const matchFilter = {
-      company: mongoose.Types.ObjectId(req.user.company._id || req.user.company),
+      company: new mongoose.Types.ObjectId(req.user.company._id || req.user.company),
       status: { $in: ['completed', 'acknowledged'] }
     }
     if (reviewCycle) matchFilter.reviewCycle = mongoose.Types.ObjectId(reviewCycle)
@@ -789,7 +789,7 @@ router.get('/reports/calibration-impact', authorize('admin', 'hr'), async (req, 
     const { reviewCycle } = req.query
 
     const matchFilter = {
-      company: mongoose.Types.ObjectId(req.user.company._id || req.user.company),
+      company: new mongoose.Types.ObjectId(req.user.company._id || req.user.company),
       'calibration.isCalibrated': true
     }
     if (reviewCycle) matchFilter.reviewCycle = mongoose.Types.ObjectId(reviewCycle)
@@ -921,5 +921,20 @@ router.put('/:id/complete', async (req, res) => {
     res.status(500).json({ success: false, message: error.message })
   }
 })
+
+// Seed sales performance data (admin only)
+router.post('/seed-sales-performance',
+  authorize('super_admin', 'company_admin'),
+  async (req, res) => {
+    try {
+      const { seedSalesPerformance } = await import('../scripts/seedSalesPerformance.js')
+      const companyId = req.activeCompany?._id || req.user?.company?._id
+      const results = await seedSalesPerformance(companyId.toString(), req.user._id.toString())
+      res.json({ success: true, data: results, message: `${results.filter(r => !r.error).length} reviews created` })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
+    }
+  }
+)
 
 export default router
