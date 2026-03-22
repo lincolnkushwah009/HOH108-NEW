@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer'
 import Notification from '../models/Notification.js'
 import User from '../models/User.js'
 import Customer from '../models/Customer.js'
+import Vendor from '../models/Vendor.js'
 
 // ---- Email transporter (singleton) ----
 let transporter = null
@@ -474,4 +475,261 @@ function buildEmailHtml(title, message, metadata = {}) {
       <p style="color: #9ca3af; font-size: 12px;">This is an automated notification from HOH108 CRM. Please do not reply to this email.</p>
     </div>
   </div>`
+}
+
+// ============================================
+// UNIVERSAL ACTIVITY NOTIFICATION ENGINE
+// Sends in-app + email to all relevant personas
+// ============================================
+
+/**
+ * Activity event definitions - maps every ERP activity to notification config.
+ * Each entry defines: who gets notified (by role/module), email subject template, message template.
+ */
+const ACTIVITY_EVENTS = {
+  // ---- LEAD / PRE-SALES ----
+  lead_created:            { departments: ['pre_sales', 'sales'], customer: false, vendor: false, subject: 'New Lead: {{ref}}', msg: 'A new lead {{ref}} has been created from {{source}}.', category: 'crm' },
+  lead_assigned:           { departments: ['pre_sales'], customer: false, vendor: false, subject: 'Lead Assigned: {{ref}}', msg: 'Lead {{ref}} has been assigned to {{assignee}}.', category: 'crm' },
+  lead_qualified:          { departments: ['pre_sales', 'sales'], customer: false, vendor: false, subject: 'Lead Qualified: {{ref}}', msg: 'Lead {{ref}} has been qualified. Ready for sales pipeline.', category: 'crm' },
+  lead_transferred:        { departments: ['sales'], customer: false, vendor: false, subject: 'Lead Transferred to Sales: {{ref}}', msg: 'Lead {{ref}} has been transferred to sales team. Assigned to {{assignee}}.', category: 'crm' },
+  lead_converted:          { departments: ['sales', 'design', 'operations', 'finance'], customer: true, vendor: false, subject: 'Lead Converted to Customer: {{ref}}', msg: 'Lead {{ref}} has been converted to customer. Project onboarding can begin.', category: 'crm' },
+  meeting_scheduled:       { departments: ['sales', 'design'], customer: true, vendor: false, subject: 'Meeting Scheduled: {{ref}}', msg: 'A meeting has been scheduled for {{ref}} on {{date}}.', category: 'crm' },
+
+  // ---- SALES ----
+  quotation_created:       { departments: ['sales', 'finance'], customer: true, vendor: false, subject: 'Quotation Created: {{ref}}', msg: 'Quotation {{ref}} has been created for {{customer}}. Amount: {{amount}}.', category: 'sales' },
+  quotation_sent:          { departments: ['sales'], customer: true, vendor: false, subject: 'Quotation Sent: {{ref}}', msg: 'Quotation {{ref}} has been sent to the customer for review.', category: 'sales' },
+  quotation_accepted:      { departments: ['sales', 'design', 'operations', 'finance'], customer: true, vendor: false, subject: 'Quotation Accepted: {{ref}}', msg: 'Quotation {{ref}} has been accepted by the customer. Proceed with sales order.', category: 'sales' },
+  sales_order_created:     { departments: ['sales', 'finance', 'design'], customer: true, vendor: false, subject: 'Sales Order: {{ref}}', msg: 'Sales Order {{ref}} created. Amount: {{amount}}.', category: 'sales' },
+  sales_order_approved:    { departments: ['sales', 'finance', 'operations'], customer: true, vendor: false, subject: 'Sales Order Approved: {{ref}}', msg: 'Sales Order {{ref}} has been approved. Project initiation can begin.', category: 'sales' },
+
+  // ---- DESIGN ----
+  design_submitted:        { departments: ['design', 'sales'], customer: true, vendor: false, subject: 'Design Submitted: {{ref}}', msg: 'Design iteration v{{version}} for {{project}} has been submitted for review.', category: 'design' },
+  design_approved:         { departments: ['design', 'sales', 'operations'], customer: true, vendor: false, subject: 'Design Approved: {{ref}}', msg: 'Design for {{project}} has been approved. Ready for execution.', category: 'design' },
+  design_revision:         { departments: ['design'], customer: true, vendor: false, subject: 'Design Revision Requested: {{ref}}', msg: 'Client has requested changes to design v{{version}} for {{project}}.', category: 'design' },
+
+  // ---- PROJECT MANAGEMENT ----
+  project_created:         { departments: ['operations', 'design', 'finance'], customer: true, vendor: false, subject: 'Project Created: {{ref}}', msg: 'Project {{ref}} has been created. Team assignment in progress.', category: 'project' },
+  project_stage_changed:   { departments: ['operations', 'sales', 'finance'], customer: true, vendor: false, subject: 'Project Stage Update: {{ref}}', msg: 'Project {{ref}} has moved to {{stage}} stage.', category: 'project' },
+  project_completed:       { departments: ['operations', 'sales', 'finance', 'management'], customer: true, vendor: false, subject: 'Project Completed: {{ref}}', msg: 'Project {{ref}} has been completed. Handover process initiated.', category: 'project' },
+  task_completed:          { departments: ['operations'], customer: false, vendor: false, subject: 'Task Completed: {{ref}}', msg: 'Task "{{taskName}}" for {{project}} has been completed.', category: 'project' },
+  milestone_reached:       { departments: ['operations', 'finance'], customer: true, vendor: false, subject: 'Milestone Reached: {{ref}}', msg: 'Milestone "{{milestone}}" for {{project}} has been completed.', category: 'project' },
+  progress_report:         { departments: ['operations', 'management'], customer: true, vendor: false, subject: 'Daily Progress: {{ref}}', msg: 'Daily progress report for {{project}}: {{progress}}% complete.', category: 'project' },
+  site_photos_uploaded:    { departments: ['operations'], customer: true, vendor: false, subject: 'Site Photos Uploaded: {{ref}}', msg: '{{count}} new photos uploaded for project {{project}}.', category: 'project' },
+
+  // ---- PROCUREMENT ----
+  rfq_sent:                { departments: ['procurement'], customer: false, vendor: true, subject: 'RFQ Sent: {{ref}}', msg: 'Request for Quotation {{ref}} has been sent to vendors.', category: 'procurement' },
+  quotation_received_vendor: { departments: ['procurement'], customer: false, vendor: false, subject: 'Vendor Quote Received: {{ref}}', msg: '{{vendor}} has submitted a quotation for RFQ {{ref}}.', category: 'procurement' },
+  po_created:              { departments: ['procurement', 'finance'], customer: false, vendor: true, subject: 'Purchase Order: {{ref}}', msg: 'Purchase Order {{ref}} has been created for {{vendor}}. Amount: {{amount}}.', category: 'procurement' },
+  po_approved:             { departments: ['procurement', 'finance'], customer: false, vendor: true, subject: 'PO Approved: {{ref}}', msg: 'Purchase Order {{ref}} has been approved. Vendor can proceed with delivery.', category: 'procurement' },
+  po_acknowledged:         { departments: ['procurement'], customer: false, vendor: false, subject: 'PO Acknowledged: {{ref}}', msg: '{{vendor}} has acknowledged Purchase Order {{ref}}.', category: 'procurement' },
+  grn_created:             { departments: ['procurement', 'operations'], customer: false, vendor: true, subject: 'GRN Created: {{ref}}', msg: 'Goods Receipt Note created for PO {{ref}}. Inspection pending.', category: 'procurement' },
+  grn_accepted:            { departments: ['procurement', 'finance'], customer: false, vendor: true, subject: 'GRN Accepted: {{ref}}', msg: 'Goods for PO {{ref}} have been inspected and accepted.', category: 'procurement' },
+  grn_rejected:            { departments: ['procurement'], customer: false, vendor: true, subject: 'GRN Rejected: {{ref}}', msg: 'Goods for PO {{ref}} have been rejected during inspection. Action required.', category: 'procurement' },
+  vendor_invoice_submitted: { departments: ['procurement', 'finance'], customer: false, vendor: false, subject: 'Vendor Invoice: {{ref}}', msg: '{{vendor}} has submitted invoice {{ref}}. Review and approve for payment.', category: 'procurement' },
+  vendor_invoice_approved: { departments: ['finance'], customer: false, vendor: true, subject: 'Invoice Approved: {{ref}}', msg: 'Invoice {{ref}} has been approved for payment processing.', category: 'procurement' },
+
+  // ---- FINANCE ----
+  customer_payment_received: { departments: ['finance', 'sales', 'operations'], customer: true, vendor: false, subject: 'Payment Received: {{ref}}', msg: 'Payment of {{amount}} received for {{project}}. Milestone: {{milestone}}.', category: 'finance' },
+  vendor_payment_made:     { departments: ['finance', 'procurement'], customer: false, vendor: true, subject: 'Payment Processed: {{ref}}', msg: 'Payment of {{amount}} processed to {{vendor}} for PO {{ref}}.', category: 'finance' },
+  invoice_generated:       { departments: ['finance'], customer: true, vendor: false, subject: 'Invoice Generated: {{ref}}', msg: 'Invoice {{ref}} generated for {{customer}}. Amount: {{amount}}. Due: {{dueDate}}.', category: 'finance' },
+  invoice_overdue:         { departments: ['finance', 'sales'], customer: true, vendor: false, subject: 'Invoice Overdue: {{ref}}', msg: 'Invoice {{ref}} is overdue. Amount pending: {{amount}}. Please make payment at the earliest.', category: 'finance' },
+
+  // ---- HR ----
+  employee_onboarded:      { departments: ['hr', 'management'], customer: false, vendor: false, subject: 'New Employee Onboarded: {{ref}}', msg: '{{employee}} has joined as {{designation}} in {{department}} department.', category: 'hr' },
+  leave_applied:           { departments: ['hr'], customer: false, vendor: false, subject: 'Leave Application: {{ref}}', msg: '{{employee}} has applied for {{leaveType}} from {{startDate}} to {{endDate}}.', category: 'hr' },
+  leave_approved:          { departments: [], customer: false, vendor: false, subject: 'Leave Approved: {{ref}}', msg: 'Your {{leaveType}} from {{startDate}} to {{endDate}} has been approved.', category: 'hr', notifyEmployee: true },
+  leave_rejected:          { departments: [], customer: false, vendor: false, subject: 'Leave Rejected: {{ref}}', msg: 'Your {{leaveType}} from {{startDate}} to {{endDate}} has been rejected. Reason: {{reason}}.', category: 'hr', notifyEmployee: true },
+  reimbursement_submitted: { departments: ['hr', 'finance'], customer: false, vendor: false, subject: 'Reimbursement Claim: {{ref}}', msg: '{{employee}} has submitted a reimbursement claim of {{amount}}.', category: 'hr' },
+  reimbursement_approved:  { departments: ['finance'], customer: false, vendor: false, subject: 'Reimbursement Approved: {{ref}}', msg: 'Reimbursement of {{amount}} has been approved for {{employee}}.', category: 'hr', notifyEmployee: true },
+  performance_review:      { departments: ['hr', 'management'], customer: false, vendor: false, subject: 'Performance Review: {{ref}}', msg: 'Performance review for {{employee}} is {{status}}. Score: {{score}}.', category: 'hr', notifyEmployee: true },
+  salary_revised:          { departments: ['hr', 'finance'], customer: false, vendor: false, subject: 'Salary Revision: {{ref}}', msg: 'Salary revised for {{employee}}. New CTC: {{amount}}.', category: 'hr', notifyEmployee: true },
+  it_declaration_submitted: { departments: ['hr', 'finance'], customer: false, vendor: false, subject: 'IT Declaration: {{ref}}', msg: '{{employee}} has submitted IT declaration for FY {{financialYear}}.', category: 'hr' },
+
+  // ---- APPROVALS ----
+  approval_pending:        { departments: [], customer: false, vendor: false, subject: 'Approval Required: {{ref}}', msg: '{{entityType}} {{ref}} requires your approval. Submitted by {{submitter}}.', category: 'approval', notifyApprover: true },
+  approval_granted:        { departments: [], customer: false, vendor: false, subject: 'Approved: {{ref}}', msg: '{{entityType}} {{ref}} has been approved by {{approver}}.', category: 'approval', notifySubmitter: true },
+  approval_rejected:       { departments: [], customer: false, vendor: false, subject: 'Rejected: {{ref}}', msg: '{{entityType}} {{ref}} has been rejected by {{approver}}. Reason: {{reason}}.', category: 'approval', notifySubmitter: true },
+
+  // ---- SUPPORT ----
+  ticket_created:          { departments: ['operations'], customer: true, vendor: false, subject: 'Support Ticket: {{ref}}', msg: 'Support ticket {{ref}} has been created. Subject: {{ticketSubject}}.', category: 'support' },
+  ticket_resolved:         { departments: [], customer: true, vendor: false, subject: 'Ticket Resolved: {{ref}}', msg: 'Support ticket {{ref}} has been resolved. Please verify.', category: 'support' },
+}
+
+// Department to module permission mapping
+const DEPT_MODULE_MAP = {
+  pre_sales: ['leads', 'call_activities'],
+  sales: ['leads', 'customers', 'sales_orders', 'quotations'],
+  design: ['design_iterations', 'all_projects'],
+  operations: ['all_projects', 'work_orders', 'qc_master'],
+  procurement: ['purchase_orders', 'rfq', 'vendors', 'goods_receipt_grn'],
+  finance: ['customer_invoices', 'payments', 'salary_management', 'accounts_receivable'],
+  hr: ['employees_module', 'leaves', 'salary_management', 'attendance'],
+  management: [], // super_admin/company_admin roles
+}
+
+/**
+ * Universal activity notification - sends in-app + email to all relevant personas.
+ *
+ * @param {string} event - Event key from ACTIVITY_EVENTS
+ * @param {object} opts - Event-specific data
+ * @param {string} opts.companyId - Company ID
+ * @param {string} opts.performedBy - User ID who triggered the event
+ * @param {string} opts.performedByName - Name of the performer
+ * @param {object} opts.data - Template variables: { ref, customer, vendor, amount, project, etc. }
+ * @param {string[]} [opts.employeeIds] - Specific employee user IDs to notify
+ * @param {string} [opts.customerId] - Customer ID to notify (email only)
+ * @param {string} [opts.vendorId] - Vendor ID to notify (email only)
+ * @param {string} [opts.employeeId] - Single employee to notify (for leave/HR events)
+ * @param {string} [opts.approverId] - Approver user ID
+ * @param {string} [opts.submitterId] - Original submitter user ID
+ */
+export async function notifyActivity(event, opts = {}) {
+  try {
+    const eventConfig = ACTIVITY_EVENTS[event]
+    if (!eventConfig) {
+      console.warn(`notifyActivity: unknown event "${event}"`)
+      return
+    }
+
+    const { companyId, performedBy, performedByName, data = {}, employeeIds, customerId, vendorId, employeeId, approverId, submitterId } = opts
+
+    if (!companyId) {
+      console.error('notifyActivity: missing companyId')
+      return
+    }
+
+    // --- Build subject and message from templates ---
+    let subject = eventConfig.subject || event
+    let msg = eventConfig.msg || ''
+
+    // Replace {{placeholders}} with actual data
+    Object.entries(data).forEach(([key, value]) => {
+      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
+      subject = subject.replace(regex, value || '')
+      msg = msg.replace(regex, value || '')
+    })
+
+    // --- COLLECT RECIPIENTS ---
+    const recipientEmails = new Set()
+    const recipientUserIds = new Set()
+
+    // 1. Department-based recipients (employees with module access)
+    if (eventConfig.departments?.length > 0) {
+      const moduleQueries = eventConfig.departments.flatMap(dept => {
+        if (dept === 'management') return [{ role: { $in: ['super_admin', 'company_admin'] } }]
+        const modules = DEPT_MODULE_MAP[dept] || []
+        return modules.map(mod => ({ [`modulePermissions.${mod}.view`]: true }))
+      })
+
+      if (moduleQueries.length > 0) {
+        const deptUsers = await User.find({
+          company: companyId,
+          isActive: true,
+          $or: moduleQueries
+        }).select('_id email name').lean()
+
+        deptUsers.forEach(u => {
+          if (u._id.toString() !== performedBy?.toString()) {
+            recipientUserIds.add(u._id.toString())
+            if (u.email) recipientEmails.add(u.email)
+          }
+        })
+      }
+    }
+
+    // 2. Explicit employee IDs
+    if (employeeIds?.length > 0) {
+      const users = await User.find({ _id: { $in: employeeIds }, isActive: true }).select('_id email').lean()
+      users.forEach(u => {
+        recipientUserIds.add(u._id.toString())
+        if (u.email) recipientEmails.add(u.email)
+      })
+    }
+
+    // 3. Single employee (HR events like leave approval)
+    if (eventConfig.notifyEmployee && employeeId) {
+      const emp = await User.findById(employeeId).select('_id email').lean()
+      if (emp) {
+        recipientUserIds.add(emp._id.toString())
+        if (emp.email) recipientEmails.add(emp.email)
+      }
+    }
+
+    // 4. Approver
+    if (eventConfig.notifyApprover && approverId) {
+      const approver = await User.findById(approverId).select('_id email').lean()
+      if (approver) {
+        recipientUserIds.add(approver._id.toString())
+        if (approver.email) recipientEmails.add(approver.email)
+      }
+    }
+
+    // 5. Submitter (for approval results)
+    if (eventConfig.notifySubmitter && submitterId) {
+      const sub = await User.findById(submitterId).select('_id email').lean()
+      if (sub) {
+        recipientUserIds.add(sub._id.toString())
+        if (sub.email) recipientEmails.add(sub.email)
+      }
+    }
+
+    // 6. Customer (email only)
+    if (eventConfig.customer && customerId) {
+      try {
+        const customer = await Customer.findById(customerId).select('email name').lean()
+        if (customer?.email) recipientEmails.add(customer.email)
+      } catch (e) {}
+    }
+
+    // 7. Vendor (email only)
+    if (eventConfig.vendor && vendorId) {
+      try {
+        const vendor = await Vendor.findById(vendorId).select('email name contactPerson').lean()
+        if (vendor?.email) recipientEmails.add(vendor.email)
+      } catch (e) {}
+    }
+
+    // Remove performer from recipients
+    if (performedBy) {
+      recipientUserIds.delete(performedBy.toString())
+    }
+
+    // --- CREATE IN-APP NOTIFICATIONS ---
+    const userIdArray = [...recipientUserIds]
+    if (userIdArray.length > 0) {
+      try {
+        await Notification.notifyUsers(userIdArray, {
+          company: companyId,
+          type: event.includes('rejected') || event.includes('overdue') ? 'warning' : event.includes('approved') || event.includes('completed') ? 'success' : 'info',
+          category: eventConfig.category,
+          title: subject,
+          message: msg,
+          entityType: eventConfig.category,
+          metadata: { event, performedBy: performedByName, ...data }
+        })
+      } catch (e) {
+        console.error('In-app notification error:', e.message)
+      }
+    }
+
+    // --- SEND EMAILS ---
+    const emailArray = [...recipientEmails]
+    if (emailArray.length > 0) {
+      const html = buildEmailHtml(subject, msg, {
+        entityLabel: data.ref || '',
+        status: data.status || event.replace(/_/g, ' '),
+        assignedTo: data.assignee || data.assignedTo || ''
+      })
+
+      // Send to all recipients (fire-and-forget, parallel)
+      await Promise.allSettled(
+        emailArray.map(email => sendEmail(email, `[HOH108] ${subject}`, html))
+      )
+    }
+
+    console.log(`notifyActivity(${event}): ${userIdArray.length} in-app, ${emailArray.length} emails`)
+  } catch (err) {
+    console.error(`notifyActivity(${event}) error:`, err.message)
+    // Never throw
+  }
 }
