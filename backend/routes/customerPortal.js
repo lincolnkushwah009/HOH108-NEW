@@ -15,6 +15,8 @@ import Customer from '../models/Customer.js'
 import Lead from '../models/Lead.js'
 import SalesOrder from '../models/SalesOrder.js'
 import PaymentMilestone from '../models/PaymentMilestone.js'
+import DailyProgressReport from '../models/DailyProgressReport.js'
+import ProjectTaskInstance from '../models/ProjectTaskInstance.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
@@ -518,6 +520,68 @@ router.get('/journey', async (req, res) => {
           .sort({ order: 1, percentage: 1 })
       : []
 
+    // Get daily progress reports (approved/submitted) with site photos
+    const progressReports = projectIds.length > 0
+      ? await DailyProgressReport.find({
+          project: { $in: projectIds },
+          status: { $in: ['submitted', 'reviewed', 'approved'] }
+        })
+          .select('reportDate overallProgress activities photos attachments weather issues manpower status project')
+          .populate('submittedBy', 'name designation')
+          .sort({ reportDate: -1 })
+          .limit(30)
+      : []
+
+    // Get project milestones from project model
+    const projectMilestones = projects.reduce((acc, p) => {
+      if (p.milestones && p.milestones.length > 0) {
+        acc.push(...p.milestones.map(m => ({ ...m.toObject ? m.toObject() : m, projectId: p.projectId, projectTitle: p.title })))
+      }
+      return acc
+    }, [])
+
+    // Get project images (before/during/after)
+    const projectImages = projects.reduce((acc, p) => {
+      if (p.images && p.images.length > 0) {
+        acc.push(...p.images.map(img => ({ ...img.toObject ? img.toObject() : img, projectId: p.projectId, projectTitle: p.title })))
+      }
+      return acc
+    }, [])
+
+    // Collect all site photos from DPRs
+    const sitePhotos = progressReports.reduce((acc, dpr) => {
+      if (dpr.photos && dpr.photos.length > 0) {
+        acc.push(...dpr.photos.map(photo => ({
+          url: photo.url,
+          caption: photo.caption,
+          category: photo.category,
+          uploadedAt: photo.uploadedAt || dpr.reportDate,
+          reportDate: dpr.reportDate,
+          submittedBy: dpr.submittedBy?.name || 'Site Team'
+        })))
+      }
+      return acc
+    }, [])
+
+    // Build progress summary per project
+    const progressSummary = projects.map(p => {
+      const pReports = progressReports.filter(r => String(r.project) === String(p._id))
+      const latestReport = pReports[0]
+      return {
+        projectId: p.projectId,
+        projectTitle: p.title,
+        stage: p.stage,
+        status: p.status,
+        completionPercentage: latestReport?.overallProgress?.actual || p.completion?.completionPercentage || 0,
+        plannedProgress: latestReport?.overallProgress?.planned || 0,
+        progressStatus: latestReport?.overallProgress?.status || 'on_track',
+        variance: latestReport?.overallProgress?.variance || 0,
+        totalReports: pReports.length,
+        lastReportDate: latestReport?.reportDate,
+        photoCount: sitePhotos.filter(ph => pReports.some(r => r.reportDate === ph.reportDate)).length
+      }
+    })
+
     res.json({
       success: true,
       data: {
@@ -528,7 +592,12 @@ router.get('/journey', async (req, res) => {
         designIterations,
         invoices,
         paymentMilestones,
-        timeline: buildJourneyTimeline(lead, salesOrders, projects, designIterations, invoices)
+        progressReports,
+        progressSummary,
+        sitePhotos,
+        projectImages,
+        projectMilestones,
+        timeline: buildJourneyTimeline(lead, salesOrders, projects, designIterations, invoices, progressReports)
       }
     })
   } catch (error) {
@@ -537,7 +606,7 @@ router.get('/journey', async (req, res) => {
 })
 
 // Helper to build timeline
-function buildJourneyTimeline(lead, salesOrders, projects, designIterations, invoices) {
+function buildJourneyTimeline(lead, salesOrders, projects, designIterations, invoices, progressReports = []) {
   const events = []
 
   if (lead) {
@@ -567,6 +636,18 @@ function buildJourneyTimeline(lead, salesOrders, projects, designIterations, inv
 
   invoices.forEach(inv => {
     events.push({ date: inv.invoiceDate, type: 'invoice', title: `Invoice: ${inv.invoiceNumber}`, description: `Amount: \u20b9${inv.invoiceTotal?.toLocaleString('en-IN')}` })
+  })
+
+  progressReports.forEach(dpr => {
+    const progress = dpr.overallProgress?.actual || 0
+    const photoCount = dpr.photos?.length || 0
+    events.push({
+      date: dpr.reportDate,
+      type: 'progress_report',
+      title: `Progress Update: ${progress}% complete`,
+      description: `${dpr.activities?.length || 0} activities${photoCount > 0 ? `, ${photoCount} photos` : ''}`,
+      photos: photoCount
+    })
   })
 
   return events.sort((a, b) => new Date(b.date) - new Date(a.date))

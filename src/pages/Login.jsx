@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Eye, EyeOff, Lock, Mail, AlertCircle, FolderKanban, FileText, Palette, LogOut, CreditCard, Calendar, CheckCircle } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, AlertCircle, FolderKanban, FileText, Palette, LogOut, CreditCard, Calendar, CheckCircle, Camera, TrendingUp, Image, Activity } from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 
@@ -29,7 +29,7 @@ const stageColors = {
 const typeIcons = {
   lead_created: Calendar, lead_qualified: CheckCircle, meeting: Calendar,
   design: Palette, sales_order: FileText, design_iteration: Palette,
-  project: FolderKanban, invoice: CreditCard,
+  project: FolderKanban, invoice: CreditCard, progress_report: TrendingUp,
 }
 
 function CustomerDashboard({ customer, token, onLogout }) {
@@ -54,9 +54,16 @@ function CustomerDashboard({ customer, token, onLogout }) {
   const designs = journey?.designIterations || []
   const timeline = journey?.timeline || []
   const milestones = journey?.paymentMilestones || []
+  const progressReports = journey?.progressReports || []
+  const sitePhotos = journey?.sitePhotos || []
+  const projectImages = journey?.projectImages || []
+  const progressSummary = journey?.progressSummary || []
+  const allMedia = [...sitePhotos, ...projectImages].sort((a, b) => new Date(b.uploadedAt || b.createdAt || 0) - new Date(a.uploadedAt || a.createdAt || 0))
 
   const tabs = [
     { key: 'projects', label: 'My Projects', icon: FolderKanban, count: projects.length },
+    { key: 'progress', label: 'Progress', icon: TrendingUp, count: progressReports.length },
+    { key: 'site-updates', label: 'Site Updates', icon: Camera, count: allMedia.length },
     { key: 'payments', label: 'Payments', icon: CreditCard, count: milestones.length },
     { key: 'invoices', label: 'Invoices', icon: FileText, count: invoices.length },
     { key: 'designs', label: 'Designs', icon: Palette, count: designs.length },
@@ -279,6 +286,186 @@ function CustomerDashboard({ customer, token, onLogout }) {
                     </div>
                     )
                   })}
+                </div>
+              )}
+
+              {/* Progress Tab */}
+              {activeTab === 'progress' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {progressSummary.length === 0 && progressReports.length === 0 ? (
+                    <div style={{ background: COLORS.card, borderRadius: 16, padding: 48, textAlign: 'center', border: `1px solid ${COLORS.border}` }}>
+                      <TrendingUp size={40} style={{ color: COLORS.textMuted, marginBottom: 12 }} />
+                      <p style={{ color: COLORS.textMuted, margin: 0 }}>No progress reports yet</p>
+                      <p style={{ color: COLORS.textMuted, fontSize: 13, margin: '8px 0 0' }}>Progress updates will appear here once your project begins</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Project Progress Cards */}
+                      {progressSummary.map((ps, idx) => {
+                        const pct = ps.completionPercentage || 0
+                        const statusColor = ps.progressStatus === 'ahead' ? '#10B981' : ps.progressStatus === 'on_track' ? '#3B82F6' : ps.progressStatus === 'behind' ? '#F59E0B' : '#EF4444'
+                        return (
+                          <div key={idx} style={{ background: COLORS.card, borderRadius: 16, border: `1px solid ${COLORS.border}`, padding: 24 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                              <div>
+                                <h3 style={{ fontSize: 17, fontWeight: 600, color: COLORS.white, margin: '0 0 4px' }}>{ps.projectTitle}</h3>
+                                <p style={{ fontSize: 13, color: COLORS.textMuted, margin: 0 }}>{ps.projectId} &middot; Stage: {(ps.stage || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</p>
+                              </div>
+                              <div style={{ textAlign: 'right' }}>
+                                <span style={{ fontSize: 28, fontWeight: 700, color: COLORS.accent }}>{pct}%</span>
+                                <p style={{ fontSize: 11, color: statusColor, fontWeight: 600, margin: '2px 0 0' }}>{(ps.progressStatus || 'on_track').replace(/_/g, ' ').toUpperCase()}</p>
+                              </div>
+                            </div>
+                            {/* Progress bar */}
+                            <div style={{ height: 8, background: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden', marginBottom: 14 }}>
+                              <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${COLORS.accent}, ${statusColor})`, borderRadius: 4, transition: 'width 0.8s ease' }} />
+                            </div>
+                            <div style={{ display: 'flex', gap: 24, fontSize: 13, color: COLORS.textMuted, flexWrap: 'wrap' }}>
+                              <span>{ps.totalReports} progress reports</span>
+                              <span>{ps.photoCount} site photos</span>
+                              {ps.lastReportDate && <span>Last update: {new Date(ps.lastReportDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>}
+                            </div>
+                          </div>
+                        )
+                      })}
+
+                      {/* Recent Progress Reports */}
+                      {progressReports.length > 0 && (
+                        <>
+                          <h3 style={{ fontSize: 15, fontWeight: 600, color: COLORS.textMuted, margin: '8px 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent Updates</h3>
+                          {progressReports.slice(0, 10).map((dpr, idx) => {
+                            const pct = dpr.overallProgress?.actual || 0
+                            const photoCount = dpr.photos?.length || 0
+                            const activityCount = dpr.activities?.length || 0
+                            const completedActivities = dpr.activities?.filter(a => a.status === 'completed').length || 0
+                            return (
+                              <div key={idx} style={{ background: COLORS.card, borderRadius: 14, border: `1px solid ${COLORS.border}`, padding: 20 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: `${COLORS.accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <Activity size={18} color={COLORS.accent} />
+                                    </div>
+                                    <div>
+                                      <p style={{ fontSize: 14, fontWeight: 600, color: COLORS.white, margin: 0 }}>
+                                        {new Date(dpr.reportDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                                      </p>
+                                      <p style={{ fontSize: 12, color: COLORS.textMuted, margin: '2px 0 0' }}>
+                                        by {dpr.submittedBy?.name || 'Site Team'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <span style={{ fontSize: 20, fontWeight: 700, color: COLORS.accent }}>{pct}%</span>
+                                </div>
+
+                                {/* Activities summary */}
+                                {activityCount > 0 && (
+                                  <div style={{ marginBottom: 12 }}>
+                                    {dpr.activities.slice(0, 4).map((act, i) => (
+                                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < Math.min(activityCount, 4) - 1 ? `1px solid ${COLORS.border}` : 'none' }}>
+                                        <div style={{
+                                          width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                                          background: act.status === 'completed' ? '#10B981' : act.status === 'in_progress' ? '#3B82F6' : act.status === 'delayed' ? '#EF4444' : '#6B7280'
+                                        }} />
+                                        <span style={{ fontSize: 13, color: COLORS.textLight, flex: 1 }}>{act.activityName}</span>
+                                        {act.percentage !== undefined && <span style={{ fontSize: 12, color: COLORS.textMuted }}>{act.percentage}%</span>}
+                                      </div>
+                                    ))}
+                                    {activityCount > 4 && <p style={{ fontSize: 12, color: COLORS.textMuted, margin: '6px 0 0' }}>+{activityCount - 4} more activities</p>}
+                                  </div>
+                                )}
+
+                                {/* Photos preview */}
+                                {photoCount > 0 && (
+                                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                    {dpr.photos.slice(0, 4).map((photo, i) => (
+                                      <div key={i} style={{
+                                        width: 72, height: 72, borderRadius: 8, overflow: 'hidden', border: `1px solid ${COLORS.border}`, position: 'relative',
+                                      }}>
+                                        <img src={photo.url} alt={photo.caption || 'Site photo'} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                          onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.style.background = COLORS.cardLight; e.target.parentElement.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%"><span style="color:#666;font-size:10px">No preview</span></div>' }} />
+                                        {i === 3 && photoCount > 4 && (
+                                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, fontWeight: 700 }}>
+                                            +{photoCount - 4}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+
+                                <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12, color: COLORS.textMuted }}>
+                                  <span>{completedActivities}/{activityCount} activities done</span>
+                                  {photoCount > 0 && <span>{photoCount} photos</span>}
+                                  {dpr.weather?.condition && <span>Weather: {dpr.weather.condition}</span>}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Site Updates / Photos Tab */}
+              {activeTab === 'site-updates' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {allMedia.length === 0 ? (
+                    <div style={{ background: COLORS.card, borderRadius: 16, padding: 48, textAlign: 'center', border: `1px solid ${COLORS.border}` }}>
+                      <Camera size={40} style={{ color: COLORS.textMuted, marginBottom: 12 }} />
+                      <p style={{ color: COLORS.textMuted, margin: 0 }}>No site photos yet</p>
+                      <p style={{ color: COLORS.textMuted, fontSize: 13, margin: '8px 0 0' }}>Photos and videos from your project site will appear here</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Category filter */}
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {['all', 'progress', 'quality', 'before', 'during', 'after', 'design', 'safety', 'issue'].map(cat => {
+                          const count = cat === 'all' ? allMedia.length : allMedia.filter(m => m.category === cat).length
+                          if (cat !== 'all' && count === 0) return null
+                          return (
+                            <button key={cat} style={{
+                              padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 500, border: `1px solid ${COLORS.border}`,
+                              background: COLORS.card, color: COLORS.textMuted, cursor: 'pointer', textTransform: 'capitalize',
+                            }}>
+                              {cat} ({count})
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      {/* Photo grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
+                        {allMedia.map((media, idx) => (
+                          <div key={idx} style={{
+                            borderRadius: 12, overflow: 'hidden', border: `1px solid ${COLORS.border}`,
+                            background: COLORS.card, position: 'relative',
+                          }}>
+                            <div style={{ width: '100%', paddingTop: '100%', position: 'relative', background: COLORS.cardLight }}>
+                              <img src={media.url} alt={media.caption || 'Site photo'}
+                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                                onError={(e) => { e.target.style.display = 'none' }} />
+                              {media.category && (
+                                <span style={{
+                                  position: 'absolute', top: 8, left: 8, padding: '3px 8px', borderRadius: 6,
+                                  fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
+                                  background: 'rgba(0,0,0,0.6)', color: '#fff',
+                                }}>{media.category}</span>
+                              )}
+                            </div>
+                            <div style={{ padding: '10px 12px' }}>
+                              {media.caption && <p style={{ fontSize: 12, color: COLORS.textLight, margin: '0 0 4px', lineHeight: 1.3 }}>{media.caption}</p>}
+                              <p style={{ fontSize: 11, color: COLORS.textMuted, margin: 0 }}>
+                                {media.uploadedAt ? new Date(media.uploadedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''}
+                                {media.submittedBy ? ` · ${media.submittedBy}` : ''}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
