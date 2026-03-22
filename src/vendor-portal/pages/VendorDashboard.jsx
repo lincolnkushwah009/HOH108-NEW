@@ -10,7 +10,10 @@ import {
   Calendar,
   ArrowRight,
   AlertCircle,
-  Star
+  Star,
+  ClipboardCheck,
+  CreditCard,
+  IndianRupee
 } from 'lucide-react'
 import { useVendorAuth } from '../context/VendorAuthContext'
 
@@ -181,6 +184,164 @@ const VendorDashboard = () => {
           color="#0d9488"
           isValue
         />
+      </div>
+
+      {/* GRN, Invoice & Payment Summary */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '16px',
+        marginBottom: '24px'
+      }}>
+        {/* GRN Summary */}
+        <Link
+          to="/vendor-portal/grns"
+          style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            border: '1px solid #e5e7eb',
+            textDecoration: 'none',
+            transition: 'box-shadow 0.2s',
+            cursor: 'pointer'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '12px',
+                background: '#2563eb15',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#2563eb'
+              }}>
+                <ClipboardCheck size={22} />
+              </div>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', margin: 0 }}>GRN Status</p>
+                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Goods received notes</p>
+              </div>
+            </div>
+            <ArrowRight size={18} color="#9ca3af" />
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }}>Total GRNs</p>
+              <p style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>{stats.totalGRNs || 0}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }}>Pending</p>
+              <p style={{ fontSize: '20px', fontWeight: '700', color: '#d97706', margin: 0 }}>{stats.pendingGRNs || 0}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }}>Accepted</p>
+              <p style={{ fontSize: '20px', fontWeight: '700', color: '#16a34a', margin: 0 }}>{stats.acceptedGRNs || 0}</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* Invoice Summary */}
+        <Link
+          to="/vendor-portal/invoices"
+          style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            border: '1px solid #e5e7eb',
+            textDecoration: 'none',
+            transition: 'box-shadow 0.2s',
+            cursor: 'pointer'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '12px',
+                background: '#6366f115',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#6366f1'
+              }}>
+                <FileText size={22} />
+              </div>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Invoices</p>
+                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Invoice tracking</p>
+              </div>
+            </div>
+            <ArrowRight size={18} color="#9ca3af" />
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }}>Total</p>
+              <p style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>{stats.totalInvoices || 0}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }}>Pending</p>
+              <p style={{ fontSize: '20px', fontWeight: '700', color: '#d97706', margin: 0 }}>{stats.pendingInvoices || 0}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }}>Approved</p>
+              <p style={{ fontSize: '20px', fontWeight: '700', color: '#16a34a', margin: 0 }}>{stats.approvedInvoices || 0}</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* Payment Summary */}
+        <Link
+          to="/vendor-portal/payments"
+          style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            border: '1px solid #e5e7eb',
+            textDecoration: 'none',
+            transition: 'box-shadow 0.2s',
+            cursor: 'pointer'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '12px',
+                background: '#10b98115',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#10b981'
+              }}>
+                <CreditCard size={22} />
+              </div>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Payments</p>
+                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Payment tracking</p>
+              </div>
+            </div>
+            <ArrowRight size={18} color="#9ca3af" />
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }}>Total Paid</p>
+              <p style={{ fontSize: '18px', fontWeight: '700', color: '#16a34a', margin: 0 }}>
+                {formatCurrency(stats.totalPaid || 0)}
+              </p>
+            </div>
+            <div>
+              <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 2px' }}>Pending</p>
+              <p style={{ fontSize: '18px', fontWeight: '700', color: '#d97706', margin: 0 }}>
+                {formatCurrency(stats.totalPendingPayment || 0)}
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Recent Orders */}

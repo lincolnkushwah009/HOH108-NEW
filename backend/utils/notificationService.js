@@ -224,7 +224,11 @@ export async function notifyEvent({
         sales_order: `/admin/crm/sales-orders/${entityId}`,
         design_iteration: `/admin/crm/design-iterations/${entityId}`,
         approval: `/admin/crm/approvals/${entityId}`,
-        project: `/admin/projects/${entityId}`
+        project: `/admin/projects/${entityId}`,
+        rfq: `/admin/procurement/rfq/${entityId}`,
+        purchase_order: `/admin/procurement/purchase-orders/${entityId}`,
+        grn: `/admin/procurement/grn/${entityId}`,
+        vendor_invoice: `/admin/procurement/invoices/${entityId}`
       }
 
       await Notification.notifyUsers(filteredUserIds, {
@@ -284,6 +288,163 @@ export async function notifyEvent({
     }
   } catch (err) {
     console.error('notifyEvent error:', err.message)
+  }
+}
+
+/**
+ * Procurement workflow notification - in-app only (no emails).
+ * Creates Notification documents for procurement events like RFQ, PO, GRN, etc.
+ * Fire-and-forget: logs errors, never throws.
+ *
+ * @param {string} event - One of: rfq_sent, quotation_received, po_acknowledged,
+ *                         grn_created, grn_accepted, invoice_received, payment_processed
+ * @param {Object} opts
+ * @param {Object} opts.company - Company object (needs _id)
+ * @param {Object} [opts.rfq] - RFQ document (for rfq_sent, quotation_received)
+ * @param {Object} [opts.purchaseOrder] - PO document (for po_acknowledged, grn_created, etc.)
+ * @param {Object} [opts.vendor] - Vendor document (needs _id, name)
+ * @param {Object} [opts.grn] - GRN document (for grn_created, grn_accepted)
+ * @param {Object} [opts.invoice] - Invoice document (for invoice_received)
+ * @param {Object} [opts.payment] - Payment document (for payment_processed)
+ * @param {string} [opts.performedBy] - User ID who triggered the action
+ * @param {string[]} [opts.recipientUserIds] - Explicit recipient IDs (overrides auto-detection)
+ */
+export async function notifyProcurementEvent(event, opts = {}) {
+  try {
+    const {
+      company,
+      rfq,
+      purchaseOrder,
+      vendor,
+      grn,
+      invoice,
+      payment,
+      performedBy,
+      recipientUserIds
+    } = opts
+
+    const companyId = company?._id || company
+    if (!companyId) {
+      console.error('notifyProcurementEvent: missing company')
+      return
+    }
+
+    // Build event-specific title, message, entityType, entityId, actionUrl
+    let title, message, entityType, entityId, actionUrl
+
+    const vendorName = vendor?.name || 'Vendor'
+    const rfqNumber = rfq?.rfqNumber || ''
+    const poNumber = purchaseOrder?.poNumber || ''
+
+    switch (event) {
+      case 'rfq_sent':
+        title = `RFQ Sent: ${rfqNumber}`
+        message = `Request for Quotation ${rfqNumber} has been sent to ${vendorName}. Please submit your quotation before the deadline.`
+        entityType = 'rfq'
+        entityId = rfq?._id
+        actionUrl = `/admin/procurement/rfq/${rfq?._id}`
+        break
+
+      case 'quotation_received':
+        title = `Quotation Received: ${rfqNumber}`
+        message = `${vendorName} has submitted a quotation for RFQ ${rfqNumber}. Review and compare vendor quotes.`
+        entityType = 'rfq'
+        entityId = rfq?._id
+        actionUrl = `/admin/procurement/rfq/${rfq?._id}`
+        break
+
+      case 'po_acknowledged':
+        title = `PO Acknowledged: ${poNumber}`
+        message = `${vendorName} has acknowledged Purchase Order ${poNumber}.`
+        entityType = 'purchase_order'
+        entityId = purchaseOrder?._id
+        actionUrl = `/admin/procurement/purchase-orders/${purchaseOrder?._id}`
+        break
+
+      case 'grn_created':
+        title = `GRN Created: ${poNumber}`
+        message = `A Goods Receipt Note has been created for Purchase Order ${poNumber}. Goods are pending inspection.`
+        entityType = 'grn'
+        entityId = grn?._id || purchaseOrder?._id
+        actionUrl = `/admin/procurement/grn/${grn?._id || purchaseOrder?._id}`
+        break
+
+      case 'grn_accepted':
+        title = `GRN Accepted: ${poNumber}`
+        message = `Goods for Purchase Order ${poNumber} have passed inspection and been accepted.`
+        entityType = 'grn'
+        entityId = grn?._id || purchaseOrder?._id
+        actionUrl = `/admin/procurement/grn/${grn?._id || purchaseOrder?._id}`
+        break
+
+      case 'invoice_received':
+        title = `Invoice Received: ${poNumber}`
+        message = `${vendorName} has submitted an invoice for Purchase Order ${poNumber}. Review and process for payment.`
+        entityType = 'vendor_invoice'
+        entityId = invoice?._id || purchaseOrder?._id
+        actionUrl = `/admin/procurement/invoices/${invoice?._id || purchaseOrder?._id}`
+        break
+
+      case 'payment_processed':
+        title = `Payment Processed: ${poNumber}`
+        message = `Payment has been recorded for Purchase Order ${poNumber}. Amount processed for ${vendorName}.`
+        entityType = 'purchase_order'
+        entityId = purchaseOrder?._id
+        actionUrl = `/admin/procurement/purchase-orders/${purchaseOrder?._id}`
+        break
+
+      default:
+        console.warn(`notifyProcurementEvent: unknown event "${event}"`)
+        return
+    }
+
+    // Determine recipients
+    let finalRecipientIds = []
+
+    if (recipientUserIds && recipientUserIds.length > 0) {
+      finalRecipientIds = recipientUserIds.map(id => id.toString())
+    } else {
+      // Auto-detect: find users with procurement module access in this company
+      const procurementUsers = await User.find({
+        company: companyId,
+        isActive: true,
+        $or: [
+          { role: { $in: ['super_admin', 'company_admin', 'procurement_manager'] } },
+          { 'modulePermissions.purchase_orders.view': true },
+          { 'modulePermissions.rfq.view': true }
+        ]
+      }).select('_id').lean()
+
+      finalRecipientIds = procurementUsers.map(u => u._id.toString())
+    }
+
+    // Remove the performer from notifications
+    if (performedBy) {
+      finalRecipientIds = finalRecipientIds.filter(id => id !== performedBy.toString())
+    }
+
+    if (finalRecipientIds.length === 0) {
+      console.log(`notifyProcurementEvent(${event}): no recipients found`)
+      return
+    }
+
+    // Create in-app notifications
+    await Notification.notifyUsers(finalRecipientIds, {
+      company: companyId,
+      type: event.includes('received') || event.includes('created') ? 'info' : 'success',
+      category: 'procurement',
+      title,
+      message,
+      entityType,
+      entityId,
+      actionUrl,
+      metadata: { event, vendorName, rfqNumber, poNumber }
+    })
+
+    console.log(`notifyProcurementEvent(${event}): notified ${finalRecipientIds.length} user(s)`)
+  } catch (err) {
+    console.error(`notifyProcurementEvent(${event}) error:`, err.message)
+    // Never throw - notifications should not break the main workflow
   }
 }
 

@@ -26,7 +26,7 @@ const notificationSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['lead', 'customer', 'project', 'system', 'performance', 'approval', 'assignment', 'escalation'],
+    enum: ['lead', 'customer', 'project', 'system', 'performance', 'approval', 'assignment', 'escalation', 'procurement'],
     default: 'system'
   },
 
@@ -42,7 +42,7 @@ const notificationSchema = new mongoose.Schema({
   // Related Entity
   entityType: {
     type: String,
-    enum: ['lead', 'customer', 'project', 'user', 'alert', 'report']
+    enum: ['lead', 'customer', 'project', 'user', 'alert', 'report', 'rfq', 'purchase_order', 'grn', 'vendor_invoice']
   },
   entityId: {
     type: mongoose.Schema.Types.ObjectId

@@ -9,6 +9,7 @@ import {
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
+import { notifyProcurementEvent } from '../utils/notificationService.js'
 
 const router = express.Router()
 
@@ -245,6 +246,19 @@ router.put('/:id/approve', async (req, res) => {
       } catch (err) {
         console.error('Failed to update project committedCost:', err.message)
       }
+    }
+
+    // Notify procurement team about PO approval
+    try {
+      const vendorDoc = await Vendor.findById(order.vendor).select('name').lean()
+      await notifyProcurementEvent('po_acknowledged', {
+        purchaseOrder: order,
+        vendor: vendorDoc || { name: 'Unknown Vendor' },
+        company: req.activeCompany,
+        performedBy: req.user._id
+      })
+    } catch (e) {
+      console.error('Notification error:', e)
     }
 
     res.json({ success: true, data: order })

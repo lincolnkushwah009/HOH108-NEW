@@ -8,6 +8,9 @@ import VendorPurchaseOrders from './pages/VendorPurchaseOrders'
 import VendorRFQs from './pages/VendorRFQs'
 import VendorProfile from './pages/VendorProfile'
 import VendorMaterials from './pages/VendorMaterials'
+import VendorGRNs from './pages/VendorGRNs'
+import VendorInvoices from './pages/VendorInvoices'
+import VendorPayments from './pages/VendorPayments'
 
 // Icons
 import {
@@ -19,7 +22,9 @@ import {
   X,
   Building2,
   FileText,
-  IndianRupee
+  IndianRupee,
+  ClipboardCheck,
+  CreditCard
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -77,6 +82,9 @@ const VendorLayout = () => {
     { path: '/vendor-portal/materials', icon: IndianRupee, label: 'My Materials' },
     { path: '/vendor-portal/rfqs', icon: FileText, label: 'Quotation Requests' },
     { path: '/vendor-portal/purchase-orders', icon: Package, label: 'Purchase Orders' },
+    { path: '/vendor-portal/grns', icon: ClipboardCheck, label: 'GRN Status' },
+    { path: '/vendor-portal/invoices', icon: FileText, label: 'Invoices' },
+    { path: '/vendor-portal/payments', icon: CreditCard, label: 'Payments' },
     { path: '/vendor-portal/profile', icon: User, label: 'Profile' },
   ]
 
@@ -330,6 +338,9 @@ const VendorPortalApp = () => {
           <Route path="rfqs/:id" element={<VendorRFQs />} />
           <Route path="purchase-orders" element={<VendorPurchaseOrders />} />
           <Route path="purchase-orders/:id" element={<VendorPurchaseOrders />} />
+          <Route path="grns" element={<VendorGRNs />} />
+          <Route path="invoices" element={<VendorInvoices />} />
+          <Route path="payments" element={<VendorPayments />} />
           <Route path="profile" element={<VendorProfile />} />
         </Route>
 
