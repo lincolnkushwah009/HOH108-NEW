@@ -682,7 +682,7 @@ const ProjectDetail = () => {
                     </div>
                   ) : (
                     <div
-                      onClick={handleEdit}
+                      onClick={openEditModal}
                       style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', padding: '8px', borderRadius: '12px', transition: 'background 0.2s' }}
                       onMouseOver={(e) => e.currentTarget.style.background = '#f9fafb'}
                       onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
