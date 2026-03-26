@@ -14,11 +14,16 @@ import { API_BASE } from '../constants/colors'
 
 const COLORS = {
   dark: '#111111',
-  card: '#1A1A1A',
+  card: '#FFFFFF',
+  canvas: '#FAF5F2',
   accent: '#C59C82',
   accentDark: '#A67C5B',
-  text: '#E5E5E5',
-  textMuted: '#9CA3AF'
+  accentLight: '#DDC5B0',
+  text: '#0F172A',
+  textMuted: '#64748B',
+  white: '#FFFFFF',
+  border: 'rgba(15,23,42,0.08)',
+  stone: '#64748B',
 }
 
 // Runware API Configuration
@@ -403,65 +408,96 @@ export default function FloorMap3D() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: COLORS.dark }}>
+    <div style={{ minHeight: '100vh', backgroundColor: COLORS.canvas }}>
       <Header />
 
-      {/* Hero Section */}
-      <section style={{
-        padding: 'clamp(100px, 15vw, 140px) 16px clamp(60px, 10vw, 80px)',
-        textAlign: 'center',
-        background: `linear-gradient(180deg, rgba(197,156,130,0.1) 0%, transparent 50%)`
-      }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      {/* Hero Section — rounded box with side gaps */}
+      <section style={{ padding: '80px 0 32px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 80px)' }}>
           <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: 'rgba(197,156,130,0.15)',
-            color: COLORS.accent,
-            padding: '10px 20px',
-            borderRadius: '50px',
-            fontSize: '14px',
-            fontWeight: 500,
-            marginBottom: '24px',
-            border: '1px solid rgba(197,156,130,0.3)'
+            position: 'relative',
+            width: '100%',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            minHeight: '400px',
           }}>
-            <Wand2 size={18} />
-            AI-Powered Visualization
+            <img
+              src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&h=800&fit=crop"
+              alt="3D Visualization"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(17,17,17,0.6)' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(17,17,17,0.5) 0%, transparent 60%)' }} />
+
+            <div style={{
+              position: 'relative',
+              zIndex: 2,
+              padding: 'clamp(48px, 8vw, 80px) clamp(32px, 6vw, 64px)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center',
+              minHeight: '400px',
+            }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 20px',
+                borderRadius: '9999px',
+                fontSize: '0.75rem',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.8)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                marginBottom: '24px',
+                fontFamily: "'Raleway', sans-serif",
+                backdropFilter: 'blur(8px)',
+                backgroundColor: 'rgba(255,255,255,0.1)',
+              }}>
+                <Wand2 size={16} />
+                AI-Powered Visualization
+              </span>
+
+              <h1 style={{
+                fontFamily: "'Oswald', sans-serif",
+                fontSize: 'clamp(2.5rem, 6vw, 4rem)',
+                fontWeight: 300,
+                color: '#ffffff',
+                lineHeight: 1.05,
+                letterSpacing: '-0.02em',
+                textTransform: 'uppercase',
+                marginBottom: '20px',
+                textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+              }}>
+                Transform Your <span style={{ color: COLORS.accent, fontWeight: 500 }}>Floor Plan</span><br />
+                Into Stunning 3D
+              </h1>
+
+              <p style={{
+                fontFamily: "'Raleway', sans-serif",
+                color: 'rgba(255,255,255,0.65)',
+                fontSize: 'clamp(14px, 1.5vw, 17px)',
+                lineHeight: 1.8,
+                maxWidth: '600px',
+              }}>
+                Upload your 2D floor plan or describe your dream space, and watch our AI create a photorealistic 3D visualization in seconds.
+              </p>
+            </div>
           </div>
-
-          <h1 style={{
-            fontFamily: 'Oswald, sans-serif',
-            fontSize: 'clamp(36px, 8vw, 56px)',
-            color: 'white',
-            marginBottom: '20px',
-            lineHeight: 1.1
-          }}>
-            Transform Your <span style={{ color: COLORS.accent, fontStyle: 'italic' }}>Floor Plan</span><br />
-            Into Stunning 3D
-          </h1>
-
-          <p style={{
-            color: COLORS.textMuted,
-            fontSize: '18px',
-            lineHeight: 1.7,
-            maxWidth: '600px',
-            margin: '0 auto'
-          }}>
-            Upload your 2D floor plan or describe your dream space, and watch our AI create a photorealistic 3D visualization in seconds.
-          </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <section style={{ padding: '0 16px 100px' }}>
+      <section style={{ padding: 'clamp(40px, 6vw, 60px) 16px 100px' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
           {/* Step 1: Choose Input Mode */}
           {step === 1 && !isGenerating && (
             <div className="calc-step-animate">
               <div style={{
-                backgroundColor: COLORS.card,
+                backgroundColor: COLORS.white,
                 borderRadius: '28px',
                 padding: 'clamp(32px, 6vw, 48px)',
                 border: '1px solid rgba(197,156,130,0.1)'
@@ -469,7 +505,7 @@ export default function FloorMap3D() {
                 <h2 style={{
                   fontFamily: 'Oswald, sans-serif',
                   fontSize: '28px',
-                  color: 'white',
+                  color: COLORS.text,
                   textAlign: 'center',
                   marginBottom: '12px'
                 }}>
@@ -479,92 +515,104 @@ export default function FloorMap3D() {
                   Choose your preferred method to create your 3D visualization
                 </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                   {/* Upload Option */}
                   <div
                     onClick={() => { setInputMode('upload'); setStep(2) }}
-                    className="calc-option-card"
+                    className="calc-option-card floor3d-card"
                     style={{
-                      background: 'linear-gradient(135deg, #C59C82 0%, #8B6F5C 100%)',
-                      borderRadius: '24px',
+                      backgroundColor: COLORS.white,
+                      borderRadius: '20px',
                       padding: '40px 32px',
                       cursor: 'pointer',
                       textAlign: 'center',
-                      color: 'white',
-                      transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                      border: `1px solid ${COLORS.border}`,
+                      transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s cubic-bezier(0.16,1,0.3,1), background-color 0.35s ease, border-color 0.3s ease'
                     }}
                   >
                     <div style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '50%',
-                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      width: '72px',
+                      height: '72px',
+                      borderRadius: '20px',
+                      background: 'linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      margin: '0 auto 24px'
+                      margin: '0 auto 24px',
+                      boxShadow: '0 8px 24px rgba(197,156,130,0.3)',
+                      position: 'relative',
                     }}>
-                      <Upload size={36} />
+                      <div style={{ position: 'absolute', top: '2px', left: '15%', right: '15%', height: '40%', borderRadius: '50%', background: 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%)', pointerEvents: 'none' }} />
+                      <Upload size={28} color="#fff" strokeWidth={1.8} />
                     </div>
-                    <h3 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '12px' }}>Upload Floor Plan</h3>
-                    <p style={{ fontSize: '15px', opacity: 0.9, marginBottom: '24px', lineHeight: 1.6 }}>
+                    <h3 className="floor3d-card-title" style={{ fontSize: '22px', fontWeight: 700, marginBottom: '12px', color: COLORS.text, fontFamily: "'Oswald', sans-serif", textTransform: 'uppercase', letterSpacing: '0.03em', transition: 'color 0.3s ease' }}>Upload Floor Plan</h3>
+                    <p className="floor3d-card-desc" style={{ fontSize: '14px', color: COLORS.textMuted, marginBottom: '24px', lineHeight: 1.7, fontFamily: "'Raleway', sans-serif", transition: 'color 0.3s ease' }}>
                       Have a 2D floor plan ready? Upload it and our AI will transform it into a stunning 3D visualization.
                     </p>
                     <div style={{
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '8px',
-                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      backgroundColor: COLORS.accent,
+                      color: '#fff',
                       padding: '12px 24px',
                       borderRadius: '50px',
-                      fontSize: '14px',
-                      fontWeight: 600
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      fontFamily: "'Raleway', sans-serif",
+                      letterSpacing: '0.5px',
                     }}>
-                      Upload Image <ChevronRight size={18} />
+                      Upload Image <ChevronRight size={16} />
                     </div>
                   </div>
 
                   {/* Manual Option */}
                   <div
                     onClick={() => { setInputMode('manual'); setStep(2) }}
-                    className="calc-option-card"
+                    className="calc-option-card floor3d-card"
                     style={{
-                      background: 'linear-gradient(135deg, #A67C5B 0%, #6B4F3C 100%)',
-                      borderRadius: '24px',
+                      backgroundColor: COLORS.white,
+                      borderRadius: '20px',
                       padding: '40px 32px',
                       cursor: 'pointer',
                       textAlign: 'center',
-                      color: 'white',
-                      transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                      border: `1px solid ${COLORS.border}`,
+                      transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s cubic-bezier(0.16,1,0.3,1), background-color 0.35s ease, border-color 0.3s ease'
                     }}
                   >
                     <div style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '50%',
-                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      width: '72px',
+                      height: '72px',
+                      borderRadius: '20px',
+                      background: 'linear-gradient(135deg, #111 0%, #333 100%)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      margin: '0 auto 24px'
+                      margin: '0 auto 24px',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                      position: 'relative',
                     }}>
-                      <PenTool size={36} />
+                      <div style={{ position: 'absolute', top: '2px', left: '15%', right: '15%', height: '40%', borderRadius: '50%', background: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%)', pointerEvents: 'none' }} />
+                      <PenTool size={28} color="#fff" strokeWidth={1.8} />
                     </div>
-                    <h3 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '12px' }}>Describe Your Space</h3>
-                    <p style={{ fontSize: '15px', opacity: 0.9, marginBottom: '24px', lineHeight: 1.6 }}>
+                    <h3 className="floor3d-card-title" style={{ fontSize: '22px', fontWeight: 700, marginBottom: '12px', color: COLORS.text, fontFamily: "'Oswald', sans-serif", textTransform: 'uppercase', letterSpacing: '0.03em', transition: 'color 0.3s ease' }}>Describe Your Space</h3>
+                    <p className="floor3d-card-desc" style={{ fontSize: '14px', color: COLORS.textMuted, marginBottom: '24px', lineHeight: 1.7, fontFamily: "'Raleway', sans-serif", transition: 'color 0.3s ease' }}>
                       No floor plan? No problem! Answer a few questions and we'll generate a concept visualization.
                     </p>
                     <div style={{
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '8px',
-                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      backgroundColor: COLORS.accent,
+                      color: '#fff',
                       padding: '12px 24px',
                       borderRadius: '50px',
-                      fontSize: '14px',
-                      fontWeight: 600
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      fontFamily: "'Raleway', sans-serif",
+                      letterSpacing: '0.5px',
                     }}>
-                      Start Questionnaire <ChevronRight size={18} />
+                      Start Questionnaire <ChevronRight size={16} />
                     </div>
                   </div>
                 </div>
@@ -576,7 +624,7 @@ export default function FloorMap3D() {
           {step === 2 && inputMode === 'upload' && !isGenerating && (
             <div className="calc-step-animate">
               <div style={{
-                backgroundColor: COLORS.card,
+                backgroundColor: COLORS.white,
                 borderRadius: '28px',
                 padding: 'clamp(32px, 6vw, 48px)',
                 border: '1px solid rgba(197,156,130,0.1)'
@@ -601,7 +649,7 @@ export default function FloorMap3D() {
                 <h2 style={{
                   fontFamily: 'Oswald, sans-serif',
                   fontSize: '28px',
-                  color: 'white',
+                  color: COLORS.text,
                   textAlign: 'center',
                   marginBottom: '12px'
                 }}>
@@ -670,7 +718,7 @@ export default function FloorMap3D() {
                       }}>
                         <Image size={36} color={COLORS.accent} />
                       </div>
-                      <p style={{ color: 'white', fontSize: '18px', fontWeight: 500, marginBottom: '8px' }}>
+                      <p style={{ color: COLORS.text, fontSize: '18px', fontWeight: 500, marginBottom: '8px' }}>
                         Click to upload or drag and drop
                       </p>
                       <p style={{ color: COLORS.textMuted, fontSize: '14px' }}>
@@ -712,7 +760,7 @@ export default function FloorMap3D() {
           {step === 2 && inputMode === 'manual' && !isGenerating && (
             <div className="calc-step-animate">
               <div style={{
-                backgroundColor: COLORS.card,
+                backgroundColor: COLORS.white,
                 borderRadius: '28px',
                 padding: 'clamp(32px, 6vw, 48px)',
                 border: '1px solid rgba(197,156,130,0.1)'
@@ -743,7 +791,7 @@ export default function FloorMap3D() {
           {isGenerating && (
             <div className="calc-step-animate">
               <div style={{
-                backgroundColor: COLORS.card,
+                backgroundColor: COLORS.white,
                 borderRadius: '28px',
                 padding: 'clamp(48px, 8vw, 80px)',
                 border: '1px solid rgba(197,156,130,0.1)',
@@ -766,7 +814,7 @@ export default function FloorMap3D() {
                 <h2 style={{
                   fontFamily: 'Oswald, sans-serif',
                   fontSize: '28px',
-                  color: 'white',
+                  color: COLORS.text,
                   marginBottom: '16px'
                 }}>
                   Creating Your 3D Visualization
@@ -852,7 +900,7 @@ export default function FloorMap3D() {
           {step === 3 && !isGenerating && (
             <div className="calc-step-animate">
               <div style={{
-                backgroundColor: COLORS.card,
+                backgroundColor: COLORS.white,
                 borderRadius: '28px',
                 padding: 'clamp(32px, 6vw, 48px)',
                 border: '1px solid rgba(197,156,130,0.1)'
@@ -873,7 +921,7 @@ export default function FloorMap3D() {
                   <h2 style={{
                     fontFamily: 'Oswald, sans-serif',
                     fontSize: '28px',
-                    color: 'white',
+                    color: COLORS.text,
                     marginBottom: '12px'
                   }}>
                     Your 3D Design is Ready!
@@ -884,7 +932,7 @@ export default function FloorMap3D() {
                 </div>
 
                 <div style={{
-                  backgroundColor: COLORS.dark,
+                  backgroundColor: COLORS.canvas,
                   borderRadius: '20px',
                   padding: '32px',
                   maxWidth: '450px',
@@ -902,11 +950,11 @@ export default function FloorMap3D() {
                       placeholder="Enter your name"
                       style={{
                         width: '100%',
-                        backgroundColor: COLORS.card,
+                        backgroundColor: COLORS.white,
                         border: '2px solid rgba(197,156,130,0.2)',
                         borderRadius: '10px',
                         padding: '14px 16px',
-                        color: 'white',
+                        color: COLORS.text,
                         fontSize: '15px',
                         outline: 'none'
                       }}
@@ -925,11 +973,11 @@ export default function FloorMap3D() {
                       placeholder="Enter your phone number"
                       style={{
                         width: '100%',
-                        backgroundColor: COLORS.card,
+                        backgroundColor: COLORS.white,
                         border: '2px solid rgba(197,156,130,0.2)',
                         borderRadius: '10px',
                         padding: '14px 16px',
-                        color: 'white',
+                        color: COLORS.text,
                         fontSize: '15px',
                         outline: 'none'
                       }}
@@ -948,11 +996,11 @@ export default function FloorMap3D() {
                       placeholder="Enter your email"
                       style={{
                         width: '100%',
-                        backgroundColor: COLORS.card,
+                        backgroundColor: COLORS.white,
                         border: '2px solid rgba(197,156,130,0.2)',
                         borderRadius: '10px',
                         padding: '14px 16px',
-                        color: 'white',
+                        color: COLORS.text,
                         fontSize: '15px',
                         outline: 'none'
                       }}
@@ -1004,7 +1052,7 @@ export default function FloorMap3D() {
           {step === 4 && !isGenerating && (
             <div className="calc-step-animate">
               <div style={{
-                backgroundColor: COLORS.card,
+                backgroundColor: COLORS.white,
                 borderRadius: '28px',
                 padding: 'clamp(32px, 6vw, 48px)',
                 border: '1px solid rgba(197,156,130,0.1)'
@@ -1026,7 +1074,7 @@ export default function FloorMap3D() {
                   <h2 style={{
                     fontFamily: 'Oswald, sans-serif',
                     fontSize: '32px',
-                    color: 'white',
+                    color: COLORS.text,
                     marginBottom: '12px'
                   }}>
                     Your 3D Visualization is Ready!
@@ -1050,7 +1098,7 @@ export default function FloorMap3D() {
                         Original Floor Plan
                       </h3>
                       <div style={{
-                        backgroundColor: COLORS.dark,
+                        backgroundColor: COLORS.canvas,
                         borderRadius: '16px',
                         overflow: 'hidden',
                         border: '1px solid rgba(197,156,130,0.2)'
@@ -1070,7 +1118,7 @@ export default function FloorMap3D() {
                       AI Generated 3D Visualization
                     </h3>
                     <div style={{
-                      backgroundColor: COLORS.dark,
+                      backgroundColor: COLORS.canvas,
                       borderRadius: '16px',
                       overflow: 'hidden',
                       border: '2px solid rgba(197,156,130,0.3)',
@@ -1169,13 +1217,13 @@ export default function FloorMap3D() {
                 {/* Lead Form Modal */}
                 {showLeadForm && !leadSubmitted && (
                   <div style={{
-                    backgroundColor: COLORS.dark,
+                    backgroundColor: COLORS.canvas,
                     borderRadius: '20px',
                     padding: '32px',
                     border: '1px solid rgba(197,156,130,0.2)'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                      <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '24px', color: 'white' }}>
+                      <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '24px', color: COLORS.text }}>
                         Get Your Free Consultation
                       </h3>
                       <button
@@ -1199,11 +1247,11 @@ export default function FloorMap3D() {
                               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                               style={{
                                 width: '100%',
-                                backgroundColor: COLORS.card,
+                                backgroundColor: COLORS.white,
                                 border: '2px solid rgba(197,156,130,0.2)',
                                 borderRadius: '10px',
                                 padding: '14px 14px 14px 44px',
-                                color: 'white',
+                                color: COLORS.text,
                                 fontSize: '15px',
                                 outline: 'none'
                               }}
@@ -1223,11 +1271,11 @@ export default function FloorMap3D() {
                               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                               style={{
                                 width: '100%',
-                                backgroundColor: COLORS.card,
+                                backgroundColor: COLORS.white,
                                 border: '2px solid rgba(197,156,130,0.2)',
                                 borderRadius: '10px',
                                 padding: '14px 14px 14px 44px',
-                                color: 'white',
+                                color: COLORS.text,
                                 fontSize: '15px',
                                 outline: 'none'
                               }}
@@ -1247,11 +1295,11 @@ export default function FloorMap3D() {
                               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                               style={{
                                 width: '100%',
-                                backgroundColor: COLORS.card,
+                                backgroundColor: COLORS.white,
                                 border: '2px solid rgba(197,156,130,0.2)',
                                 borderRadius: '10px',
                                 padding: '14px 14px 14px 44px',
-                                color: 'white',
+                                color: COLORS.text,
                                 fontSize: '15px',
                                 outline: 'none'
                               }}
@@ -1271,11 +1319,11 @@ export default function FloorMap3D() {
                               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                               style={{
                                 width: '100%',
-                                backgroundColor: COLORS.card,
+                                backgroundColor: COLORS.white,
                                 border: '2px solid rgba(197,156,130,0.2)',
                                 borderRadius: '10px',
                                 padding: '14px 14px 14px 44px',
-                                color: 'white',
+                                color: COLORS.text,
                                 fontSize: '15px',
                                 outline: 'none'
                               }}
@@ -1293,11 +1341,11 @@ export default function FloorMap3D() {
                           rows={3}
                           style={{
                             width: '100%',
-                            backgroundColor: COLORS.card,
+                            backgroundColor: COLORS.white,
                             border: '2px solid rgba(197,156,130,0.2)',
                             borderRadius: '10px',
                             padding: '14px',
-                            color: 'white',
+                            color: COLORS.text,
                             fontSize: '15px',
                             outline: 'none',
                             resize: 'vertical'
@@ -1353,7 +1401,7 @@ export default function FloorMap3D() {
                     }}>
                       <Check size={32} color="#22c55e" />
                     </div>
-                    <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '24px', color: 'white', marginBottom: '12px' }}>
+                    <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '24px', color: COLORS.text, marginBottom: '12px' }}>
                       Thank You!
                     </h3>
                     <p style={{ color: COLORS.textMuted, fontSize: '16px' }}>

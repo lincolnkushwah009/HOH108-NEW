@@ -4,108 +4,128 @@ import {
   Mail,
   MapPin,
   ChevronRight,
-  Facebook,
-  Instagram,
-  Twitter,
-  Linkedin,
-  Youtube,
+  Clock,
 } from 'lucide-react'
+import { FaInstagram, FaLinkedinIn, FaFacebookF } from 'react-icons/fa'
 import { COLORS } from '../constants/colors'
 
 function Footer() {
-  return (
-    <footer style={{ backgroundColor: COLORS.card, position: 'relative', overflow: 'hidden' }}>
-      {/* Top Accent Bar */}
-      <div style={{
-        height: '4px',
-        background: `linear-gradient(90deg, ${COLORS.accent}, ${COLORS.accentLight}, ${COLORS.accent})`
-      }} />
+  const quickLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'About Us', path: '/about' },
+    { name: 'Team', path: '/team' },
+    { name: 'Contact Us', path: '/contact-us' },
+  ]
 
-      {/* Main Footer Content */}
-      <div style={{ padding: '64px 24px 48px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          {/* Top Section - Logo & Social */}
+  const serviceLinks = [
+    { name: 'Interior Design', path: '/interior' },
+    { name: 'Construction', path: '/construction' },
+    { name: 'Renovation', path: '/renovation' },
+    { name: 'Our Team', path: '/team' },
+    { name: '3D Visualizer', path: '/floor-map-3d' },
+  ]
+
+  const locations = [
+    'HSR Layout, Bengaluru',
+    'JP Nagar, Bengaluru',
+    'Mysuru',
+  ]
+
+  const socialLinks = [
+    { icon: FaInstagram, href: '#', label: 'Instagram' },
+    { icon: FaLinkedinIn, href: '#', label: 'LinkedIn' },
+    { icon: FaFacebookF, href: '#', label: 'Facebook' },
+  ]
+
+  return (
+    <footer style={{ backgroundColor: '#1a1a1a', position: 'relative', overflow: 'hidden' }}>
+      {/* Main Content */}
+      <div style={{ padding: 'clamp(48px, 8vw, 80px) clamp(16px, 4vw, 80px) clamp(32px, 6vw, 48px)' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          {/* Top: Logo + Tagline */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '48px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '24px',
             marginBottom: '48px',
             paddingBottom: '48px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)'
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
           }}>
-            {/* Logo & Description */}
             <div>
-              <Link to="/" style={{ display: 'inline-block', marginBottom: '20px' }}>
+              <Link to="/" style={{ display: 'inline-block', marginBottom: '16px' }}>
                 <img
                   src="/Logo.png"
                   alt="House of Hancet 108"
-                  style={{ height: '60px', width: 'auto' }}
+                  className="footer-logo-img"
+                  style={{ height: '56px', width: 'auto', filter: 'brightness(0) invert(1)' }}
                 />
               </Link>
-              <p style={{ color: COLORS.textMuted, fontSize: '14px', lineHeight: 1.7, marginBottom: '24px', maxWidth: '300px' }}>
-                Transforming spaces into masterpieces. From construction to interiors, we bring your dream home to life with precision and quality.
+              <p style={{
+                color: 'rgba(255,255,255,0.5)',
+                fontSize: 'var(--text-small)',
+                lineHeight: 1.7,
+                maxWidth: '320px',
+              }}>
+                From construction to interiors, HOH108 delivers full-spectrum home solutions
+                with precision, quality, and passion for every space.
               </p>
-              {/* Social Icons */}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                {[
-                  { icon: Facebook, href: '#' },
-                  { icon: Instagram, href: '#' },
-                  { icon: Twitter, href: '#' },
-                  { icon: Linkedin, href: '#' },
-                  { icon: Youtube, href: '#' }
-                ].map((social, i) => (
-                  <a
-                    key={i}
-                    href={social.href}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      backgroundColor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = COLORS.accent
-                      e.currentTarget.style.borderColor = COLORS.accent
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
-                    }}
-                  >
-                    <social.icon size={18} color="white" />
-                  </a>
-                ))}
-              </div>
+            </div>
+            {/* Social */}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {socialLinks.map((social, i) => (
+                <a
+                  key={i}
+                  href={social.href}
+                  aria-label={social.label}
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease',
+                    color: 'rgba(255,255,255,0.6)',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = COLORS.accent
+                    e.currentTarget.style.borderColor = COLORS.accent
+                    e.currentTarget.style.color = '#fff'
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
+                    e.currentTarget.style.color = 'rgba(255,255,255,0.6)'
+                  }}
+                >
+                  <social.icon size={16} />
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Links Grid */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: '32px',
-            marginBottom: '48px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '40px',
           }}>
             {/* Quick Links */}
             <div>
               <h5 style={{
-                color: 'white',
-                fontSize: '14px',
+                color: '#fff',
+                fontSize: '13px',
                 fontWeight: 600,
                 marginBottom: '20px',
                 textTransform: 'uppercase',
-                letterSpacing: '1px'
+                letterSpacing: '0.1em',
+                fontFamily: "'Oswald', sans-serif",
               }}>Quick Links</h5>
-              {[
-                { name: 'Home', path: '/' },
-                { name: 'About Us', path: '/about' },
-                { name: 'Team', path: '/team' }
-              ].map(link => (
+              {quickLinks.map(link => (
                 <Link
                   key={link.name}
                   to={link.path}
@@ -113,14 +133,14 @@ function Footer() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    color: COLORS.textMuted,
+                    color: 'rgba(255,255,255,0.5)',
                     fontSize: '14px',
-                    marginBottom: '14px',
+                    marginBottom: '12px',
                     textDecoration: 'none',
-                    transition: 'color 0.2s'
+                    transition: 'color 0.3s ease',
                   }}
                   onMouseOver={(e) => e.currentTarget.style.color = COLORS.accent}
-                  onMouseOut={(e) => e.currentTarget.style.color = COLORS.textMuted}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
                 >
                   <ChevronRight size={14} />
                   {link.name}
@@ -131,19 +151,15 @@ function Footer() {
             {/* Services */}
             <div>
               <h5 style={{
-                color: 'white',
-                fontSize: '14px',
+                color: '#fff',
+                fontSize: '13px',
                 fontWeight: 600,
                 marginBottom: '20px',
                 textTransform: 'uppercase',
-                letterSpacing: '1px'
+                letterSpacing: '0.1em',
+                fontFamily: "'Oswald', sans-serif",
               }}>Services</h5>
-              {[
-                { name: 'Interior Design', path: '/interior' },
-                { name: 'Construction', path: '/construction' },
-                { name: 'Renovation', path: '/renovation' },
-                { name: '3D Visualizer', path: '/floor-map-3d' }
-              ].map(s => (
+              {serviceLinks.map(s => (
                 <Link
                   key={s.name}
                   to={s.path}
@@ -151,14 +167,14 @@ function Footer() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    color: COLORS.textMuted,
+                    color: 'rgba(255,255,255,0.5)',
                     fontSize: '14px',
-                    marginBottom: '14px',
+                    marginBottom: '12px',
                     textDecoration: 'none',
-                    transition: 'color 0.2s'
+                    transition: 'color 0.3s ease',
                   }}
                   onMouseOver={(e) => e.currentTarget.style.color = COLORS.accent}
-                  onMouseOut={(e) => e.currentTarget.style.color = COLORS.textMuted}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
                 >
                   <ChevronRight size={14} />
                   {s.name}
@@ -166,107 +182,62 @@ function Footer() {
               ))}
             </div>
 
-            {/* Support */}
+            {/* Locations */}
             <div>
               <h5 style={{
-                color: 'white',
-                fontSize: '14px',
+                color: '#fff',
+                fontSize: '13px',
                 fontWeight: 600,
                 marginBottom: '20px',
                 textTransform: 'uppercase',
-                letterSpacing: '1px'
-              }}>Support</h5>
-              {[
-                { name: 'Privacy Policy', path: '/privacy-policy' },
-                { name: 'Terms & Conditions', path: '/terms-and-conditions' },
-                { name: 'Refund & Cancellation', path: '/refund-policy' },
-              ].map(s => (
-                <Link
-                  key={s.name}
-                  to={s.path}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    color: COLORS.textMuted,
-                    fontSize: '14px',
-                    marginBottom: '14px',
-                    textDecoration: 'none',
-                    transition: 'color 0.2s'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.color = COLORS.accent}
-                  onMouseOut={(e) => e.currentTarget.style.color = COLORS.textMuted}
-                >
-                  <ChevronRight size={14} />
-                  {s.name}
-                </Link>
+                letterSpacing: '0.1em',
+                fontFamily: "'Oswald', sans-serif",
+              }}>Locations</h5>
+              {locations.map(loc => (
+                <div key={loc} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <MapPin size={14} color={COLORS.accent} style={{ flexShrink: 0 }} />
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>{loc}</span>
+                </div>
               ))}
             </div>
 
-            {/* Contact Info */}
+            {/* Contact */}
             <div>
               <h5 style={{
-                color: 'white',
-                fontSize: '14px',
+                color: '#fff',
+                fontSize: '13px',
                 fontWeight: 600,
                 marginBottom: '20px',
                 textTransform: 'uppercase',
-                letterSpacing: '1px'
-              }}>Contact Us</h5>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    backgroundColor: 'rgba(197,156,130,0.15)',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    <Phone size={16} color={COLORS.accent} />
-                  </div>
-                  <div>
-                    <p style={{ color: COLORS.textMuted, fontSize: '12px', marginBottom: '2px' }}>Call Us</p>
-                    <p style={{ color: 'white', fontSize: '14px', fontWeight: 500 }}>+91 8861888424</p>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    backgroundColor: 'rgba(197,156,130,0.15)',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    <Mail size={16} color={COLORS.accent} />
-                  </div>
-                  <div>
-                    <p style={{ color: COLORS.textMuted, fontSize: '12px', marginBottom: '2px' }}>Email Us</p>
-                    <p style={{ color: 'white', fontSize: '14px', fontWeight: 500 }}>support@HOH108.com</p>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    backgroundColor: 'rgba(197,156,130,0.15)',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    <MapPin size={16} color={COLORS.accent} />
-                  </div>
-                  <div>
-                    <p style={{ color: COLORS.textMuted, fontSize: '12px', marginBottom: '2px' }}>Locations</p>
-                    <p style={{ color: 'white', fontSize: '14px', fontWeight: 500 }}>Bengaluru & Mysuru</p>
-                  </div>
+                letterSpacing: '0.1em',
+                fontFamily: "'Oswald', sans-serif",
+              }}>Contact</h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <a href="tel:+918861888424" style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  color: 'rgba(255,255,255,0.5)', fontSize: '14px', textDecoration: 'none',
+                  transition: 'color 0.3s ease',
+                }}
+                  onMouseOver={(e) => e.currentTarget.style.color = COLORS.accent}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                >
+                  <Phone size={14} color={COLORS.accent} />
+                  +91 8861888424
+                </a>
+                <a href="mailto:info@hoh108.com" style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  color: 'rgba(255,255,255,0.5)', fontSize: '14px', textDecoration: 'none',
+                  transition: 'color 0.3s ease',
+                }}
+                  onMouseOver={(e) => e.currentTarget.style.color = COLORS.accent}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                >
+                  <Mail size={14} color={COLORS.accent} />
+                  info@hoh108.com
+                </a>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Clock size={14} color={COLORS.accent} />
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>Mon-Sat, 9AM-7PM</span>
                 </div>
               </div>
             </div>
@@ -276,77 +247,44 @@ function Footer() {
 
       {/* Bottom Bar */}
       <div style={{
-        backgroundColor: 'rgba(0,0,0,0.3)',
-        padding: '20px 24px'
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        padding: '20px clamp(16px, 4vw, 80px)',
       }}>
         <div style={{
-          maxWidth: '1280px',
+          maxWidth: '1400px',
           margin: '0 auto',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '16px'
+          gap: '16px',
         }}>
-          <p style={{ color: COLORS.textMuted, fontSize: '13px' }}>
-            &copy; 2025 <span style={{ color: COLORS.accent }}>HOH108</span>. All Rights Reserved.
+          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px' }}>
+            &copy; {new Date().getFullYear()} <span style={{ color: COLORS.accent }}>HOH108</span>. All Rights Reserved.
           </p>
           <div style={{ display: 'flex', gap: '24px' }}>
-            <Link
-              to="/terms-and-conditions"
-              style={{
-                color: COLORS.textMuted,
-                fontSize: '13px',
-                textDecoration: 'none',
-                transition: 'color 0.2s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.color = 'white'}
-              onMouseOut={(e) => e.currentTarget.style.color = COLORS.textMuted}
-            >
-              Terms
-            </Link>
-            <Link
-              to="/privacy-policy"
-              style={{
-                color: COLORS.textMuted,
-                fontSize: '13px',
-                textDecoration: 'none',
-                transition: 'color 0.2s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.color = 'white'}
-              onMouseOut={(e) => e.currentTarget.style.color = COLORS.textMuted}
-            >
-              Privacy
-            </Link>
-            <Link
-              to="/refund-policy"
-              style={{
-                color: COLORS.textMuted,
-                fontSize: '13px',
-                textDecoration: 'none',
-                transition: 'color 0.2s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.color = 'white'}
-              onMouseOut={(e) => e.currentTarget.style.color = COLORS.textMuted}
-            >
-              Refund
-            </Link>
+            {[
+              { name: 'Privacy Policy', path: '/privacy-policy' },
+              { name: 'Terms', path: '/terms-and-conditions' },
+              { name: 'Refund', path: '/refund-policy' },
+            ].map(link => (
+              <Link
+                key={link.name}
+                to={link.path}
+                style={{
+                  color: 'rgba(255,255,255,0.35)',
+                  fontSize: '13px',
+                  textDecoration: 'none',
+                  transition: 'color 0.3s ease',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
+              >
+                {link.name}
+              </Link>
+            ))}
           </div>
         </div>
-      </div>
-
-      {/* Watermark */}
-      <div style={{
-        position: 'absolute',
-        bottom: '60px',
-        right: '-50px',
-        fontSize: '200px',
-        fontWeight: 900,
-        color: 'rgba(255,255,255,0.015)',
-        pointerEvents: 'none',
-        fontFamily: "'Oswald', sans-serif"
-      }}>
-        108
       </div>
     </footer>
   )

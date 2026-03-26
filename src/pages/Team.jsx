@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Linkedin,
   ArrowRight,
-  Users,
+  ChevronRight,
   X,
 } from 'lucide-react'
 import Header from '../components/Header'
@@ -17,7 +17,7 @@ import ChandanPhoto from '../assets/Team/Chandan-Sharma(1).jpeg'
 import EklavyaPhoto from '../assets/Team/Eklavyas(6).jpeg'
 import KasthuriPhoto from '../assets/Team/Kasthuri(3).jpeg'
 import SandarshPhoto from '../assets/Team/sandarsh(5).jpg'
-import SiddhantPhoto from '../assets/Team/Siddhant(7).png'
+import SiddhantPhoto from '../assets/Team/Siddhant-new.jpeg'
 import SandeepPhoto from '../assets/Team/Sandeep(2).jpeg'
 import RaghavendraPhoto from '../assets/Team/Raghavendra.jpeg'
 
@@ -29,197 +29,197 @@ const teamMembers = [
     role: "Director",
     image: ChandanPhoto,
     bio: "A visionary leader driving excellence in construction and interior design with a focus on quality and client satisfaction.",
-    socials: {
-      linkedin: "#",
-    }
+    socials: { linkedin: "#" },
+    isLeadership: true,
   },
   {
     id: 2,
     name: "Sandeep Selvam",
-    role: "Director",
+    role: "Group CEO",
     image: SandeepPhoto,
-    bio: "Sandeep Selvam is a seasoned business leader with strong experience in the interior design and construction industry. As Director at Interior Plus, he plays a key role in driving strategic growth, operational excellence, and client-focused delivery. With a background in business development and regional leadership, he has successfully led teams and scaled operations across competitive markets. His career reflects a balance of strategic vision and hands-on execution, ensuring quality-driven outcomes. Based in Bengaluru, he continues to contribute to the evolving interiors and real estate ecosystem with a results-oriented and people-first approach.",
-    socials: {
-      linkedin: "https://www.linkedin.com/in/sandeep-selvam-121252121",
-    }
+    bio: "As Group CEO, Sandeep brings extensive leadership experience across the interior design and construction industry. He oversees strategic growth, operational excellence, and client-focused delivery across all HOH108 verticals. With a strong background in business development and regional leadership, he has successfully scaled teams and operations across competitive markets. His approach balances strategic vision with hands-on execution — ensuring quality-driven outcomes at every level of the organization.",
+    socials: { linkedin: "https://www.linkedin.com/in/sandeep-selvam-121252121" },
+    isLeadership: true,
   },
   {
     id: 3,
     name: "Abhijit Honnati",
     role: "CEO",
     image: AbhijitPhoto,
-    bio: "As the CEO of House of Hancet 108, Abhijit Honnatti brings over 15 years of experience across interiors and construction. His leadership combines strategic foresight with a strong belief in team-driven execution. He is focused on transforming House of Hancet 108 into a category-leading brand built on innovation, operational excellence, and long-term value creation for clients and investors.",
-    socials: {
-      linkedin: "https://www.linkedin.com/in/abhijit-honnatti-43062b1aa/",
-    }
+    bio: "With over 15 years across interiors and construction, Abhijit leads HOH108 with a clear mandate — build a company where operational discipline meets creative ambition. His focus is on scaling the brand through innovation, client-centric delivery, and long-term value creation. Under his leadership, HOH108 has grown into a vertically integrated design-build practice serving clients across Karnataka.",
+    socials: { linkedin: "https://www.linkedin.com/in/abhijit-honnatti-43062b1aa/" },
+    isLeadership: false,
   },
   {
     id: 4,
     name: "Kasthuri N",
     role: "COO",
     image: KasthuriPhoto,
-    bio: "I bring seasoned leadership in operations and organizational development to House of Hancet—building teams that thrive and systems that actually work. With deep roots in construction and development, I bring invaluable industry insight alongside experience in the realty services industry, transforming Kumon Education Pvt Ltd through strategic team development, and leading marketing initiatives across diverse sectors. I'm passionate about empowering people, untangling complexity, and turning ambitious visions into everyday reality. At House of Hancet, I create the infrastructure that lets us scale without the chaos—connecting teams, and keeping things running beautifully.",
-    socials: {
-      linkedin: "https://www.linkedin.com/in/kasthuri-nandakumar-113153390",
-    }
+    bio: "Kasthuri brings deep expertise in operations, organizational development, and cross-functional team leadership. With a background spanning construction, real estate services, and education, she architects the internal systems that allow HOH108 to scale — connecting teams, streamlining workflows, and ensuring every project runs on time and on standard. She is the operational backbone that turns ambitious plans into consistent, repeatable outcomes.",
+    socials: { linkedin: "https://www.linkedin.com/in/kasthuri-nandakumar-113153390" },
+    isLeadership: false,
   },
   {
     id: 5,
     name: "Raghavendra",
     role: "CTO",
     image: RaghavendraPhoto,
-    bio: "As the Chief Technology Officer at House of Hancet 108, Raghavendra leads the technology strategy and digital transformation initiatives. With extensive experience in technology leadership, he drives innovation and ensures the seamless integration of cutting-edge solutions across all business verticals.",
-    socials: {
-      linkedin: "https://www.linkedin.com/in/raghavendra-krishnaprasad-3160871a/",
-    }
+    bio: "Raghavendra leads technology strategy and digital transformation at HOH108. With extensive experience in enterprise technology leadership, he oversees the development of proprietary tools — from AI-powered 3D visualization to real-time project tracking dashboards. His mandate is clear: use technology to eliminate friction, increase transparency, and give clients a digital-first experience from first consultation to final handover.",
+    socials: { linkedin: "https://www.linkedin.com/in/raghavendra-krishnaprasad-3160871a/" },
+    isLeadership: false,
   },
   {
     id: 6,
     name: "Eklavya Jain",
     role: "CFO",
     image: EklavyaPhoto,
-    bio: "With deep roots in construction and development, I bring invaluable industry insight alongside experience in the realty services industry, transforming Kumon Education Pvt Ltd through strategic team development, and leading marketing initiatives across diverse sectors. I'm passionate about empowering people, untangling complexity, and turning ambitious visions into everyday reality.",
-    socials: {
-      linkedin: "https://linkedin.com/in/cseklavyajain",
-    }
+    bio: "A Chartered Secretary by qualification with deep roots in the construction and development sector, Eklavya oversees all financial operations, compliance, and strategic resource allocation at HOH108. His disciplined approach to budgeting and cost management ensures that every project maintains its financial integrity — enabling transparent, open-book pricing that clients can trust at every stage.",
+    socials: { linkedin: "https://linkedin.com/in/cseklavyajain" },
+    isLeadership: false,
   },
   {
     id: 7,
     name: "Sandarsh Goyal",
     role: "CBO",
     image: SandarshPhoto,
-    bio: "At House of Hancet, I create the infrastructure that lets us scale without the chaos—connecting teams, and keeping things running beautifully.",
-    socials: {
-      linkedin: "https://www.linkedin.com/in/sandarsh-goyal-5035b0a7/",
-    }
+    bio: "Sandarsh drives business development and strategic partnerships at HOH108. He is responsible for identifying growth opportunities, building client relationships, and expanding the company's footprint across new markets. His ability to connect commercial strategy with on-ground execution makes him instrumental in scaling operations while maintaining the service quality that defines the HOH108 brand.",
+    socials: { linkedin: "https://www.linkedin.com/in/sandarsh-goyal-5035b0a7/" },
+    isLeadership: false,
   },
   {
     id: 8,
     name: "Siddhant Jain",
     role: "CMO",
     image: SiddhantPhoto,
-    bio: "As the CMO at House of Hancet, Siddhant brings over 12 years of cross-functional experience across marketing, sales, and business development, with a strong focus on growth through strategic resource optimisation. He has led impactful brand initiatives, trade programs, partnerships, and exhibitions that drive market presence and profitability. Known for his results-first approach and strong business communication, Siddhant consistently delivers scalable, long-term outcomes. He was previously with AB InBev as RTMM (East) and is also a Director at Three Fourth Solutions, a leading marketing agency in India.",
-    socials: {
-      linkedin: "https://www.linkedin.com/in/siddhantjain0990",
-    }
-  }
+    bio: "Siddhant brings over 12 years of cross-functional experience across marketing, sales, and business development. Previously with AB InBev as Regional Trade Marketing Manager and currently a Director at Three Fourth Solutions — a leading integrated marketing agency — he leads HOH108's brand strategy, market positioning, and growth campaigns. His results-first approach and strong commercial acumen consistently deliver scalable, long-term outcomes.",
+    socials: { linkedin: "https://www.linkedin.com/in/siddhantjain0990" },
+    isLeadership: false,
+  },
 ]
 
 // ============================================
-// FLOATING PARTICLES BACKGROUND
+// SECTION PILL COMPONENT
 // ============================================
-function FloatingParticles() {
-  const particles = Array.from({ length: 15 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 4 + 2,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    duration: Math.random() * 20 + 15,
-    delay: Math.random() * 5,
-  }))
-
+function SectionPill({ label, light }) {
   return (
-    <div style={{
-      position: 'absolute',
-      inset: 0,
-      overflow: 'hidden',
-      pointerEvents: 'none',
+    <span style={{
+      display: 'inline-block',
+      padding: '6px 20px',
+      border: `1px solid ${light ? 'rgba(255,255,255,0.15)' : COLORS.border}`,
+      borderRadius: '50px',
+      fontSize: '11px',
+      fontFamily: 'Oswald, sans-serif',
+      textTransform: 'uppercase',
+      letterSpacing: '2px',
+      color: light ? COLORS.accent : COLORS.textMuted,
+      marginBottom: '20px',
     }}>
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          style={{
-            position: 'absolute',
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-            borderRadius: '50%',
-            backgroundColor: COLORS.accent,
-            opacity: 0.15,
-          }}
-          animate={{
-            y: [-20, 20, -20],
-            x: [-10, 10, -10],
-            opacity: [0.1, 0.2, 0.1],
-          }}
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            delay: p.delay,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
-    </div>
+      {label}
+    </span>
   )
 }
 
 // ============================================
-// HERO SECTION
+// HERO SECTION (Home Page Style — rounded box with gaps)
 // ============================================
 function HeroSection() {
-  const { scrollY } = useScroll()
-  const y = useTransform(scrollY, [0, 500], [0, 100])
-  const opacity = useTransform(scrollY, [0, 300], [1, 0])
-
   return (
-    <section style={{
-      position: 'relative',
-      backgroundColor: COLORS.dark,
-      paddingTop: '140px',
-      paddingBottom: '80px',
-      overflow: 'hidden',
-    }}>
-      <FloatingParticles />
-
-      <motion.div
-        style={{ y, opacity }}
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-      >
+    <section style={{ padding: '80px 0 32px' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 80px)' }}>
         <div style={{
-          maxWidth: '800px',
-          margin: '0 auto',
-          padding: '0 24px',
-          textAlign: 'center',
           position: 'relative',
-          zIndex: 10,
+          width: '100%',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          minHeight: '500px',
         }}>
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            style={{
-              fontFamily: 'Oswald, sans-serif',
-              fontSize: 'clamp(36px, 7vw, 56px)',
-              fontWeight: 700,
-              marginBottom: '24px',
-              lineHeight: 1.2,
-              color: 'white',
-            }}
-          >
-            Meet Our <span style={{ color: COLORS.accent, fontStyle: 'italic' }}>Team</span>
-          </motion.h1>
+          {/* Background Image */}
+          <img
+            src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&h=1080&fit=crop"
+            alt="Our Team"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(17,17,17,0.55)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(17,17,17,0.5) 0%, transparent 60%)' }} />
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            style={{
-              color: COLORS.textMuted,
-              fontSize: '16px',
-              lineHeight: 1.7,
+          {/* Content — Center Aligned */}
+          <div style={{
+            position: 'relative',
+            zIndex: 2,
+            padding: 'clamp(48px, 8vw, 80px) clamp(32px, 6vw, 64px)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center',
+            minHeight: '500px',
+          }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '8px 20px',
+              borderRadius: '9999px',
+              fontSize: '0.75rem',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.7)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              marginBottom: '24px',
+              fontFamily: "'Raleway', sans-serif",
+            }}>
+              Our People
+            </span>
+
+            <h1 style={{
+              fontFamily: "'Oswald', sans-serif",
+              fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+              fontWeight: 300,
+              color: '#ffffff',
+              lineHeight: 1.05,
+              letterSpacing: '-0.02em',
+              textTransform: 'uppercase',
+              marginBottom: '24px',
+              textShadow: '0 2px 20px rgba(0,0,0,0.5)',
+            }}>
+              Meet Our <span style={{ color: COLORS.accent, fontWeight: 500 }}>Team</span>
+            </h1>
+
+            <p style={{
+              fontFamily: "'Raleway', sans-serif",
+              color: 'rgba(255,255,255,0.65)',
+              fontSize: 'clamp(14px, 1.5vw, 17px)',
+              lineHeight: 1.8,
               maxWidth: '600px',
-              margin: '0 auto',
-            }}
-          >
-            Passionate professionals dedicated to transforming your vision into
-            architectural masterpieces. Meet the experts behind every project.
-          </motion.p>
+              marginBottom: '32px',
+            }}>
+              Passionate professionals dedicated to transforming your vision into
+              architectural masterpieces. Meet the experts behind every project.
+            </p>
+
+            <Link
+              to="/contact-us"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: COLORS.accent,
+                color: '#ffffff',
+                padding: '14px 32px',
+                borderRadius: '9999px',
+                fontWeight: 500,
+                fontSize: '13px',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+                fontFamily: "'Raleway', sans-serif",
+              }}
+            >
+              Join Our Team
+              <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   )
 }
@@ -227,120 +227,142 @@ function HeroSection() {
 // ============================================
 // TEAM CARD COMPONENT
 // ============================================
-function TeamCard({ member, index, onClick }) {
+function TeamCard({ member, onClick, large }) {
   const [isHovered, setIsHovered] = useState(false)
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-50px' })
 
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 60 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
-      transition={{ duration: 0.6, delay: index * 0.1, ease: 'easeOut' }}
+    <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
       style={{
-        position: 'relative',
-        backgroundColor: COLORS.card,
+        backgroundColor: COLORS.white,
         borderRadius: '20px',
-        padding: '32px 24px',
-        cursor: 'pointer',
         overflow: 'hidden',
-        border: `1px solid ${isHovered ? COLORS.accent + '40' : 'rgba(255,255,255,0.05)'}`,
-        boxShadow: isHovered ? `0 25px 50px rgba(0,0,0,0.4)` : '0 4px 20px rgba(0,0,0,0.2)',
-        transform: isHovered ? 'translateY(-8px)' : 'translateY(0)',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        height: '320px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        border: `1px solid ${isHovered ? COLORS.borderHover : COLORS.border}`,
+        boxShadow: isHovered
+          ? '0 20px 40px rgba(0,0,0,0.1)'
+          : '0 2px 8px rgba(0,0,0,0.03)',
+        transform: isHovered ? 'translateY(-6px)' : 'translateY(0)',
+        transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+        cursor: 'pointer',
       }}
     >
-      {/* Profile Image */}
+      {/* Image */}
       <div style={{
+        width: '100%',
+        aspectRatio: large ? '3/4' : '1/1',
+        overflow: 'hidden',
         position: 'relative',
-        width: '120px',
-        height: '120px',
-        marginBottom: '20px',
-        flexShrink: 0,
       }}>
-        <div style={{
-          position: 'absolute',
-          inset: '-3px',
-          borderRadius: '50%',
-          background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark || '#8B7355'})`,
-          opacity: isHovered ? 1 : 0.4,
-          transition: 'opacity 0.4s ease',
-        }} />
         <img
           src={member.image}
           alt={member.name}
           loading="lazy"
           style={{
-            position: 'relative',
             width: '100%',
             height: '100%',
-            borderRadius: '50%',
             objectFit: 'cover',
             objectPosition: 'top center',
-            border: `3px solid ${COLORS.card}`,
+            transition: 'transform 0.5s ease',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
           }}
         />
+        {/* Gradient overlay */}
+        <div style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '40%',
+          background: 'linear-gradient(transparent, rgba(0,0,0,0.05))',
+          pointerEvents: 'none',
+        }} />
       </div>
 
-      {/* Name */}
-      <h3 style={{
-        fontFamily: 'Oswald, sans-serif',
-        fontSize: '22px',
-        fontWeight: 600,
-        color: COLORS.white,
-        textAlign: 'center',
-        marginBottom: '6px',
-      }}>
-        {member.name}
-      </h3>
+      {/* Content */}
+      <div style={{ padding: large ? '28px 24px' : '20px 20px' }}>
+        <h3 style={{
+          fontFamily: 'Oswald, sans-serif',
+          fontSize: large ? '22px' : '18px',
+          fontWeight: 600,
+          color: COLORS.textDark,
+          marginBottom: '4px',
+          textTransform: 'uppercase',
+        }}>
+          {member.name}
+        </h3>
 
-      {/* Role */}
-      <p style={{
-        fontSize: '13px',
-        color: COLORS.accent,
-        textAlign: 'center',
-        fontWeight: 600,
-        marginBottom: '16px',
-        textTransform: 'uppercase',
-        letterSpacing: '1.5px',
-      }}>
-        {member.role}
-      </p>
+        <p style={{
+          fontFamily: 'Raleway, sans-serif',
+          fontSize: '12px',
+          color: COLORS.accent,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '1.5px',
+          marginBottom: '12px',
+        }}>
+          {member.role}
+        </p>
 
-      {/* Short Bio Preview */}
-      <p style={{
-        fontSize: '13px',
-        color: COLORS.textMuted,
-        textAlign: 'center',
-        lineHeight: 1.6,
-        flex: 1,
-        overflow: 'hidden',
-        display: '-webkit-box',
-        WebkitLineClamp: 3,
-        WebkitBoxOrient: 'vertical',
-      }}>
-        {member.bio}
-      </p>
+        <p style={{
+          fontFamily: 'Raleway, sans-serif',
+          fontSize: '13px',
+          color: COLORS.textMuted,
+          lineHeight: 1.6,
+          display: '-webkit-box',
+          WebkitLineClamp: large ? 4 : 3,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+          marginBottom: '16px',
+        }}>
+          {member.bio}
+        </p>
 
-      {/* View More Indicator */}
-      <div style={{
-        marginTop: '16px',
-        fontSize: '12px',
-        color: isHovered ? COLORS.accent : COLORS.textMuted,
-        fontWeight: 500,
-        transition: 'color 0.3s ease',
-      }}>
-        Click to view full profile
+        {/* LinkedIn + View */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          {member.socials.linkedin && member.socials.linkedin !== '#' ? (
+            <a
+              href={member.socials.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: COLORS.textMuted,
+                fontSize: '12px',
+                fontFamily: 'Raleway, sans-serif',
+                textDecoration: 'none',
+                transition: 'color 0.3s ease',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.accent }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = COLORS.textMuted }}
+            >
+              <Linkedin size={14} />
+              LinkedIn
+            </a>
+          ) : (
+            <span />
+          )}
+
+          <span style={{
+            fontSize: '12px',
+            fontFamily: 'Raleway, sans-serif',
+            color: isHovered ? COLORS.accent : COLORS.textMuted,
+            fontWeight: 500,
+            transition: 'color 0.3s ease',
+          }}>
+            View Profile
+          </span>
+        </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -350,38 +372,41 @@ function TeamCard({ member, index, onClick }) {
 function TeamMemberModal({ member, onClose }) {
   if (!member) return null
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
       onClick={onClose}
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.85)',
+        backgroundColor: 'rgba(15, 23, 42, 0.7)',
+        backdropFilter: 'blur(8px)',
         zIndex: 1000,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
+        animation: 'fadeIn 0.25s ease',
       }}
     >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
+      <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          backgroundColor: COLORS.card,
+          backgroundColor: COLORS.white,
           borderRadius: '24px',
-          padding: '40px',
-          maxWidth: '600px',
+          padding: '48px 40px',
+          maxWidth: '560px',
           width: '100%',
           maxHeight: '90vh',
           overflow: 'auto',
           position: 'relative',
-          border: `1px solid ${COLORS.accent}30`,
+          border: `1px solid ${COLORS.border}`,
+          boxShadow: '0 32px 64px rgba(0,0,0,0.15)',
+          animation: 'scaleIn 0.3s ease',
         }}
       >
         {/* Close Button */}
@@ -391,8 +416,8 @@ function TeamMemberModal({ member, onClose }) {
             position: 'absolute',
             top: '20px',
             right: '20px',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            border: 'none',
+            backgroundColor: COLORS.canvas,
+            border: `1px solid ${COLORS.border}`,
             borderRadius: '50%',
             width: '40px',
             height: '40px',
@@ -405,43 +430,39 @@ function TeamMemberModal({ member, onClose }) {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = COLORS.accent
-            e.currentTarget.style.color = COLORS.dark
+            e.currentTarget.style.color = COLORS.white
+            e.currentTarget.style.borderColor = COLORS.accent
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'
+            e.currentTarget.style.backgroundColor = COLORS.canvas
             e.currentTarget.style.color = COLORS.textMuted
+            e.currentTarget.style.borderColor = COLORS.border
           }}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Profile Image */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          marginBottom: '24px',
+          marginBottom: '28px',
         }}>
           <div style={{
-            position: 'relative',
-            width: '150px',
-            height: '150px',
+            width: '130px',
+            height: '130px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            border: `3px solid ${COLORS.accent}`,
           }}>
-            <div style={{
-              position: 'absolute',
-              inset: '-4px',
-              borderRadius: '50%',
-              background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark || '#8B7355'})`,
-            }} />
             <img
               src={member.image}
               alt={member.name}
               style={{
-                position: 'relative',
                 width: '100%',
                 height: '100%',
-                borderRadius: '50%',
                 objectFit: 'cover',
-                border: `4px solid ${COLORS.card}`,
+                objectPosition: 'top center',
               }}
             />
           </div>
@@ -450,18 +471,20 @@ function TeamMemberModal({ member, onClose }) {
         {/* Name */}
         <h3 style={{
           fontFamily: 'Oswald, sans-serif',
-          fontSize: '32px',
+          fontSize: '28px',
           fontWeight: 600,
-          color: COLORS.white,
+          color: COLORS.textDark,
           textAlign: 'center',
-          marginBottom: '8px',
+          marginBottom: '6px',
+          textTransform: 'uppercase',
         }}>
           {member.name}
         </h3>
 
         {/* Role */}
         <p style={{
-          fontSize: '14px',
+          fontFamily: 'Raleway, sans-serif',
+          fontSize: '13px',
           color: COLORS.accent,
           textAlign: 'center',
           fontWeight: 600,
@@ -472,12 +495,21 @@ function TeamMemberModal({ member, onClose }) {
           {member.role}
         </p>
 
+        {/* Divider */}
+        <div style={{
+          width: '48px',
+          height: '2px',
+          backgroundColor: COLORS.accent,
+          margin: '0 auto 24px',
+        }} />
+
         {/* Full Bio */}
         <p style={{
+          fontFamily: 'Raleway, sans-serif',
           fontSize: '15px',
-          color: COLORS.textLight,
+          color: COLORS.textMuted,
           lineHeight: 1.8,
-          marginBottom: '24px',
+          marginBottom: '28px',
           textAlign: 'center',
         }}>
           {member.bio}
@@ -494,113 +526,272 @@ function TeamMemberModal({ member, onClose }) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '10px',
-                padding: '14px 28px',
+                padding: '14px 32px',
                 backgroundColor: COLORS.accent,
                 borderRadius: '50px',
-                color: COLORS.dark,
-                fontSize: '14px',
+                color: COLORS.white,
+                fontFamily: 'Oswald, sans-serif',
+                fontSize: '13px',
                 fontWeight: 600,
                 textDecoration: 'none',
+                textTransform: 'uppercase',
+                letterSpacing: '1.5px',
                 transition: 'all 0.3s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.05)'
+                e.currentTarget.style.backgroundColor = COLORS.accentDark
+                e.currentTarget.style.transform = 'translateY(-2px)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.backgroundColor = COLORS.accent
+                e.currentTarget.style.transform = 'translateY(0)'
               }}
             >
-              <Linkedin size={18} />
+              <Linkedin size={16} />
               Connect on LinkedIn
             </a>
           </div>
         )}
-      </motion.div>
-    </motion.div>
+      </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+    </div>
   )
 }
 
 // ============================================
-// TEAM SECTION
 // ============================================
-function TeamGrid() {
-  const [selectedMember, setSelectedMember] = useState(null)
+// TEAM SHOWCASE — Reference exact layout
+// Left: counter + vertical text + stair-step thumbnails
+// Center: tall narrow portrait
+// Right: name + role + bio + next button
+// ============================================
+function TeamShowcase({ members, sectionLabel, title, titleAccent, subtitle, bg = COLORS.white }) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const isPaused = useRef(false)
+  const timerRef = useRef(null)
+
+  // Fluid spring for the grow/shrink — the hero animation
+  const cardSpring = { type: 'spring', stiffness: 180, damping: 26, mass: 0.8 }
+  const textFade = { duration: 0.45, ease: [0.16, 1, 0.3, 1] }
+
+  const goNext = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % members.length)
+  }, [members.length])
+
+  // Auto-cycle
+  useEffect(() => {
+    const tick = () => {
+      timerRef.current = setTimeout(() => {
+        if (!isPaused.current) goNext()
+        tick()
+      }, 5000)
+    }
+    tick()
+    return () => clearTimeout(timerRef.current)
+  }, [goNext])
+
+  // Strip: hero on left (offset 0) → thumbnails stair-step right (offset +1,+2,+3)
+  // When activeIndex increments, hero exits left, new card enters from right → scrolls RIGHT
+  const getStrip = () => {
+    const items = []
+    for (let offset = 0; offset <= 3; offset++) {
+      const idx = (activeIndex + offset + members.length) % members.length
+      items.push({ member: members[idx], offset, idx })
+    }
+    return items
+  }
+  const strip = getStrip()
+  const active = members[activeIndex]
+
+  // Hero is tallest on left, thumbnails shrink going right
+  const getDims = (offset) => {
+    if (offset === 0) return { w: 220, h: 500, r: 12 }        // Hero — tall (left)
+    if (offset === 1) return { w: 150, h: 260, r: 10 }        // Closest right
+    if (offset === 2) return { w: 130, h: 190, r: 10 }        // Mid right
+    if (offset === 3) return { w: 80, h: 130, r: 8 }          // Far right (smallest)
+    return { w: 80, h: 120, r: 8 }
+  }
 
   return (
-    <section style={{
-      position: 'relative',
-      backgroundColor: COLORS.dark,
-      padding: '60px 24px 80px',
-    }}>
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-      }}>
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          style={{
-            textAlign: 'center',
-            marginBottom: '60px',
-          }}
-        >
-          <h2 style={{
-            fontFamily: 'Oswald, sans-serif',
-            fontSize: 'clamp(28px, 5vw, 36px)',
-            color: 'white',
-            marginBottom: '16px',
-          }}>
-            The <span style={{ color: COLORS.accent, fontStyle: 'italic' }}>Experts</span> Behind Every Build
-          </h2>
-          <p style={{
-            color: COLORS.textMuted,
-            fontSize: '15px',
-            maxWidth: '500px',
-            margin: '0 auto',
-            lineHeight: 1.7,
-          }}>
-            Our diverse team brings together decades of experience in construction,
-            design, and project management.
-          </p>
-        </motion.div>
+    <section
+      style={{ backgroundColor: bg, padding: 'clamp(64px, 10vw, 120px) 0', overflow: 'hidden' }}
+      onMouseEnter={() => { isPaused.current = true }}
+      onMouseLeave={() => { isPaused.current = false }}
+    >
+      {/* Header */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 80px)', textAlign: 'center', marginBottom: 'clamp(48px, 7vw, 72px)' }}>
+        <SectionPill label={sectionLabel} />
+        <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 'clamp(1.8rem, 4vw, 3rem)', color: COLORS.textDark, textTransform: 'uppercase', lineHeight: 1.2, marginBottom: '16px' }}>
+          {title} <span style={{ color: COLORS.accent }}>{titleAccent}</span>
+        </h2>
+        <p style={{ fontFamily: "'Raleway', sans-serif", color: COLORS.textMuted, fontSize: '15px', maxWidth: '550px', margin: '0 auto', lineHeight: 1.7 }}>
+          {subtitle}
+        </p>
+      </div>
 
-        {/* Team Grid */}
-        <div style={{
+      {/*
+        REFERENCE LAYOUT:
+        ┌──────────────────────────────────────────────────────┐
+        │  counter    │                        │  Name         │
+        │  vertical   │                        │  Role         │
+        │  text       │     HERO CARD          │  "Bio..."     │
+        │             │     (tall)             │               │
+        │  [t1][t2][t3]                        │               │
+        └──────────────────────────────────────────────────────┘
+                          [ > button ]
+      */}
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 60px)' }}>
+        <div className="team-showcase-wrap" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '24px',
-        }} className="team-grid">
-          {teamMembers.map((member, index) => (
-            <TeamCard
-              key={member.id}
-              member={member}
-              index={index}
-              onClick={() => setSelectedMember(member)}
-            />
-          ))}
+          gridTemplateColumns: '1fr 240px 1fr',
+          gap: '32px',
+          minHeight: '540px',
+        }}>
+
+          {/* LEFT COLUMN: counter + vertical label (top) + thumbnails (bottom) */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '520px' }}>
+            {/* Top: counter + vertical text */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+              <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '13px', color: COLORS.textMuted, letterSpacing: '2px', whiteSpace: 'nowrap' }}>
+                {String(activeIndex + 1).padStart(2, '0')} / {String(members.length).padStart(2, '0')}
+              </span>
+              <span style={{ fontFamily: "'Oswald', sans-serif", fontSize: '14px', fontWeight: 600, color: COLORS.textDark, textTransform: 'uppercase', letterSpacing: '3px', writingMode: 'vertical-lr' }}>
+                {sectionLabel}
+              </span>
+            </div>
+
+            {/* Bottom: thumbnail row — bottom-aligned, stair-stepped */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+              {strip.filter(s => s.offset > 0).reverse().map(({ member, offset, idx }) => {
+                const thumbH = { 1: 160, 2: 130, 3: 100 }[offset] || 100
+                return (
+                  <motion.div
+                    key={`thumb-${member.id}`}
+                    layout
+                    animate={{ height: thumbH, opacity: offset >= 3 ? 0.5 : 1 }}
+                    transition={cardSpring}
+                    onClick={() => setActiveIndex(idx)}
+                    style={{
+                      width: '110px',
+                      flexShrink: 0,
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      filter: `grayscale(${offset * 0.1})`,
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                    }}
+                  >
+                    <img src={member.image} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }} />
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* CENTER COLUMN: Hero card — tall, bottom-aligned with thumbnails */}
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={cardSpring}
+                style={{
+                  width: '100%',
+                  height: '520px',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  boxShadow: '0 24px 64px rgba(0,0,0,0.15)',
+                }}
+              >
+                <img src={active.image} alt={active.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center', display: 'block' }} />
+                {/* Name bar at bottom */}
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px',
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%)',
+                }}>
+                  <div style={{ width: '40px', height: '3px', backgroundColor: COLORS.accent, marginBottom: '8px', borderRadius: '2px' }} />
+                  <p style={{ fontFamily: "'Oswald', sans-serif", fontSize: '14px', color: '#fff', fontWeight: 600, letterSpacing: '0.5px' }}>
+                    {active.name}
+                  </p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* RIGHT COLUMN: Bio text — vertically centered */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ minHeight: '260px' }}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeIndex}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={textFade}
+                >
+                  <h3 style={{ fontFamily: "'Oswald', sans-serif", fontSize: '22px', fontWeight: 700, color: COLORS.textDark, marginBottom: '4px', textTransform: 'uppercase' }}>
+                    {active.name}
+                  </h3>
+                  <p style={{ fontFamily: "'Raleway', sans-serif", fontSize: '12px', color: COLORS.accent, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '24px' }}>
+                    {active.role}
+                  </p>
+                  <p style={{ fontFamily: "'Raleway', sans-serif", fontSize: '15px', color: COLORS.textDark, lineHeight: 1.8, fontWeight: 500 }}>
+                    "{active.bio}"
+                  </p>
+                  {active.socials?.linkedin && active.socials.linkedin !== '#' && (
+                    <a href={active.socials.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '16px', color: COLORS.accent, fontSize: '12px', fontWeight: 600, fontFamily: "'Raleway', sans-serif", textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <Linkedin size={14} /> LinkedIn
+                    </a>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {/* Next button — completely outside the grid, always fixed */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
+          <motion.button
+            onClick={goNext}
+            whileHover={{ scale: 1.12 }}
+            whileTap={{ scale: 0.92 }}
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              backgroundColor: COLORS.accent,
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 20px rgba(197,156,130,0.4)',
+            }}
+          >
+            <ChevronRight size={20} color="#fff" strokeWidth={2.5} />
+          </motion.button>
         </div>
       </div>
 
-      {/* Modal */}
-      {selectedMember && (
-        <TeamMemberModal
-          member={selectedMember}
-          onClose={() => setSelectedMember(null)}
-        />
-      )}
-
       <style>{`
-        @media (max-width: 1024px) {
-          .team-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
-        }
-        @media (max-width: 640px) {
-          .team-grid {
+        @media (max-width: 900px) {
+          .team-showcase-wrap {
             grid-template-columns: 1fr !important;
+            gap: 32px !important;
+            min-height: auto !important;
           }
         }
       `}</style>
@@ -609,117 +800,68 @@ function TeamGrid() {
 }
 
 // ============================================
-// JOIN OUR TEAM CTA
+// LEADERSHIP SECTION (Directors)
 // ============================================
-function JoinTeamCTA() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
-
+// Combined — All team members in one showcase
+function AllTeamSection() {
   return (
-    <section style={{
-      backgroundColor: COLORS.card,
-      padding: '80px 24px',
-    }}>
-      <motion.div
-        ref={ref}
-        initial={{ opacity: 0, y: 50 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-        transition={{ duration: 0.8 }}
-        style={{
-          maxWidth: '900px',
-          margin: '0 auto',
-        }}
-      >
+    <TeamShowcase
+      members={teamMembers}
+      sectionLabel="Our Team"
+      title="The Experts Behind Every"
+      titleAccent="Build"
+      subtitle="Directors, engineers, designers, and strategists — our diverse team brings together decades of experience under one roof."
+      bg={COLORS.white}
+    />
+  )
+}
+
+// ============================================
+// CTA SECTION
+// ============================================
+function CTASection() {
+  return (
+    <section style={{ padding: 'clamp(32px, 5vw, 64px) 0' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 80px)' }}>
         <div style={{
-          backgroundColor: COLORS.accent,
-          borderRadius: '24px',
-          padding: '60px 40px',
-          textAlign: 'center',
           position: 'relative',
+          borderRadius: '20px',
           overflow: 'hidden',
+          minHeight: '320px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}>
-          {/* Decorative circles */}
-          <div style={{
-            position: 'absolute',
-            top: '-50px',
-            right: '-50px',
-            width: '150px',
-            height: '150px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-          }} />
-          <div style={{
-            position: 'absolute',
-            bottom: '-30px',
-            left: '-30px',
-            width: '100px',
-            height: '100px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-          }} />
+          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=600&fit=crop" alt="Join our team" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(17,17,17,0.7)' }} />
 
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={isInView ? { scale: 1 } : { scale: 0 }}
-            transition={{ duration: 0.5, delay: 0.2, type: 'spring' }}
-            style={{
-              width: '70px',
-              height: '70px',
-              borderRadius: '50%',
-              backgroundColor: COLORS.dark,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 24px',
-            }}
-          >
-            <Users size={32} color={COLORS.accent} />
-          </motion.div>
+          <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', padding: 'clamp(40px, 6vw, 60px) clamp(24px, 4vw, 48px)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 20px', borderRadius: '9999px', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.15)', marginBottom: '20px', fontFamily: "'Raleway', sans-serif" }}>
+              Careers
+            </span>
 
-          <h2 style={{
-            fontFamily: 'Oswald, sans-serif',
-            fontSize: 'clamp(28px, 5vw, 36px)',
-            color: COLORS.dark,
-            marginBottom: '16px',
-          }}>
-            Join Our Growing Team
-          </h2>
+            <h2 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 300, color: '#fff', textTransform: 'uppercase', lineHeight: 1.1, marginBottom: '16px', textShadow: '0 2px 16px rgba(0,0,0,0.4)' }}>
+              Join Our <span style={{ color: COLORS.accent, fontWeight: 500 }}>Growing Team</span>
+            </h2>
 
-          <p style={{
-            color: 'rgba(17,17,17,0.7)',
-            fontSize: '15px',
-            lineHeight: 1.7,
-            maxWidth: '500px',
-            margin: '0 auto 32px',
-          }}>
-            We're always looking for talented individuals who share our passion for
-            excellence in construction and design. Build your career with us.
-          </p>
+            <p style={{ fontFamily: "'Raleway', sans-serif", color: 'rgba(255,255,255,0.6)', fontSize: '15px', lineHeight: 1.7, maxWidth: '480px', margin: '0 auto 28px' }}>
+              We're always looking for talented individuals who share our passion for excellence in construction and design.
+            </p>
 
-          <Link to="/contact-us" style={{ textDecoration: 'none' }}>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                backgroundColor: COLORS.dark,
-                color: COLORS.white,
-                padding: '14px 36px',
-                borderRadius: '50px',
-                border: 'none',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}
-            >
+            <Link to="/contact-us" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              backgroundColor: COLORS.accent, color: '#fff',
+              padding: '14px 32px', borderRadius: '9999px',
+              fontWeight: 500, fontSize: '13px', letterSpacing: '0.04em',
+              textTransform: 'uppercase', textDecoration: 'none',
+              fontFamily: "'Raleway', sans-serif",
+            }}>
               View Open Positions
               <ArrowRight size={16} />
-            </motion.button>
-          </Link>
+            </Link>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   )
 }
@@ -733,12 +875,12 @@ function Team() {
   }, [])
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: COLORS.dark }}>
+    <div style={{ minHeight: '100vh', backgroundColor: COLORS.white }}>
       <Header />
       <main>
         <HeroSection />
-        <TeamGrid />
-        <JoinTeamCTA />
+        <AllTeamSection />
+        <CTASection />
       </main>
       <Footer />
     </div>

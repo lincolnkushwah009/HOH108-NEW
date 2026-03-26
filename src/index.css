@@ -106,6 +106,228 @@
 @source "../index.html";
 @source "./**/*.{js,jsx,ts,tsx}";
 
+/* ═══════════════════════════════════════════════════════════
+   HOH108 — Interiorplus-inspired Design System
+   Light. Clean. Premium.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Colors */
+  --ip-void: #0F172A;
+  --ip-white: #ffffff;
+  --ip-canvas: #FAF5F2;
+  --ip-stone: #64748B;
+  --ip-linen: #F6F6F6;
+  --ip-earth: #4d3d30;
+  --ip-gold: #D97706;
+  --ip-gray: #EEEDED;
+  --ip-border: rgba(15, 23, 42, 0.08);
+  --ip-border-hover: rgba(27, 26, 26, 0.15);
+
+  /* Typography — fluid */
+  --text-display: clamp(2.5rem, 6vw, 4.5rem);
+  --text-h1: clamp(1.8rem, 4vw, 3rem);
+  --text-h2: clamp(1.4rem, 3vw, 2.2rem);
+  --text-h3: clamp(1.1rem, 2vw, 1.5rem);
+  --text-body: clamp(0.9rem, 1vw, 1.05rem);
+  --text-small: 0.8125rem;
+  --text-caption: 0.75rem;
+
+  /* Spacing — fluid */
+  --space-section: clamp(64px, 10vw, 120px);
+  --space-block: clamp(32px, 6vw, 80px);
+  --space-page: clamp(16px, 4vw, 80px);
+
+  /* Easing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Durations */
+  --duration-fast: 0.3s;
+  --duration-base: 0.5s;
+  --duration-slow: 0.7s;
+}
+
+/* ─── Keyframes (Interiorplus) ─── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes lineExpand { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+@keyframes pulse-gentle { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+@keyframes ctaBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+.cta-beat { animation: ctaBeat 2s ease-in-out infinite; }
+.cta-beat:hover { animation: none; }
+
+/* ─── Selection ─── */
+::selection {
+  background-color: var(--ip-void);
+  color: var(--ip-white);
+}
+
+/* ─── Section Pill ─── */
+.section-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  font-size: var(--text-caption);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: 'Raleway', sans-serif;
+  color: var(--ip-void);
+  border: 1px solid var(--ip-border);
+  background: transparent;
+}
+
+/* ─── IP Card ─── */
+.ip-card {
+  border-radius: 20px;
+  background: var(--ip-white);
+  border: 1px solid var(--ip-border);
+  overflow: hidden;
+  transition: transform 0.5s var(--ease-out-expo), box-shadow 0.5s var(--ease-out-expo), border-color 0.5s var(--ease-out-expo);
+}
+.ip-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
+  border-color: var(--ip-border-hover);
+}
+
+/* ─── Card Bordered ─── */
+.card-bordered {
+  border-radius: 20px;
+  border: 1px solid var(--ip-border);
+  background: var(--ip-white);
+  overflow: hidden;
+  transition: transform 0.5s var(--ease-out-expo), box-shadow 0.5s var(--ease-out-expo);
+}
+.card-bordered:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Link Hover Underline ─── */
+.link-hover {
+  position: relative;
+  display: inline-block;
+}
+.link-hover::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s var(--ease-out-expo);
+}
+.link-hover:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ─── Stat Number ─── */
+.stat-number {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 300;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* ─── Bento Gradient ─── */
+.bento-gradient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(27, 24, 22, 0.7) 0%, rgba(27, 24, 22, 0.2) 40%, transparent 70%);
+}
+
+/* ─── Noise Overlay ─── */
+.noise-overlay {
+  position: relative;
+}
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.02;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px;
+  z-index: 1;
+}
+
+/* ─── No Scrollbar ─── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Page Padding ─── */
+.page-pad {
+  padding-left: var(--space-page);
+  padding-right: var(--space-page);
+}
+
+/* ─── Global Container ─── */
+.site-container {
+  width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-page);
+  padding-right: var(--space-page);
+}
+
+/* ─── Section wrapper — full width bg + constrained content ─── */
+.site-section {
+  width: 100%;
+  padding-top: var(--space-section);
+  padding-bottom: var(--space-section);
+  padding-left: var(--space-page);
+  padding-right: var(--space-page);
+}
+
+.site-section > .site-inner {
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+/* ─── Fluid width utilities ─── */
+.w-full { width: 100%; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+/* ─── Prevent overflow on all screen sizes ─── */
+html, body, #root {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* ─── Ensure images never break layout ─── */
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ─── Image Hover Zoom (Interiorplus) ─── */
+.img-zoom-ip {
+  overflow: hidden;
+  border-radius: 16px;
+}
+.img-zoom-ip img {
+  transition: transform 0.7s var(--ease-out-expo);
+}
+.img-zoom-ip:hover img {
+  transform: scale(1.05);
+}
+
 /* Base Styles */
 *,
 *::before,
@@ -117,60 +339,61 @@
 
 /* Form Input Styles */
 .consultation-input {
-  background-color: #f5f5f5;
-  border: none;
-  padding: 16px 18px;
-  border-radius: 12px;
+  background-color: var(--ip-linen);
+  border: 1px solid var(--ip-border);
+  padding: 14px 16px;
+  border-radius: 10px;
   font-size: 14px;
   font-family: 'Raleway', sans-serif;
-  color: #333;
+  color: var(--ip-void);
   outline: none;
-  transition: box-shadow 0.2s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
   width: 100%;
   box-sizing: border-box;
 }
 
 .consultation-input::placeholder {
-  color: #b0a090;
-  opacity: 1;
+  color: var(--ip-stone);
+  opacity: 0.7;
 }
 
 .consultation-input:focus {
-  box-shadow: 0 0 0 2px rgba(197, 156, 130, 0.3);
+  border-color: #C59C82;
+  box-shadow: 0 0 0 3px rgba(197, 156, 130, 0.12);
 }
 
 /* ========================== */
 /* COST CALCULATOR STYLES */
 /* ========================== */
 
-/* Step animation */
+/* Step animation — smooth slide + fade */
 .calc-step-animate {
-  animation: calcFadeIn 0.4s ease-out;
+  animation: calcSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes calcFadeIn {
+@keyframes calcSlideUp {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(24px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 /* Option card hover effects */
 .calc-option-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
 }
 
 .calc-option-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
 }
 
 .calc-option-card:active {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1);
 }
 
 /* Back button style */
@@ -190,20 +413,23 @@
 }
 
 .calc-back-btn:hover {
-  color: white;
+  color: #0F172A;
 }
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   font-family: 'Raleway', sans-serif;
-  background-color: #111111;
-  color: #E5E5E5;
+  background-color: var(--ip-white);
+  color: var(--ip-void);
+  font-size: var(--text-body);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* Heading Font */
@@ -211,29 +437,20 @@ body {
   font-family: 'Oswald', sans-serif;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar — hidden globally (Interiorplus style) */
 ::-webkit-scrollbar {
-  width: 8px;
+  display: none;
 }
-
-::-webkit-scrollbar-track {
-  background: #111111;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #C59C82;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #DDC5B0;
+html, body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Calculator Toggle Container - EXPLICIT STYLES */
 .calc-toggle-container {
   display: inline-flex;
   flex-direction: column;
-  background-color: #111111;
+  background-color: var(--ip-void);
   border-radius: 9999px;
   padding: 6px;
 }
@@ -277,11 +494,11 @@ body {
 
 /* Section backgrounds */
 .section-dark {
-  background-color: #111111;
+  background-color: #0F172A;
 }
 
 .section-card {
-  background-color: #1A1A1A;
+  background-color: var(--ip-canvas);
 }
 
 .section-accent {
@@ -290,7 +507,8 @@ body {
 
 /* Beige container styles */
 .beige-container {
-  background-color: #C59C82;
+  background-color: var(--ip-canvas);
+  border: 1px solid var(--ip-border);
   border-radius: 30px;
   padding: 24px;
 }
@@ -461,7 +679,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #111111;
+  background-color: var(--ip-void);
   color: white;
   padding: 10px 20px;
   border-radius: 9999px;
@@ -493,37 +711,38 @@ body {
 }
 
 .nav-dot-active {
-  background-color: #111111;
+  background-color: var(--ip-void);
   width: 24px;
 }
 
 .nav-dot-inactive {
-  background-color: rgba(17, 17, 17, 0.3);
+  background-color: rgba(15, 23, 42, 0.2);
   width: 8px;
 }
 
-/* Glassmorphism */
+/* Glassmorphism (Interiorplus) */
 .glass {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(27, 26, 26, 0.06);
 }
 
 /* Card Hover Effects */
 .card-hover {
-  transition: all 0.3s ease;
+  transition: all 0.5s var(--ease-out-expo);
 }
 
 .card-hover:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
 }
 
-/* Responsive Grid Utilities */
+/* Responsive Grid Utilities — works on all screen sizes */
 .grid-responsive-2 {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: clamp(20px, 3vw, 40px);
 }
 
 @media (min-width: 768px) {
@@ -535,7 +754,7 @@ body {
 .grid-responsive-3 {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: clamp(16px, 2.5vw, 32px);
 }
 
 @media (min-width: 640px) {
@@ -553,7 +772,7 @@ body {
 .grid-responsive-4 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: clamp(16px, 2vw, 24px);
 }
 
 @media (min-width: 768px) {
@@ -565,7 +784,7 @@ body {
 .grid-responsive-6 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: clamp(12px, 1.5vw, 20px);
 }
 
 @media (min-width: 640px) {
@@ -577,6 +796,509 @@ body {
 @media (min-width: 1024px) {
   .grid-responsive-6 {
     grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* ─── Floor3D cards — white → dark on hover ─── */
+.floor3d-card:hover {
+  background-color: #111111 !important;
+  border-color: #111111 !important;
+  box-shadow: 0 20px 48px rgba(0,0,0,0.15) !important;
+  transform: translateY(-6px) !important;
+}
+
+.floor3d-card:hover .floor3d-card-title {
+  color: #fff !important;
+}
+
+.floor3d-card:hover .floor3d-card-desc {
+  color: rgba(255,255,255,0.6) !important;
+}
+
+/* ─── Floating circle animation ─── */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(3deg); }
+}
+
+/* ─── About Story Marquee — auto scroll ─── */
+@keyframes about-marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.about-story-marquee {
+  animation: about-marquee-scroll 20s linear infinite;
+  will-change: transform;
+}
+
+/* Ensure marquee parent allows overflow */
+.about-story-marquee-wrap {
+  overflow: hidden !important;
+}
+
+.about-story-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ─── About Services — responsive ─── */
+@media (max-width: 767px) {
+  .about-services-row {
+    grid-template-columns: 1fr !important;
+  }
+  .about-services-row-bottom {
+    max-width: 100% !important;
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ─── About Story — responsive ─── */
+@media (max-width: 767px) {
+  .about-story-header {
+    grid-template-columns: 1fr !important;
+  }
+  .about-story-cards {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+  .about-story-cards > div {
+    min-height: 220px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .about-story-cards {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+  }
+}
+
+/* ─── Why Bento Grid — responsive ─── */
+@media (max-width: 767px) {
+  .why-bento-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+  .why-bento-grid > div {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+    min-height: 200px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .why-bento-grid {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+  }
+  .why-bento-grid > div {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+  }
+}
+
+/* ─── Services CTA Button ─── */
+.services-cta-btn {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.services-cta-btn:hover {
+  background-color: #C59C82 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px);
+  border-color: #C59C82 !important;
+}
+
+/* ─── Services Bento Grid — stack on mobile ─── */
+@media (max-width: 767px) {
+  .services-bento-grid {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+
+  .services-bento-grid > div {
+    min-height: 200px;
+    flex: unset !important;
+  }
+}
+
+/* ─── Large Desktop (1440px+) — increase breathing room ─── */
+@media (min-width: 1440px) {
+  :root {
+    --space-page: clamp(60px, 5vw, 120px);
+  }
+}
+
+/* ─── Ultra-wide (1920px+) — keep content centered and readable ─── */
+@media (min-width: 1920px) {
+  :root {
+    --space-page: clamp(80px, 6vw, 160px);
+    --text-display: clamp(3rem, 5vw, 5rem);
+  }
+}
+
+/* ═══════════════════════════════════════════ */
+/* SELECTIVE RENDERING — Mobile vs Desktop    */
+/* ═══════════════════════════════════════════ */
+
+/* Desktop-only text: hidden on mobile, shown on tablet+ */
+.desktop-only-text {
+  display: none;
+}
+@media (min-width: 768px) {
+  .desktop-only-text {
+    display: inline;
+  }
+}
+
+/* Mobile-only text: shown on mobile, hidden on tablet+ */
+.mobile-only-text {
+  display: inline;
+}
+@media (min-width: 768px) {
+  .mobile-only-text {
+    display: none;
+  }
+}
+
+/* Desktop-only blocks (paragraphs, sections) */
+.desktop-only {
+  display: none;
+}
+@media (min-width: 768px) {
+  .desktop-only {
+    display: block;
+  }
+}
+
+/* Mobile-only blocks */
+.mobile-only {
+  display: block;
+}
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+}
+
+/* Desktop-only flex */
+.desktop-only-flex {
+  display: none;
+}
+@media (min-width: 768px) {
+  .desktop-only-flex {
+    display: flex;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* MOBILE RESPONSIVE — Complete Overhaul (max-width:767px)*/
+/* ═══════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* ── Global ── */
+  html, body {
+    overflow-x: hidden !important;
+  }
+
+  section {
+    overflow-x: hidden;
+  }
+
+  /* ── Section Padding — consistent 16px sides ── */
+  section > div {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* ── Hero sections — reduced height ── */
+  .hero-ip-grid {
+    gap: 20px !important;
+  }
+
+  /* Hero rounded boxes — shorter on mobile */
+  section > div > div[style*="borderRadius"] {
+    min-height: 340px !important;
+  }
+
+  /* ── Typography — scale down ── */
+  h1 { font-size: clamp(1.8rem, 8vw, 2.5rem) !important; }
+  h2 { font-size: clamp(1.5rem, 6vw, 2rem) !important; }
+  h3 { font-size: clamp(1.1rem, 5vw, 1.4rem) !important; }
+
+  /* ── Buttons — touch-friendly but proportional ── */
+  button, a[style*="borderRadius: '9999px'"], a[style*="borderRadius: '50px'"],
+  .services-cta-btn {
+    font-size: 12px !important;
+    padding: 12px 24px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  /* ── Services Bento — keep horizontal, shorter ── */
+  .services-bento-grid {
+    height: 320px !important;
+    gap: 8px !important;
+  }
+
+  .services-bento-grid > div {
+    min-width: 0 !important;
+  }
+
+  /* ── Why Bento Grid — single column ── */
+  .why-bento-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+    gap: 12px !important;
+  }
+
+  .why-bento-grid > div {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+    min-height: 160px !important;
+  }
+
+  /* ── Team Showcase — stack, hide counter column ── */
+  .team-showcase-wrap {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    min-height: auto !important;
+  }
+
+  /* Hide the counter/label column on mobile */
+  .team-showcase-wrap > div:first-child {
+    display: none !important;
+  }
+
+  /* ── FAQ Block — less border-radius, tighter margin ── */
+  section > div > div[style*="border-radius: 24px"] {
+    border-radius: 14px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* ── Stats grid — 2 columns on mobile ── */
+  .grid-responsive-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* ── Feature cards grid — single column ── */
+  .grid-responsive-3 {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .grid-responsive-6 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* ── About page story header — stack ── */
+  .about-story-header {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  /* ── About services row — single column ── */
+  .about-services-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ── About story marquee — slower on mobile ── */
+  .about-story-marquee > div {
+    width: 300px !important;
+    min-height: 260px !important;
+  }
+
+  /* ── Verticals — scale down radial on mobile, center it ── */
+  .verticals-mobile-layout {
+    display: none !important;
+  }
+  .verticals-desktop-layout {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .verticals-desktop-layout .verticals-header {
+    text-align: center;
+    padding: 0 16px !important;
+  }
+  .verticals-radial-wrapper {
+    transform: scale(0.55) !important;
+    transform-origin: center center !important;
+    margin: -80px auto -80px !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+  .verticals-orbit-container {
+    margin: 0 auto !important;
+  }
+
+  /* ── Cost Calculator — reduce height, tighter spacing ── */
+  .cost-estimator-header {
+    padding: 32px 16px 20px !important;
+  }
+  .cost-estimator-header h2 {
+    font-size: clamp(1.4rem, 5vw, 2rem) !important;
+    margin-bottom: 10px !important;
+  }
+  .cost-estimator-header p {
+    font-size: 13px !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* ── Login card — stack panels ── */
+  div[style*="gridTemplateColumns: '1fr 1fr'"],
+  div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Reduce image sizes ── */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* ── No horizontal overflow from anything (except marquees) ── */
+  *:not(.about-story-marquee):not(.about-story-marquee *) {
+    max-width: 100vw;
+  }
+
+  /* ── Hide decorative elements on mobile ── */
+  [style*="animation: float-slow"],
+  .noise-overlay {
+    display: none !important;
+  }
+
+  /* ── Services bento expanded card — smaller text on mobile ── */
+  .services-bento-grid h3 {
+    font-size: clamp(1rem, 4vw, 1.25rem) !important;
+  }
+
+  .services-bento-grid p {
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+  }
+
+  .services-cta-btn {
+    font-size: 10px !important;
+    padding: 8px 16px !important;
+  }
+
+  /* ── Collapsed card vertical text — smaller ── */
+  .services-bento-grid span[style*="writingMode"] {
+    font-size: 10px !important;
+    letter-spacing: 2px !important;
+  }
+
+  /* ── Cost calculator — tighter padding + sizing ── */
+  .calc-option-card {
+    padding: 20px 14px !important;
+  }
+
+  .calc-step-animate h3 {
+    font-size: 20px !important;
+  }
+
+  .calc-step-animate p {
+    font-size: 13px !important;
+  }
+
+  /* Calculator inner card — reduce padding */
+  .calc-step-animate > div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* BHK grid — 3 columns on mobile instead of 5 */
+  .calc-step-animate > div[style*="repeat(5"] {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Category grid — single column */
+  .calc-step-animate > div[style*="repeat(2, 1fr)"] {
+    gap: 10px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* TABLET RESPONSIVE (768px — 1023px)                     */
+/* ═══════════════════════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1023px) {
+
+  /* ── Bento grids — 2 columns ── */
+  .why-bento-grid {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+  }
+
+  .why-bento-grid > div {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+  }
+
+  /* ── Services bento — keep horizontal but shorter ── */
+  .services-bento-grid {
+    height: 360px !important;
+  }
+
+  /* ── Team showcase — 2-column layout ── */
+  .team-showcase-wrap {
+    grid-template-columns: 60px 1fr 260px !important;
+    gap: 16px !important;
+  }
+
+  /* ── About story cards — 2 columns ── */
+  .about-story-cards {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+  }
+
+  /* ── Stats — keep 4 columns ── */
+  .grid-responsive-4 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* ── Feature cards — 2 columns ── */
+  .grid-responsive-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ── Verticals — scale radial on tablet ── */
+  .verticals-desktop-layout {
+    grid-template-columns: 1fr 500px !important;
+    gap: 32px !important;
+  }
+  .verticals-radial-wrapper {
+    transform: scale(0.85) !important;
+    transform-origin: center center !important;
+  }
+}
+
+/* ─── Login page — stack on mobile ─── */
+@media (max-width: 767px) {
+  .login-container {
+    height: auto !important;
+    min-height: 500px;
+  }
+
+  .login-container > div[style*="width: '50%'"] {
+    position: relative !important;
+    width: 100% !important;
+    min-height: 400px;
+  }
+
+  /* Hide the sliding dark overlay on mobile — show both forms stacked */
+  .login-container > div:last-child {
+    position: relative !important;
+    width: 100% !important;
+    border-radius: 16px !important;
   }
 }
 
@@ -615,21 +1337,9 @@ body {
   }
 }
 
-/* Responsive padding */
+/* Responsive padding — fluid across all screen sizes */
 .section-padding {
-  padding: 48px 16px;
-}
-
-@media (min-width: 640px) {
-  .section-padding {
-    padding: 64px 24px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .section-padding {
-    padding: 96px 24px;
-  }
+  padding: var(--space-section) var(--space-page);
 }
 
 /* Responsive text */
@@ -649,20 +1359,14 @@ body {
   }
 }
 
-/* Verticals Mobile Layout - shown on mobile */
+/* Verticals Mobile Layout - always hidden now (desktop layout used everywhere) */
 .verticals-mobile-layout {
-  display: block;
-}
-
-@media (min-width: 1024px) {
-  .verticals-mobile-layout {
-    display: none;
-  }
-}
-
-/* Verticals Desktop Layout - side by side */
-.verticals-desktop-layout {
   display: none;
+}
+
+/* Verticals Desktop Layout - shown on all screens */
+.verticals-desktop-layout {
+  display: block;
 }
 
 @media (min-width: 1024px) {
@@ -1392,9 +2096,9 @@ a, button, input, textarea, select {
 .skeleton {
   background: linear-gradient(
     90deg,
-    #1A1A1A 25%,
-    #2A2A2A 50%,
-    #1A1A1A 75%
+    #f0ebe7 25%,
+    #e8e0d9 50%,
+    #f0ebe7 75%
   );
   background-size: 200% 100%;
   animation: skeletonLoading 1.5s infinite;
@@ -1507,7 +2211,7 @@ a, button, input, textarea, select {
 /* Border Gradient Animation */
 .border-gradient-animate {
   position: relative;
-  background: #1A1A1A;
+  background: var(--ip-white);
 }
 
 .border-gradient-animate::before {
@@ -1912,7 +2616,7 @@ a, button, input, textarea, select {
 /* Gradient Border Animation */
 .gradient-border-animated {
   position: relative;
-  background: #1A1A1A;
+  background: var(--ip-white);
   border-radius: 16px;
   overflow: hidden;
 }
@@ -2305,7 +3009,7 @@ a, button, input, textarea, select {
   content: '';
   position: absolute;
   inset: 2px;
-  background: #1A1A1A;
+  background: var(--ip-white);
   border-radius: 14px;
 }
 

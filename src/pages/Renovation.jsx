@@ -1,42 +1,43 @@
 import { useState } from 'react';
-import { ArrowRight, Users, Shield, Clock, DollarSign, Award, Heart, ChevronLeft, ChevronRight, Home, Building2, Paintbrush, Wrench, RefreshCw, Sparkles, CheckCircle, MapPin, Phone, Mail } from 'lucide-react';
+import { ArrowRight, Users, Shield, Clock, DollarSign, Award, Heart, Home, Building2, Paintbrush, Wrench, RefreshCw, Sparkles, CheckCircle, Phone, Mail, ChevronDown } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { COLORS } from '../constants/colors';
 
 const Renovation = () => {
-  const [currentProject, setCurrentProject] = useState(0);
   const [activeProcess, setActiveProcess] = useState(0);
+  const [openFaq, setOpenFaq] = useState(null);
 
   const features = [
     {
       icon: Users,
       title: 'Expert Craftsmen',
-      description: 'Our skilled team transforms spaces with precision, bringing decades of renovation expertise.'
+      description: 'Our skilled team transforms spaces with precision, bringing decades of renovation expertise to every project.'
     },
     {
       icon: Shield,
       title: 'Quality Guaranteed',
-      description: 'Premium materials and meticulous workmanship backed by our satisfaction guarantee.'
+      description: 'Premium materials and meticulous workmanship backed by our comprehensive satisfaction guarantee.'
     },
     {
       icon: Clock,
       title: 'Minimal Disruption',
-      description: 'Efficient project timelines designed to get you back to normal life quickly.'
+      description: 'Efficient project timelines designed to get you back to normal life as quickly as possible.'
     },
     {
       icon: DollarSign,
       title: 'Fixed Pricing',
-      description: 'Detailed quotes with no hidden costs. Know your investment upfront.'
+      description: 'Detailed quotes with no hidden costs. Know your full investment upfront before we begin.'
     },
     {
       icon: Award,
       title: 'Design Excellence',
-      description: 'Creative solutions that maximize space, light, and functionality.'
+      description: 'Creative solutions that maximize space, natural light, and everyday functionality.'
     },
     {
       icon: Heart,
       title: 'Personalized Approach',
-      description: 'Every renovation is tailored to your lifestyle, taste, and budget.'
+      description: 'Every renovation is tailored to your unique lifestyle, taste, and budget requirements.'
     }
   ];
 
@@ -45,36 +46,42 @@ const Renovation = () => {
       icon: Home,
       title: 'Complete Home Renovation',
       description: 'Full-scale transformations that reimagine your entire living space from floor to ceiling.',
+      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop',
       features: ['Structural modifications', 'Layout redesign', 'Modern upgrades', 'Energy efficiency']
     },
     {
       icon: Paintbrush,
       title: 'Kitchen Remodeling',
       description: 'Transform your kitchen into a functional, beautiful heart of your home.',
+      image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop',
       features: ['Custom cabinetry', 'Premium countertops', 'Modern appliances', 'Smart storage']
     },
     {
       icon: Sparkles,
       title: 'Bathroom Renovation',
       description: 'Create spa-like retreats with modern fixtures and elegant finishes.',
+      image: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&h=400&fit=crop',
       features: ['Luxury fixtures', 'Tile work', 'Vanity design', 'Lighting design']
     },
     {
       icon: Building2,
       title: 'Commercial Renovation',
       description: 'Upgrade your business space to enhance productivity and impress clients.',
+      image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop',
       features: ['Office redesign', 'Retail makeovers', 'Restaurant fit-outs', 'Lobby upgrades']
     },
     {
       icon: RefreshCw,
       title: 'Room Additions',
       description: 'Expand your living space with seamlessly integrated room additions.',
+      image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&h=400&fit=crop',
       features: ['Bedroom additions', 'Home offices', 'Sunrooms', 'In-law suites']
     },
     {
       icon: Wrench,
       title: 'Restoration & Repair',
       description: 'Preserve heritage while modernizing functionality in older properties.',
+      image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&h=400&fit=crop',
       features: ['Heritage restoration', 'Structural repairs', 'Foundation work', 'Weatherproofing']
     }
   ];
@@ -102,336 +109,300 @@ const Renovation = () => {
     }
   ];
 
-  const projects = [
+  const faqs = [
     {
-      title: 'Modern Kitchen Transformation',
-      location: 'Bangalore, KA',
-      category: 'Kitchen',
-      image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop'
+      question: 'How long does a typical renovation take?',
+      answer: 'Project timelines vary based on scope. A bathroom renovation typically takes 2-3 weeks, a kitchen remodel 4-6 weeks, and a complete home renovation 8-12 weeks. We provide a detailed timeline during the planning phase.'
     },
     {
-      title: 'Luxury Bathroom Remodel',
-      location: 'Mysore, KA',
-      category: 'Bathroom',
-      image: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&h=600&fit=crop'
+      question: 'Do you provide a fixed-price quote?',
+      answer: 'Yes, we provide comprehensive fixed-price quotes after the initial consultation and site assessment. There are no hidden costs or surprise charges. Any changes to scope are discussed and approved by you before proceeding.'
     },
     {
-      title: 'Complete Villa Renovation',
-      location: 'Bangalore, KA',
-      category: 'Full Home',
-      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop'
+      question: 'Can I live in my home during renovation?',
+      answer: 'In most cases, yes. We plan the renovation in phases to minimize disruption to your daily life. For extensive whole-home renovations, we may recommend temporary relocation for certain phases.'
     },
     {
-      title: 'Office Space Makeover',
-      location: 'Bangalore, KA',
-      category: 'Commercial',
-      image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop'
+      question: 'What materials do you use?',
+      answer: 'We source premium materials from trusted suppliers. During the planning phase, you will select from curated options that balance quality, aesthetics, and budget. We never compromise on structural or safety materials.'
+    },
+    {
+      question: 'Do you handle permits and approvals?',
+      answer: 'Absolutely. Our team manages all necessary permits, approvals, and inspections required for your renovation project. This is included in our project management scope.'
     }
   ];
 
-  const stats = [
-    { value: '200+', label: 'Renovations Completed' },
-    { value: '98%', label: 'Client Satisfaction' },
-    { value: '15+', label: 'Years Experience' },
-    { value: '45-Day', label: 'Avg. Project Time' }
-  ];
+  const sectionPill = (text) => ({
+    display: 'inline-block',
+    backgroundColor: COLORS.canvas,
+    color: COLORS.accent,
+    padding: '8px 20px',
+    borderRadius: '9999px',
+    fontSize: '12px',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: '2px',
+    marginBottom: '20px',
+    border: `1px solid ${COLORS.border}`
+  });
 
-  const nextProject = () => {
-    setCurrentProject((prev) => (prev + 1) % projects.length);
-  };
-
-  const prevProject = () => {
-    setCurrentProject((prev) => (prev - 1 + projects.length) % projects.length);
+  const sectionHeading = {
+    fontFamily: "'Oswald', sans-serif",
+    fontSize: 'clamp(28px, 5vw, 44px)',
+    fontWeight: 400,
+    color: COLORS.textDark,
+    lineHeight: 1.2,
+    textTransform: 'uppercase'
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#111111', color: '#E5E5E5' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: COLORS.white, color: COLORS.textDark }}>
       <Header />
 
       {/* Hero Section */}
-      <section style={{
-        position: 'relative',
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden'
-      }}>
-        {/* Background Image */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: 'url(https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=1920&h=1080&fit=crop)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}>
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to bottom, rgba(17, 17, 17, 0.7), rgba(17, 17, 17, 0.9))'
-          }} />
-        </div>
-
-        {/* Content */}
-        <div style={{
-          position: 'relative',
-          zIndex: 10,
-          textAlign: 'center',
-          padding: '0 24px',
-          maxWidth: '900px'
-        }}>
-          <span style={{
-            display: 'inline-block',
-            backgroundColor: 'rgba(197, 156, 130, 0.2)',
-            color: '#C59C82',
-            padding: '8px 20px',
-            borderRadius: '9999px',
-            fontSize: '12px',
-            fontWeight: 500,
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginBottom: '24px',
-            border: '1px solid rgba(197, 156, 130, 0.3)'
-          }}>
-            Complete Renovation Services
-          </span>
-          <h1 style={{
-            fontFamily: "'Oswald', sans-serif",
-            fontSize: 'clamp(36px, 8vw, 72px)',
-            fontWeight: 400,
-            color: 'white',
-            marginBottom: '24px',
-            lineHeight: 1.1
-          }}>
-            Transform Your Space.
-            <br />
-            <span style={{ fontStyle: 'italic', color: '#C59C82' }}>Elevate Your Life.</span>
-          </h1>
-          <p style={{
-            color: '#9CA3AF',
-            fontSize: '18px',
-            maxWidth: '600px',
-            margin: '0 auto 40px',
-            lineHeight: 1.7
-          }}>
-            From dated to dazzling. Our expert renovation services breathe new life into homes and commercial spaces with thoughtful design and flawless execution.
-          </p>
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="#contact" style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: '#C59C82',
-              color: '#111111',
-              padding: '16px 32px',
-              borderRadius: '9999px',
-              fontSize: '16px',
-              fontWeight: 500,
-              textDecoration: 'none',
-              transition: 'transform 0.2s'
-            }}>
-              Start Your Renovation
-              <ArrowRight size={18} />
-            </a>
-            <a href="#portfolio" style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: 'transparent',
-              color: 'white',
-              padding: '16px 32px',
-              borderRadius: '9999px',
-              fontSize: '16px',
-              fontWeight: 500,
-              textDecoration: 'none',
-              border: '1px solid rgba(255,255,255,0.3)',
-              transition: 'border-color 0.2s'
-            }}>
-              View Our Work
-            </a>
+      <section style={{ padding: '80px 0 32px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 80px)' }}>
+          <div style={{ position: 'relative', width: '100%', borderRadius: '20px', overflow: 'hidden', minHeight: '500px' }}>
+            <img src="https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=1920&h=1080&fit=crop" alt="Renovation" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(17,17,17,0.55)' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(17,17,17,0.5) 0%, transparent 60%)' }} />
+            <div style={{ position: 'relative', zIndex: 2, padding: 'clamp(48px, 8vw, 80px) clamp(32px, 6vw, 64px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', minHeight: '500px' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 20px', borderRadius: '9999px', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.15)', marginBottom: '24px', fontFamily: "'Raleway', sans-serif" }}>
+                Renovation Services
+              </span>
+              <h1 style={{ fontFamily: "'Oswald', sans-serif", fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 300, color: '#ffffff', lineHeight: 1.05, letterSpacing: '-0.02em', textTransform: 'uppercase', marginBottom: '24px', textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>
+                Renovation<br />
+                <span style={{ color: COLORS.accent, fontWeight: 500 }}>Services</span>
+              </h1>
+              <p style={{ fontFamily: "'Raleway', sans-serif", color: 'rgba(255,255,255,0.65)', fontSize: 'clamp(14px, 1.5vw, 17px)', lineHeight: 1.8, maxWidth: '600px', marginBottom: '32px' }}>
+                From dated to dazzling. Our expert renovation services breathe new life into homes and commercial spaces with thoughtful design and flawless execution.
+              </p>
+              <a href="/contact-us" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: COLORS.accent, color: '#ffffff', padding: '14px 32px', borderRadius: '9999px', fontWeight: 500, fontSize: '13px', letterSpacing: '0.04em', textTransform: 'uppercase', textDecoration: 'none', fontFamily: "'Raleway', sans-serif" }}>
+                Start Your Renovation
+                <ArrowRight size={18} />
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section style={{ padding: '48px 24px', backgroundColor: '#1A1A1A' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Services Section */}
+      <section id="services" style={{ padding: 'clamp(64px, 10vw, 120px) 24px', backgroundColor: COLORS.white }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+            <span style={sectionPill('services')}>Our Services</span>
+            <h2 style={sectionHeading}>
+              Comprehensive Renovation
+              <br />
+              <span style={{ fontStyle: 'italic', color: COLORS.accent }}>Solutions</span>
+            </h2>
+          </div>
+
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: '32px',
-            textAlign: 'center'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+            gap: '32px'
           }}>
-            {stats.map((stat, index) => (
-              <div key={index}>
+            {services.map((service, index) => {
+              const IconComponent = service.icon;
+              return (
+                <div key={index} style={{
+                  backgroundColor: COLORS.white,
+                  borderRadius: '20px',
+                  border: `1px solid ${COLORS.border}`,
+                  overflow: 'hidden',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  cursor: 'default'
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 20px 60px rgba(15,23,42,0.08)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                >
+                  <div style={{ position: 'relative', overflow: 'hidden' }}>
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block' }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: '16px',
+                      left: '16px',
+                      width: '48px',
+                      height: '48px',
+                      backgroundColor: COLORS.white,
+                      borderRadius: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}>
+                      <IconComponent size={22} style={{ color: COLORS.accent }} />
+                    </div>
+                  </div>
+                  <div style={{ padding: '28px' }}>
+                    <h3 style={{
+                      fontFamily: "'Oswald', sans-serif",
+                      color: COLORS.textDark,
+                      fontSize: '20px',
+                      fontWeight: 500,
+                      marginBottom: '10px',
+                      textTransform: 'uppercase'
+                    }}>
+                      {service.title}
+                    </h3>
+                    <p style={{
+                      fontFamily: "'Raleway', sans-serif",
+                      color: COLORS.textMuted,
+                      fontSize: '14px',
+                      lineHeight: 1.7,
+                      marginBottom: '20px'
+                    }}>
+                      {service.description}
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {service.features.map((feature, idx) => (
+                        <span key={idx} style={{
+                          backgroundColor: COLORS.canvas,
+                          color: COLORS.accent,
+                          padding: '6px 14px',
+                          borderRadius: '9999px',
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          fontFamily: "'Raleway', sans-serif"
+                        }}>
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <section style={{ padding: 'clamp(64px, 10vw, 120px) 24px', backgroundColor: COLORS.canvas }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+            <span style={sectionPill('process')}>Our Process</span>
+            <h2 style={sectionHeading}>
+              How We Transform
+              <br />
+              <span style={{ fontStyle: 'italic', color: COLORS.accent }}>Your Space</span>
+            </h2>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '32px'
+          }}>
+            {process.map((step, index) => (
+              <div
+                key={index}
+                onClick={() => setActiveProcess(index)}
+                style={{
+                  backgroundColor: activeProcess === index ? COLORS.accent : COLORS.white,
+                  borderRadius: '20px',
+                  padding: '36px 28px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  border: `1px solid ${activeProcess === index ? COLORS.accent : COLORS.border}`,
+                  textAlign: 'center'
+                }}
+              >
                 <div style={{
                   fontFamily: "'Oswald', sans-serif",
-                  fontSize: 'clamp(32px, 5vw, 48px)',
-                  fontWeight: 400,
-                  color: '#C59C82',
-                  marginBottom: '8px'
+                  fontSize: '48px',
+                  fontWeight: 300,
+                  color: activeProcess === index ? COLORS.white : COLORS.accentLight,
+                  marginBottom: '16px',
+                  lineHeight: 1
                 }}>
-                  {stat.value}
+                  {step.step}
                 </div>
-                <div style={{ color: '#9CA3AF', fontSize: '14px' }}>{stat.label}</div>
+                <h3 style={{
+                  fontFamily: "'Oswald', sans-serif",
+                  color: activeProcess === index ? COLORS.white : COLORS.textDark,
+                  fontSize: '20px',
+                  fontWeight: 500,
+                  marginBottom: '12px',
+                  textTransform: 'uppercase'
+                }}>
+                  {step.title}
+                </h3>
+                <p style={{
+                  fontFamily: "'Raleway', sans-serif",
+                  color: activeProcess === index ? 'rgba(255,255,255,0.85)' : COLORS.textMuted,
+                  fontSize: '14px',
+                  lineHeight: 1.7
+                }}>
+                  {step.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* About Renovation Section */}
-      <section style={{ padding: 'clamp(48px, 10vw, 96px) 24px', backgroundColor: '#111111' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div className="grid-responsive-2" style={{ alignItems: 'center', gap: '48px' }}>
-            {/* Image */}
-            <div style={{
-              position: 'relative',
-              borderRadius: '24px',
-              overflow: 'hidden'
-            }}>
-              <img
-                src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&h=500&fit=crop"
-                alt="Renovation in progress"
-                style={{
-                  width: '100%',
-                  height: '400px',
-                  objectFit: 'cover'
-                }}
-              />
-              <div style={{
-                position: 'absolute',
-                bottom: '24px',
-                left: '24px',
-                right: '24px',
-                backgroundColor: 'rgba(17, 17, 17, 0.9)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '16px',
-                padding: '20px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <RefreshCw size={24} style={{ color: '#C59C82' }} />
-                  <div>
-                    <div style={{ color: 'white', fontWeight: 600 }}>Seamless Transformations</div>
-                    <div style={{ color: '#9CA3AF', fontSize: '13px' }}>From concept to completion</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div>
-              <span style={{
-                display: 'inline-block',
-                backgroundColor: '#1A1A1A',
-                color: '#C59C82',
-                padding: '8px 20px',
-                borderRadius: '9999px',
-                fontSize: '12px',
-                fontWeight: 500,
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                marginBottom: '24px'
-              }}>
-                Why Renovate With Us
-              </span>
-              <h2 style={{
-                fontFamily: "'Oswald', sans-serif",
-                fontSize: 'clamp(28px, 5vw, 42px)',
-                fontWeight: 400,
-                color: 'white',
-                marginBottom: '24px',
-                lineHeight: 1.2
-              }}>
-                Reimagine Your Space
-                <br />
-                <span style={{ fontStyle: 'italic', color: '#C59C82' }}>Without The Hassle</span>
-              </h2>
-              <p style={{
-                color: '#9CA3AF',
-                fontSize: '16px',
-                lineHeight: 1.8,
-                marginBottom: '32px'
-              }}>
-                Renovation doesn't have to be stressful. At HOH108, we handle every aspect of your project—from initial design to final cleanup. Our experienced team delivers stunning transformations on time and on budget, with minimal disruption to your daily life.
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                {['Fixed-price quotes', 'Dedicated project manager', 'Quality materials', 'Clean worksite'].map((item, index) => (
-                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <CheckCircle size={20} style={{ color: '#C59C82' }} />
-                    <span style={{ color: '#E5E5E5', fontSize: '14px' }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features Section */}
-      <section style={{ padding: 'clamp(48px, 10vw, 96px) 24px', backgroundColor: '#1A1A1A' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <span style={{
-              display: 'inline-block',
-              backgroundColor: '#111111',
-              color: '#C59C82',
-              padding: '8px 20px',
-              borderRadius: '9999px',
-              fontSize: '12px',
-              fontWeight: 500,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '24px'
-            }}>
-              The HOH108 Difference
-            </span>
-            <h2 style={{
-              fontFamily: "'Oswald', sans-serif",
-              fontSize: 'clamp(28px, 5vw, 42px)',
-              fontWeight: 400,
-              color: 'white',
-              lineHeight: 1.2
-            }}>
+      <section style={{ padding: 'clamp(64px, 10vw, 120px) 24px', backgroundColor: COLORS.white }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+            <span style={sectionPill('features')}>The HOH108 Difference</span>
+            <h2 style={sectionHeading}>
               Why Choose Us For Your
               <br />
-              <span style={{ fontStyle: 'italic', color: '#C59C82' }}>Renovation Project</span>
+              <span style={{ fontStyle: 'italic', color: COLORS.accent }}>Renovation Project</span>
             </h2>
           </div>
 
-          <div className="grid-responsive-3">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+            gap: '28px'
+          }}>
             {features.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
                 <div key={index} style={{
-                  backgroundColor: '#111111',
-                  borderRadius: '24px',
-                  padding: '32px',
+                  backgroundColor: COLORS.white,
+                  borderRadius: '20px',
+                  padding: '36px',
                   textAlign: 'center',
-                  transition: 'transform 0.3s ease'
-                }}>
+                  border: `1px solid ${COLORS.border}`,
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 16px 48px rgba(15,23,42,0.06)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                >
                   <div style={{
                     width: '64px',
                     height: '64px',
-                    backgroundColor: 'rgba(197, 156, 130, 0.1)',
+                    backgroundColor: COLORS.canvas,
                     borderRadius: '16px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 20px'
                   }}>
-                    <IconComponent size={28} style={{ color: '#C59C82' }} />
+                    <IconComponent size={28} style={{ color: COLORS.accent }} />
                   </div>
                   <h3 style={{
-                    color: 'white',
+                    fontFamily: "'Oswald', sans-serif",
+                    color: COLORS.textDark,
                     fontSize: '18px',
-                    fontWeight: 600,
-                    marginBottom: '12px'
+                    fontWeight: 500,
+                    marginBottom: '12px',
+                    textTransform: 'uppercase'
                   }}>
                     {feature.title}
                   </h3>
                   <p style={{
-                    color: '#9CA3AF',
+                    fontFamily: "'Raleway', sans-serif",
+                    color: COLORS.textMuted,
                     fontSize: '14px',
                     lineHeight: 1.7
                   }}>
@@ -444,380 +415,126 @@ const Renovation = () => {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section style={{ padding: 'clamp(48px, 10vw, 96px) 24px', backgroundColor: '#111111' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+      {/* FAQ Section */}
+      <section style={{ padding: 'clamp(64px, 10vw, 120px) 24px', backgroundColor: COLORS.dark }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
             <span style={{
               display: 'inline-block',
-              backgroundColor: '#1A1A1A',
-              color: '#C59C82',
+              backgroundColor: 'rgba(197,156,130,0.15)',
+              color: COLORS.accent,
               padding: '8px 20px',
               borderRadius: '9999px',
               fontSize: '12px',
-              fontWeight: 500,
+              fontWeight: 600,
               textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '24px'
+              letterSpacing: '2px',
+              marginBottom: '20px',
+              border: '1px solid rgba(197,156,130,0.2)'
             }}>
-              Our Services
+              FAQ
             </span>
             <h2 style={{
               fontFamily: "'Oswald', sans-serif",
-              fontSize: 'clamp(28px, 5vw, 42px)',
+              fontSize: 'clamp(28px, 5vw, 44px)',
               fontWeight: 400,
-              color: 'white',
-              lineHeight: 1.2
+              color: COLORS.white,
+              lineHeight: 1.2,
+              textTransform: 'uppercase'
             }}>
-              Comprehensive Renovation
+              Frequently Asked
               <br />
-              <span style={{ fontStyle: 'italic', color: '#C59C82' }}>Solutions</span>
+              <span style={{ fontStyle: 'italic', color: COLORS.accent }}>Questions</span>
             </h2>
           </div>
 
-          <div className="grid-responsive-3">
-            {services.map((service, index) => {
-              const IconComponent = service.icon;
-              return (
-                <div key={index} style={{
-                  backgroundColor: '#1A1A1A',
-                  borderRadius: '24px',
-                  padding: '32px',
-                  border: '1px solid rgba(197, 156, 130, 0.1)',
-                  transition: 'border-color 0.3s ease'
-                }}>
-                  <div style={{
-                    width: '56px',
-                    height: '56px',
-                    backgroundColor: '#C59C82',
-                    borderRadius: '14px',
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {faqs.map((faq, index) => (
+              <div key={index} style={{
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255,255,255,0.08)',
+                overflow: 'hidden',
+                transition: 'border-color 0.3s ease'
+              }}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                  style={{
+                    width: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '20px'
-                  }}>
-                    <IconComponent size={26} style={{ color: '#111111' }} />
-                  </div>
-                  <h3 style={{
-                    color: 'white',
-                    fontSize: '20px',
-                    fontWeight: 600,
-                    marginBottom: '12px'
-                  }}>
-                    {service.title}
-                  </h3>
-                  <p style={{
-                    color: '#9CA3AF',
-                    fontSize: '14px',
-                    lineHeight: 1.7,
-                    marginBottom: '20px'
-                  }}>
-                    {service.description}
-                  </p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {service.features.map((feature, idx) => (
-                      <span key={idx} style={{
-                        backgroundColor: 'rgba(197, 156, 130, 0.1)',
-                        color: '#C59C82',
-                        padding: '6px 12px',
-                        borderRadius: '9999px',
-                        fontSize: '12px'
-                      }}>
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <section style={{ padding: 'clamp(48px, 10vw, 96px) 24px', backgroundColor: '#1A1A1A' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <span style={{
-              display: 'inline-block',
-              backgroundColor: '#111111',
-              color: '#C59C82',
-              padding: '8px 20px',
-              borderRadius: '9999px',
-              fontSize: '12px',
-              fontWeight: 500,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '24px'
-            }}>
-              Our Process
-            </span>
-            <h2 style={{
-              fontFamily: "'Oswald', sans-serif",
-              fontSize: 'clamp(28px, 5vw, 42px)',
-              fontWeight: 400,
-              color: 'white',
-              lineHeight: 1.2
-            }}>
-              How We Transform
-              <br />
-              <span style={{ fontStyle: 'italic', color: '#C59C82' }}>Your Space</span>
-            </h2>
-          </div>
-
-          <div className="grid-responsive-2" style={{ gap: '48px', alignItems: 'start' }}>
-            {/* Process Steps */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {process.map((step, index) => (
-                <div
-                  key={index}
-                  onClick={() => setActiveProcess(index)}
-                  style={{
-                    backgroundColor: activeProcess === index ? '#C59C82' : '#111111',
-                    borderRadius: '20px',
-                    padding: '24px',
+                    justifyContent: 'space-between',
+                    padding: '20px 24px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease'
+                    textAlign: 'left'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <span style={{
-                      fontFamily: "'Oswald', sans-serif",
-                      fontSize: '32px',
-                      fontWeight: 400,
-                      color: activeProcess === index ? '#111111' : '#C59C82'
-                    }}>
-                      {step.step}
-                    </span>
-                    <h3 style={{
-                      color: activeProcess === index ? '#111111' : 'white',
-                      fontSize: '18px',
-                      fontWeight: 600
-                    }}>
-                      {step.title}
-                    </h3>
+                  <span style={{
+                    fontFamily: "'Raleway', sans-serif",
+                    color: COLORS.white,
+                    fontSize: '16px',
+                    fontWeight: 600
+                  }}>
+                    {faq.question}
+                  </span>
+                  <ChevronDown
+                    size={20}
+                    style={{
+                      color: COLORS.accent,
+                      transition: 'transform 0.3s ease',
+                      transform: openFaq === index ? 'rotate(180deg)' : 'rotate(0deg)',
+                      flexShrink: 0,
+                      marginLeft: '16px'
+                    }}
+                  />
+                </button>
+                {openFaq === index && (
+                  <div style={{
+                    padding: '0 24px 20px',
+                    fontFamily: "'Raleway', sans-serif",
+                    color: 'rgba(255,255,255,0.65)',
+                    fontSize: '14px',
+                    lineHeight: 1.8
+                  }}>
+                    {faq.answer}
                   </div>
-                  {activeProcess === index && (
-                    <p style={{
-                      color: 'rgba(17, 17, 17, 0.8)',
-                      fontSize: '14px',
-                      lineHeight: 1.7,
-                      marginTop: '16px',
-                      paddingLeft: '56px'
-                    }}>
-                      {step.description}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Process Image */}
-            <div style={{
-              borderRadius: '24px',
-              overflow: 'hidden',
-              position: 'sticky',
-              top: '120px'
-            }}>
-              <img
-                src={[
-                  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=500&fit=crop',
-                  'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&h=500&fit=crop',
-                  'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=600&h=500&fit=crop',
-                  'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&h=500&fit=crop'
-                ][activeProcess]}
-                alt={process[activeProcess].title}
-                style={{
-                  width: '100%',
-                  height: '400px',
-                  objectFit: 'cover',
-                  transition: 'opacity 0.3s ease'
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Work Section */}
-      <section id="portfolio" style={{ padding: 'clamp(48px, 10vw, 96px) 24px', backgroundColor: '#111111' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <span style={{
-              display: 'inline-block',
-              backgroundColor: '#1A1A1A',
-              color: '#C59C82',
-              padding: '8px 20px',
-              borderRadius: '9999px',
-              fontSize: '12px',
-              fontWeight: 500,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              marginBottom: '24px'
-            }}>
-              Portfolio
-            </span>
-            <h2 style={{
-              fontFamily: "'Oswald', sans-serif",
-              fontSize: 'clamp(28px, 5vw, 42px)',
-              fontWeight: 400,
-              color: 'white',
-              lineHeight: 1.2
-            }}>
-              Recent Renovation
-              <br />
-              <span style={{ fontStyle: 'italic', color: '#C59C82' }}>Transformations</span>
-            </h2>
-          </div>
-
-          {/* Project Carousel */}
-          <div style={{ position: 'relative' }}>
-            <div style={{
-              borderRadius: '24px',
-              overflow: 'hidden',
-              position: 'relative'
-            }}>
-              <img
-                src={projects[currentProject].image}
-                alt={projects[currentProject].title}
-                style={{
-                  width: '100%',
-                  height: '500px',
-                  objectFit: 'cover'
-                }}
-              />
-              <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: 'linear-gradient(to top, rgba(17, 17, 17, 0.9), transparent)',
-                padding: '60px 32px 32px'
-              }}>
-                <span style={{
-                  display: 'inline-block',
-                  backgroundColor: '#C59C82',
-                  color: '#111111',
-                  padding: '6px 14px',
-                  borderRadius: '9999px',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  marginBottom: '12px'
-                }}>
-                  {projects[currentProject].category}
-                </span>
-                <h3 style={{
-                  color: 'white',
-                  fontSize: '24px',
-                  fontWeight: 600,
-                  marginBottom: '8px'
-                }}>
-                  {projects[currentProject].title}
-                </h3>
-                <p style={{
-                  color: '#9CA3AF',
-                  fontSize: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <MapPin size={14} />
-                  {projects[currentProject].location}
-                </p>
+                )}
               </div>
-            </div>
-
-            {/* Navigation Arrows */}
-            <button
-              onClick={prevProject}
-              style={{
-                position: 'absolute',
-                left: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '48px',
-                height: '48px',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                borderRadius: '50%',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'background-color 0.2s'
-              }}
-            >
-              <ChevronLeft size={24} style={{ color: '#111111' }} />
-            </button>
-            <button
-              onClick={nextProject}
-              style={{
-                position: 'absolute',
-                right: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '48px',
-                height: '48px',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                borderRadius: '50%',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'background-color 0.2s'
-              }}
-            >
-              <ChevronRight size={24} style={{ color: '#111111' }} />
-            </button>
-          </div>
-
-          {/* Navigation Dots */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '8px',
-            marginTop: '24px'
-          }}>
-            {projects.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentProject(index)}
-                style={{
-                  width: index === currentProject ? '24px' : '8px',
-                  height: '8px',
-                  borderRadius: '9999px',
-                  backgroundColor: index === currentProject ? '#C59C82' : 'rgba(197, 156, 130, 0.3)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-              />
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section with Contact Form */}
-      <section id="contact" style={{ padding: 'clamp(48px, 10vw, 96px) 24px', backgroundColor: '#C59C82' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div className="grid-responsive-2" style={{ alignItems: 'center', gap: '48px' }}>
+      {/* CTA Section */}
+      <section id="contact" style={{ padding: 'clamp(64px, 10vw, 120px) 24px', backgroundColor: COLORS.canvas }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+            alignItems: 'center',
+            gap: '48px'
+          }}>
             {/* Left Content */}
             <div>
+              <span style={sectionPill('cta')}>Get Started</span>
               <h2 style={{
                 fontFamily: "'Oswald', sans-serif",
                 fontSize: 'clamp(32px, 5vw, 48px)',
                 fontWeight: 400,
-                color: '#111111',
+                color: COLORS.textDark,
                 marginBottom: '24px',
-                lineHeight: 1.2
+                lineHeight: 1.2,
+                textTransform: 'uppercase'
               }}>
                 Ready to Transform
                 <br />
-                <span style={{ fontStyle: 'italic' }}>Your Space?</span>
+                <span style={{ fontStyle: 'italic', color: COLORS.accent }}>Your Space?</span>
               </h2>
               <p style={{
-                color: 'rgba(17, 17, 17, 0.8)',
+                fontFamily: "'Raleway', sans-serif",
+                color: COLORS.textMuted,
                 fontSize: '16px',
                 lineHeight: 1.8,
                 marginBottom: '32px'
@@ -827,46 +544,52 @@ const Renovation = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{
-                    width: '40px',
-                    height: '40px',
-                    backgroundColor: 'rgba(17, 17, 17, 0.1)',
-                    borderRadius: '10px',
+                    width: '44px',
+                    height: '44px',
+                    backgroundColor: COLORS.white,
+                    borderRadius: '12px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    border: `1px solid ${COLORS.border}`
                   }}>
-                    <Phone size={18} style={{ color: '#111111' }} />
+                    <Phone size={18} style={{ color: COLORS.accent }} />
                   </div>
-                  <span style={{ color: '#111111', fontSize: '14px' }}>+91 8861888424</span>
+                  <span style={{ fontFamily: "'Raleway', sans-serif", color: COLORS.textDark, fontSize: '15px', fontWeight: 500 }}>+91 8861888424</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{
-                    width: '40px',
-                    height: '40px',
-                    backgroundColor: 'rgba(17, 17, 17, 0.1)',
-                    borderRadius: '10px',
+                    width: '44px',
+                    height: '44px',
+                    backgroundColor: COLORS.white,
+                    borderRadius: '12px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    border: `1px solid ${COLORS.border}`
                   }}>
-                    <Mail size={18} style={{ color: '#111111' }} />
+                    <Mail size={18} style={{ color: COLORS.accent }} />
                   </div>
-                  <span style={{ color: '#111111', fontSize: '14px' }}>renovation@hoh108.com</span>
+                  <span style={{ fontFamily: "'Raleway', sans-serif", color: COLORS.textDark, fontSize: '15px', fontWeight: 500 }}>renovation@hoh108.com</span>
                 </div>
               </div>
             </div>
 
             {/* Contact Form */}
             <div style={{
-              backgroundColor: 'white',
-              borderRadius: '24px',
-              padding: 'clamp(24px, 5vw, 40px)'
+              backgroundColor: COLORS.white,
+              borderRadius: '20px',
+              padding: 'clamp(28px, 5vw, 44px)',
+              border: `1px solid ${COLORS.border}`,
+              boxShadow: '0 20px 60px rgba(15,23,42,0.06)'
             }}>
               <h3 style={{
-                color: '#111111',
-                fontSize: '20px',
-                fontWeight: 600,
-                marginBottom: '24px'
+                fontFamily: "'Oswald', sans-serif",
+                color: COLORS.textDark,
+                fontSize: '22px',
+                fontWeight: 500,
+                marginBottom: '28px',
+                textTransform: 'uppercase'
               }}>
                 Get a Free Consultation
               </h3>
@@ -874,21 +597,65 @@ const Renovation = () => {
                 <input
                   type="text"
                   placeholder="Your Name"
-                  className="consultation-input"
+                  style={{
+                    width: '100%',
+                    padding: '14px 18px',
+                    borderRadius: '12px',
+                    border: `1px solid ${COLORS.border}`,
+                    fontSize: '14px',
+                    fontFamily: "'Raleway', sans-serif",
+                    color: COLORS.textDark,
+                    backgroundColor: COLORS.canvas,
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
                 />
                 <input
                   type="email"
                   placeholder="Email Address"
-                  className="consultation-input"
+                  style={{
+                    width: '100%',
+                    padding: '14px 18px',
+                    borderRadius: '12px',
+                    border: `1px solid ${COLORS.border}`,
+                    fontSize: '14px',
+                    fontFamily: "'Raleway', sans-serif",
+                    color: COLORS.textDark,
+                    backgroundColor: COLORS.canvas,
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
                 />
                 <input
                   type="tel"
                   placeholder="Phone Number"
-                  className="consultation-input"
+                  style={{
+                    width: '100%',
+                    padding: '14px 18px',
+                    borderRadius: '12px',
+                    border: `1px solid ${COLORS.border}`,
+                    fontSize: '14px',
+                    fontFamily: "'Raleway', sans-serif",
+                    color: COLORS.textDark,
+                    backgroundColor: COLORS.canvas,
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
                 />
                 <select
-                  className="consultation-input"
-                  style={{ cursor: 'pointer' }}
+                  style={{
+                    width: '100%',
+                    padding: '14px 18px',
+                    borderRadius: '12px',
+                    border: `1px solid ${COLORS.border}`,
+                    fontSize: '14px',
+                    fontFamily: "'Raleway', sans-serif",
+                    color: COLORS.textMuted,
+                    backgroundColor: COLORS.canvas,
+                    outline: 'none',
+                    cursor: 'pointer',
+                    boxSizing: 'border-box'
+                  }}
                 >
                   <option value="">Select Renovation Type</option>
                   <option value="full-home">Complete Home Renovation</option>
@@ -901,26 +668,39 @@ const Renovation = () => {
                 <textarea
                   placeholder="Tell us about your renovation project..."
                   rows={4}
-                  className="consultation-input"
-                  style={{ resize: 'vertical' }}
+                  style={{
+                    width: '100%',
+                    padding: '14px 18px',
+                    borderRadius: '12px',
+                    border: `1px solid ${COLORS.border}`,
+                    fontSize: '14px',
+                    fontFamily: "'Raleway', sans-serif",
+                    color: COLORS.textDark,
+                    backgroundColor: COLORS.canvas,
+                    outline: 'none',
+                    resize: 'vertical',
+                    boxSizing: 'border-box'
+                  }}
                 />
                 <button
                   type="submit"
                   style={{
                     width: '100%',
-                    padding: '14px 24px',
-                    backgroundColor: '#111111',
-                    color: 'white',
+                    padding: '16px 24px',
+                    backgroundColor: COLORS.accent,
+                    color: COLORS.white,
                     borderRadius: '9999px',
                     border: 'none',
-                    fontSize: '14px',
-                    fontWeight: 500,
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    fontFamily: "'Raleway', sans-serif",
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    transition: 'background-color 0.2s'
+                    transition: 'background-color 0.2s',
+                    letterSpacing: '0.5px'
                   }}
                 >
                   Schedule Consultation

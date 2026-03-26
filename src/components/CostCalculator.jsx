@@ -4,16 +4,49 @@
  */
 
 import { useState, useEffect } from 'react'
-import { Calculator, Sofa, Building2, Home, ArrowRight, ArrowLeft, Check, ChevronRight, Sparkles } from 'lucide-react'
+import { Calculator, Sofa, Building2, Home, ArrowRight, ArrowLeft, Check, ChevronRight, Sparkles, LayoutGrid, Bed, CookingPot, Armchair, UtensilsCrossed, DoorOpen, Flower2, Ruler, Package, Crown, Gem, HardHat, Warehouse } from 'lucide-react'
 import { CelebrationEffect } from './Confetti'
 
 const COLORS = {
   dark: '#111111',
-  card: '#1A1A1A',
+  card: '#FFFFFF',
   accent: '#C59C82',
   accentDark: '#A67C5B',
-  text: '#E5E5E5',
-  textMuted: '#9CA3AF'
+  text: '#0F172A',
+  textMuted: '#64748B',
+  bg: '#FAF5F2',
+  border: 'rgba(15,23,42,0.08)',
+}
+
+// 3D-style icon component with gradient background + shadow
+function Icon3D({ icon: Icon, size = 48, color = '#fff', bg = 'linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)', shadow = 'rgba(197,156,130,0.4)' }) {
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: size * 0.3,
+      background: bg,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: `0 ${size * 0.15}px ${size * 0.4}px ${shadow}`,
+      flexShrink: 0,
+      position: 'relative',
+    }}>
+      {/* Glossy highlight */}
+      <div style={{
+        position: 'absolute',
+        top: '2px',
+        left: '15%',
+        right: '15%',
+        height: '40%',
+        borderRadius: '50%',
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%)',
+        pointerEvents: 'none',
+      }} />
+      <Icon size={size * 0.48} color={color} strokeWidth={1.8} />
+    </div>
+  )
 }
 
 // ============================================
@@ -79,13 +112,13 @@ function InteriorCalculator() {
   }
 
   const spaces = [
-    { id: 'bedroom', label: 'Bedroom', icon: '🛏️', percentage: 20, hasLimit: true },
-    { id: 'kitchen', label: 'Kitchen', icon: '🍳', percentage: 12, hasLimit: true },
-    { id: 'livingRoom', label: 'Living Room', icon: '🛋️', percentage: 20, hasLimit: true },
-    { id: 'dining', label: 'Dining', icon: '🍽️', percentage: 10, hasLimit: true },
-    { id: 'foyer', label: 'Foyer', icon: '🚪', percentage: 5, hasLimit: false },
-    { id: 'puja', label: 'Puja Room', icon: '🕉️', percentage: 5, hasLimit: false },
-    { id: 'furniture', label: 'Furniture', icon: '🪑', percentage: 7, hasLimit: false }
+    { id: 'bedroom', label: 'Bedroom', icon: Bed, percentage: 20, hasLimit: true },
+    { id: 'kitchen', label: 'Kitchen', icon: CookingPot, percentage: 12, hasLimit: true },
+    { id: 'livingRoom', label: 'Living Room', icon: Sofa, percentage: 20, hasLimit: true },
+    { id: 'dining', label: 'Dining', icon: UtensilsCrossed, percentage: 10, hasLimit: true },
+    { id: 'foyer', label: 'Foyer', icon: DoorOpen, percentage: 5, hasLimit: false },
+    { id: 'puja', label: 'Puja Room', icon: Flower2, percentage: 5, hasLimit: false },
+    { id: 'furniture', label: 'Furniture', icon: Armchair, percentage: 7, hasLimit: false }
   ]
 
   const getSpaceCount = (spaceId) => data.selectedSpaces.filter(s => s === spaceId).length
@@ -194,7 +227,7 @@ function InteriorCalculator() {
             <span style={{ fontSize: '14px', color: COLORS.textMuted }}>Step {step} of {totalSteps}</span>
             <span style={{ fontSize: '14px', color: COLORS.accent, fontWeight: 500 }}>{stepTitles[step]}</span>
           </div>
-          <div style={{ height: '6px', backgroundColor: 'rgba(197,156,130,0.2)', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{ height: '6px', backgroundColor: 'rgba(197,156,130,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
             <div style={{
               height: '100%',
               backgroundColor: COLORS.accent,
@@ -209,35 +242,37 @@ function InteriorCalculator() {
       {/* Step 1: Work Type */}
       {step === 1 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: 'clamp(24px, 3vw, 32px)', fontFamily: "'Oswald', sans-serif", color: COLORS.text, marginBottom: '8px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
             What would you like to design?
           </h3>
-          <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>Choose your project scope</p>
+          <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '36px', fontFamily: "'Raleway', sans-serif", fontSize: '14px' }}>Choose your project scope</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
             {[
-              { id: 'full', icon: '🏠', title: 'Full Home', desc: 'Complete interior for entire home', gradient: 'linear-gradient(135deg, #C59C82 0%, #8B6F5C 100%)' },
-              { id: 'specific', icon: '🛋️', title: 'Specific Rooms', desc: 'Select individual spaces', gradient: 'linear-gradient(135deg, #A67C5B 0%, #6B4F3C 100%)' }
+              { id: 'full', icon: Home, title: 'Full Home', desc: 'Complete interior for entire home', bg: 'linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)', shadow: 'rgba(197,156,130,0.35)' },
+              { id: 'specific', icon: LayoutGrid, title: 'Specific Rooms', desc: 'Select individual spaces', bg: 'linear-gradient(135deg, #111 0%, #333 100%)', shadow: 'rgba(0,0,0,0.2)' }
             ].map((type) => (
               <div
                 key={type.id}
                 onClick={() => { setData({ ...data, workType: type.id }); setStep(2) }}
                 className="calc-option-card"
                 style={{
-                  background: type.gradient,
+                  backgroundColor: COLORS.card,
                   borderRadius: '20px',
-                  padding: '32px 24px',
+                  padding: '36px 24px',
                   cursor: 'pointer',
                   textAlign: 'center',
-                  color: 'white',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                  border: `1px solid ${COLORS.border}`,
+                  transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease'
                 }}
               >
-                <div style={{ fontSize: '56px', marginBottom: '16px' }}>{type.icon}</div>
-                <h4 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '8px' }}>{type.title}</h4>
-                <p style={{ fontSize: '14px', opacity: 0.9 }}>{type.desc}</p>
-                <div style={{ marginTop: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500 }}>
-                  Select <ChevronRight size={16} />
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                  <Icon3D icon={type.icon} size={56} bg={type.bg} shadow={type.shadow} />
+                </div>
+                <h4 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: COLORS.text, fontFamily: "'Oswald', sans-serif", textTransform: 'uppercase', letterSpacing: '0.03em' }}>{type.title}</h4>
+                <p style={{ fontSize: '13px', color: COLORS.textMuted, fontFamily: "'Raleway', sans-serif", lineHeight: 1.6, marginBottom: '16px' }}>{type.desc}</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: COLORS.accent, fontFamily: "'Raleway', sans-serif" }}>
+                  Select <ChevronRight size={14} />
                 </div>
               </div>
             ))}
@@ -248,31 +283,36 @@ function InteriorCalculator() {
       {/* Step 2: BHK Selection */}
       {step === 2 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             Select your home type
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>Choose the configuration of your home</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
-            {Object.keys(sizeMapping).map((bhk) => (
-              <div
-                key={bhk}
-                onClick={() => { setData({ ...data, bhk }); setStep(3) }}
-                className="calc-option-card"
-                style={{
-                  backgroundColor: COLORS.card,
-                  border: `2px solid ${data.bhk === bhk ? COLORS.accent : 'rgba(197,156,130,0.2)'}`,
-                  borderRadius: '16px',
-                  padding: '24px 16px',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                <div style={{ fontSize: '36px', marginBottom: '12px' }}>🏡</div>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: 'white' }}>{bhk}</div>
-              </div>
-            ))}
+            {Object.keys(sizeMapping).map((bhk, idx) => {
+              const isSelected = data.bhk === bhk
+              return (
+                <div
+                  key={bhk}
+                  onClick={() => { setData({ ...data, bhk }); setStep(3) }}
+                  className="calc-option-card"
+                  style={{
+                    backgroundColor: isSelected ? COLORS.accent : COLORS.card,
+                    border: `2px solid ${isSelected ? COLORS.accent : COLORS.border}`,
+                    borderRadius: '16px',
+                    padding: '24px 16px',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                    <Icon3D icon={Home} size={36} bg={isSelected ? 'linear-gradient(135deg, #fff 0%, #f0e6dd 100%)' : 'linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)'} color={isSelected ? COLORS.accent : '#fff'} shadow={isSelected ? 'rgba(255,255,255,0.3)' : 'rgba(197,156,130,0.3)'} />
+                  </div>
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: isSelected ? '#fff' : COLORS.text, fontFamily: "'Oswald', sans-serif" }}>{bhk}</div>
+                </div>
+              )
+            })}
           </div>
 
           <button onClick={() => setStep(1)} className="calc-back-btn">
@@ -284,7 +324,7 @@ function InteriorCalculator() {
       {/* Step 3: Size Selection */}
       {step === 3 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             What's your home size?
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>Select carpet area or enter custom</p>
@@ -299,8 +339,8 @@ function InteriorCalculator() {
                 onClick={() => { setData({ ...data, size: size.id, customCarpetArea: '' }); setStep(data.workType === 'specific' ? 4 : 5) }}
                 className="calc-option-card"
                 style={{
-                  backgroundColor: COLORS.card,
-                  border: '2px solid rgba(197,156,130,0.2)',
+                  backgroundColor: COLORS.card, /* white */
+                  border: `1px solid ${COLORS.border}`,
                   borderRadius: '20px',
                   padding: '32px 24px',
                   cursor: 'pointer',
@@ -308,16 +348,18 @@ function InteriorCalculator() {
                   transition: 'all 0.3s ease'
                 }}
               >
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>{size.id === 'small' ? '📐' : '📏'}</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                  <Icon3D icon={size.id === 'small' ? Ruler : Package} size={48} bg={size.id === 'small' ? 'linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)' : 'linear-gradient(135deg, #111 0%, #333 100%)'} shadow={size.id === 'small' ? 'rgba(197,156,130,0.35)' : 'rgba(0,0,0,0.2)'} />
+                </div>
                 <div style={{ fontSize: '16px', color: COLORS.accent, fontWeight: 500, marginBottom: '8px' }}>{size.label}</div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: 'white' }}>{size.sqft}</div>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: COLORS.text }}>{size.sqft}</div>
                 <div style={{ fontSize: '14px', color: COLORS.textMuted }}>sq.ft</div>
               </div>
             ))}
           </div>
 
           {/* Custom Input */}
-          <div style={{ backgroundColor: COLORS.card, borderRadius: '16px', padding: '24px', border: '1px dashed rgba(197,156,130,0.3)' }}>
+          <div style={{ backgroundColor: COLORS.card, /* white */ borderRadius: '16px', padding: '24px', border: `1px dashed ${COLORS.border}` }}>
             <label style={{ display: 'block', fontSize: '14px', color: COLORS.textMuted, marginBottom: '16px', textAlign: 'center' }}>
               Or enter your exact carpet area
             </label>
@@ -329,13 +371,14 @@ function InteriorCalculator() {
                 placeholder="e.g., 1200"
                 style={{
                   flex: 1,
-                  backgroundColor: COLORS.dark,
-                  border: '2px solid rgba(197,156,130,0.3)',
+                  backgroundColor: '#fff',
+                  border: `1px solid ${COLORS.border}`,
                   borderRadius: '12px',
                   padding: '14px 18px',
-                  color: 'white',
+                  color: COLORS.text,
                   fontSize: '16px',
-                  outline: 'none'
+                  outline: 'none',
+                  transition: 'border-color 0.3s ease'
                 }}
               />
               <button
@@ -372,7 +415,7 @@ function InteriorCalculator() {
       {/* Step 4: Space Selection (specific only) */}
       {step === 4 && data.workType === 'specific' && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             Select spaces to design
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>
@@ -392,7 +435,7 @@ function InteriorCalculator() {
                   className="calc-option-card"
                   style={{
                     backgroundColor: isSelected ? COLORS.accent : COLORS.card,
-                    border: `2px solid ${isSelected ? COLORS.accent : 'rgba(197,156,130,0.2)'}`,
+                    border: `2px solid ${isSelected ? COLORS.accent : COLORS.border}`,
                     borderRadius: '16px',
                     padding: '20px 12px',
                     cursor: 'pointer',
@@ -418,8 +461,10 @@ function InteriorCalculator() {
                       fontWeight: 700
                     }}>{count}</div>
                   )}
-                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>{space.icon}</div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? COLORS.dark : 'white' }}>{space.label}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                    <Icon3D icon={space.icon} size={32} bg={isSelected ? 'linear-gradient(135deg, #fff 0%, #f0e6dd 100%)' : 'linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)'} color={isSelected ? COLORS.accent : '#fff'} shadow={isSelected ? 'rgba(255,255,255,0.2)' : 'rgba(197,156,130,0.3)'} />
+                  </div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? COLORS.dark : COLORS.text, fontFamily: "'Raleway', sans-serif" }}>{space.label}</div>
                   {limit && <div style={{ fontSize: '10px', color: isSelected ? 'rgba(0,0,0,0.5)' : COLORS.textMuted, marginTop: '4px' }}>Max {limit}</div>}
                 </div>
               )
@@ -458,25 +503,25 @@ function InteriorCalculator() {
       {/* Step 5: Category Selection */}
       {step === 5 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             Choose your design package
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>Select based on your style & budget</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
             {[
-              { id: 'affordable', icon: '💰', title: 'Essential', price: '₹1,190', desc: 'Smart & functional', color: '#4A9D7C' },
-              { id: 'premium', icon: '✨', title: 'Premium', price: '₹1,400', desc: 'Enhanced finishes', color: '#7B68EE' },
-              { id: 'luxury', icon: '💎', title: 'Luxury', price: '₹1,645', desc: 'High-end materials', color: '#C59C82' },
-              { id: 'superLuxury', icon: '👑', title: 'Ultra Luxury', price: '₹2,100', desc: 'Bespoke experience', color: '#DAA520' }
+              { id: 'affordable', icon: Check, title: 'Essential', price: '₹1,190', desc: 'Smart & functional', color: '#4A9D7C' },
+              { id: 'premium', icon: Sparkles, title: 'Premium', price: '₹1,400', desc: 'Enhanced finishes', color: '#C59C82' },
+              { id: 'luxury', icon: Gem, title: 'Luxury', price: '₹1,645', desc: 'High-end materials', color: '#A67C5B' },
+              { id: 'superLuxury', icon: Crown, title: 'Ultra Luxury', price: '₹2,100', desc: 'Bespoke experience', color: '#111' }
             ].map((cat) => (
               <div
                 key={cat.id}
                 onClick={() => { setData({ ...data, category: cat.id }); setStep(6) }}
                 className="calc-option-card"
                 style={{
-                  backgroundColor: COLORS.card,
-                  border: '2px solid rgba(197,156,130,0.2)',
+                  backgroundColor: COLORS.card, /* white */
+                  border: `1px solid ${COLORS.border}`,
                   borderRadius: '20px',
                   padding: '28px 20px',
                   cursor: 'pointer',
@@ -494,8 +539,10 @@ function InteriorCalculator() {
                   height: '4px',
                   backgroundColor: cat.color
                 }} />
-                <div style={{ fontSize: '44px', marginBottom: '12px' }}>{cat.icon}</div>
-                <h4 style={{ fontSize: '18px', fontWeight: 700, color: 'white', marginBottom: '4px' }}>{cat.title}</h4>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                  <Icon3D icon={cat.icon} size={44} bg={`linear-gradient(135deg, ${cat.color} 0%, ${cat.color}CC 100%)`} shadow={`${cat.color}40`} />
+                </div>
+                <h4 style={{ fontSize: '18px', fontWeight: 700, color: COLORS.text, marginBottom: '4px' }}>{cat.title}</h4>
                 <div style={{ fontSize: '24px', fontWeight: 700, color: cat.color, marginBottom: '4px' }}>{cat.price}</div>
                 <div style={{ fontSize: '12px', color: COLORS.textMuted }}>per sq.ft</div>
                 <p style={{ fontSize: '13px', color: COLORS.textMuted, marginTop: '12px' }}>{cat.desc}</p>
@@ -512,7 +559,7 @@ function InteriorCalculator() {
       {/* Step 6: Lead Capture Form */}
       {step === 6 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             Almost there!
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>
@@ -520,7 +567,7 @@ function InteriorCalculator() {
           </p>
 
           <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-            <div style={{ backgroundColor: COLORS.card, borderRadius: '20px', padding: '32px' }}>
+            <div style={{ backgroundColor: COLORS.card, /* white */ borderRadius: '20px', padding: '32px' }}>
               {/* Name */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '14px', color: COLORS.textMuted, marginBottom: '8px' }}>
@@ -533,11 +580,11 @@ function InteriorCalculator() {
                   placeholder="Enter your name"
                   style={{
                     width: '100%',
-                    backgroundColor: COLORS.dark,
+                    backgroundColor: COLORS.bg,
                     border: '2px solid rgba(197,156,130,0.3)',
                     borderRadius: '12px',
                     padding: '14px 18px',
-                    color: 'white',
+                    color: COLORS.text,
                     fontSize: '16px',
                     outline: 'none'
                   }}
@@ -556,11 +603,11 @@ function InteriorCalculator() {
                   placeholder="Enter your phone number"
                   style={{
                     width: '100%',
-                    backgroundColor: COLORS.dark,
+                    backgroundColor: COLORS.bg,
                     border: '2px solid rgba(197,156,130,0.3)',
                     borderRadius: '12px',
                     padding: '14px 18px',
-                    color: 'white',
+                    color: COLORS.text,
                     fontSize: '16px',
                     outline: 'none'
                   }}
@@ -579,11 +626,11 @@ function InteriorCalculator() {
                   placeholder="Enter your email"
                   style={{
                     width: '100%',
-                    backgroundColor: COLORS.dark,
+                    backgroundColor: COLORS.bg,
                     border: '2px solid rgba(197,156,130,0.3)',
                     borderRadius: '12px',
                     padding: '14px 18px',
-                    color: 'white',
+                    color: COLORS.text,
                     fontSize: '16px',
                     outline: 'none'
                   }}
@@ -651,8 +698,10 @@ function InteriorCalculator() {
             <div style={{ position: 'absolute', bottom: '-30px', left: '-30px', width: '100px', height: '100px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
 
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
-              <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                <Icon3D icon={Sparkles} size={56} bg="linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)" shadow="rgba(197,156,130,0.4)" />
+              </div>
+              <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px' }}>
                 Your Estimate is Ready!
               </h3>
               <p style={{ color: 'rgba(255,255,255,0.8)', marginBottom: '32px' }}>Here's a detailed breakdown</p>
@@ -660,7 +709,7 @@ function InteriorCalculator() {
               {/* Main Cost Display */}
               <div style={{ backgroundColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', borderRadius: '20px', padding: '32px', marginBottom: '24px' }}>
                 <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>Estimated Investment</div>
-                <div style={{ fontSize: '48px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>
+                <div style={{ fontSize: '48px', fontWeight: 700, color: COLORS.text, marginBottom: '8px' }}>
                   ₹{cost.totalCost.toLocaleString('en-IN')}
                 </div>
                 <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>
@@ -678,7 +727,7 @@ function InteriorCalculator() {
                 ].map((item, i) => (
                   <div key={i} style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '12px' }}>
                     <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{item.label}</div>
-                    <div style={{ fontSize: '16px', fontWeight: 600, color: 'white' }}>{item.value}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: COLORS.text }}>{item.value}</div>
                   </div>
                 ))}
               </div>
@@ -825,7 +874,7 @@ function ConstructionCalculator() {
             <span style={{ fontSize: '14px', color: COLORS.textMuted }}>Step {step} of 5</span>
             <span style={{ fontSize: '14px', color: COLORS.accent, fontWeight: 500 }}>{stepTitles[step]}</span>
           </div>
-          <div style={{ height: '6px', backgroundColor: 'rgba(197,156,130,0.2)', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{ height: '6px', backgroundColor: 'rgba(197,156,130,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
             <div style={{
               height: '100%',
               backgroundColor: COLORS.accent,
@@ -840,35 +889,37 @@ function ConstructionCalculator() {
       {/* Step 1: Project Type */}
       {step === 1 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             What are you building?
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>Select your project type</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
             {[
-              { id: 'residential', icon: '🏠', title: 'Residential', desc: 'Homes, villas, apartments', gradient: 'linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)' },
-              { id: 'commercial', icon: '🏢', title: 'Commercial', desc: 'Offices, shops, warehouses', gradient: 'linear-gradient(135deg, #A67C5B 0%, #8B6F5C 100%)' }
+              { id: 'residential', icon: Home, title: 'Residential', desc: 'Homes, villas, apartments', bg: 'linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)', shadow: 'rgba(197,156,130,0.35)' },
+              { id: 'commercial', icon: Warehouse, title: 'Commercial', desc: 'Offices, shops, warehouses', bg: 'linear-gradient(135deg, #111 0%, #333 100%)', shadow: 'rgba(0,0,0,0.2)' }
             ].map((type) => (
               <div
                 key={type.id}
                 onClick={() => { setData({ ...data, projectType: type.id }); setStep(2) }}
                 className="calc-option-card"
                 style={{
-                  background: type.gradient,
+                  backgroundColor: COLORS.card,
                   borderRadius: '20px',
-                  padding: '32px 24px',
+                  padding: '36px 24px',
                   cursor: 'pointer',
                   textAlign: 'center',
-                  color: 'white',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                  border: `1px solid ${COLORS.border}`,
+                  transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s cubic-bezier(0.16,1,0.3,1)'
                 }}
               >
-                <div style={{ fontSize: '56px', marginBottom: '16px' }}>{type.icon}</div>
-                <h4 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '8px' }}>{type.title}</h4>
-                <p style={{ fontSize: '14px', opacity: 0.9 }}>{type.desc}</p>
-                <div style={{ marginTop: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 500 }}>
-                  Select <ChevronRight size={16} />
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                  <Icon3D icon={type.icon} size={56} bg={type.bg} shadow={type.shadow} />
+                </div>
+                <h4 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: COLORS.text, fontFamily: "'Oswald', sans-serif", textTransform: 'uppercase' }}>{type.title}</h4>
+                <p style={{ fontSize: '13px', color: COLORS.textMuted, fontFamily: "'Raleway', sans-serif", marginBottom: '16px' }}>{type.desc}</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: COLORS.accent }}>
+                  Select <ChevronRight size={14} />
                 </div>
               </div>
             ))}
@@ -879,13 +930,13 @@ function ConstructionCalculator() {
       {/* Step 2: Plot Area */}
       {step === 2 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             Enter your plot area
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>Provide the plot size in square feet</p>
 
           <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-            <div style={{ backgroundColor: COLORS.card, borderRadius: '20px', padding: '32px', textAlign: 'center' }}>
+            <div style={{ backgroundColor: COLORS.card, /* white */ borderRadius: '20px', padding: '32px', textAlign: 'center' }}>
               <input
                 type="number"
                 value={data.plotArea}
@@ -893,11 +944,11 @@ function ConstructionCalculator() {
                 placeholder="e.g., 2400"
                 style={{
                   width: '100%',
-                  backgroundColor: COLORS.dark,
+                  backgroundColor: COLORS.bg,
                   border: '2px solid rgba(197,156,130,0.3)',
                   borderRadius: '12px',
                   padding: '20px',
-                  color: 'white',
+                  color: COLORS.text,
                   fontSize: '28px',
                   fontWeight: 600,
                   textAlign: 'center',
@@ -920,7 +971,7 @@ function ConstructionCalculator() {
               disabled={!data.plotArea || parseInt(data.plotArea) < 400}
               style={{
                 backgroundColor: data.plotArea && parseInt(data.plotArea) >= 400 ? COLORS.accent : 'rgba(197,156,130,0.3)',
-                color: 'white',
+                color: COLORS.text,
                 padding: '16px 40px',
                 borderRadius: '12px',
                 border: 'none',
@@ -941,7 +992,7 @@ function ConstructionCalculator() {
       {/* Step 3: Floors */}
       {step === 3 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             How many floors?
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>Select the number of floors to build</p>
@@ -962,8 +1013,10 @@ function ConstructionCalculator() {
                   transition: 'all 0.3s ease'
                 }}
               >
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏗️</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, color: 'white' }}>{floor}</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                  <Icon3D icon={Building2} size={32} bg="linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)" shadow="rgba(197,156,130,0.3)" />
+                </div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: COLORS.text }}>{floor}</div>
                 <div style={{ fontSize: '11px', color: data.floors === floor ? 'rgba(255,255,255,0.8)' : COLORS.textMuted, marginTop: '4px' }}>{i + 1} Floor{i > 0 ? 's' : ''}</div>
               </div>
             ))}
@@ -978,24 +1031,24 @@ function ConstructionCalculator() {
       {/* Step 4: Category */}
       {step === 4 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             Choose construction grade
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>Select based on quality & budget</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
             {[
-              { id: 'affordable', icon: '💰', title: 'Standard', desc: 'Quality on budget', color: '#22c55e' },
-              { id: 'premium', icon: '✨', title: 'Premium', desc: 'Enhanced materials', color: '#C59C82' },
-              { id: 'luxury', icon: '👑', title: 'Luxury', desc: 'Top-tier quality', color: '#f59e0b' }
+              { id: 'affordable', icon: Check, title: 'Standard', desc: 'Quality on budget', color: '#4A9D7C' },
+              { id: 'premium', icon: Sparkles, title: 'Premium', desc: 'Enhanced materials', color: '#C59C82' },
+              { id: 'luxury', icon: Crown, title: 'Luxury', desc: 'Top-tier quality', color: '#111' }
             ].map((cat) => (
               <div
                 key={cat.id}
                 onClick={() => { setData({ ...data, category: cat.id }); setStep(5) }}
                 className="calc-option-card"
                 style={{
-                  backgroundColor: COLORS.card,
-                  border: '2px solid rgba(197,156,130,0.2)',
+                  backgroundColor: COLORS.card, /* white */
+                  border: `1px solid ${COLORS.border}`,
                   borderRadius: '20px',
                   padding: '32px 20px',
                   cursor: 'pointer',
@@ -1006,8 +1059,10 @@ function ConstructionCalculator() {
                 }}
               >
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', backgroundColor: cat.color }} />
-                <div style={{ fontSize: '48px', marginBottom: '12px' }}>{cat.icon}</div>
-                <h4 style={{ fontSize: '18px', fontWeight: 700, color: 'white', marginBottom: '8px' }}>{cat.title}</h4>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                  <Icon3D icon={cat.icon} size={44} bg={`linear-gradient(135deg, ${cat.color} 0%, ${cat.color}CC 100%)`} shadow={`${cat.color}40`} />
+                </div>
+                <h4 style={{ fontSize: '18px', fontWeight: 700, color: COLORS.text, marginBottom: '8px' }}>{cat.title}</h4>
                 <p style={{ fontSize: '13px', color: COLORS.textMuted }}>{cat.desc}</p>
               </div>
             ))}
@@ -1022,7 +1077,7 @@ function ConstructionCalculator() {
       {/* Step 5: Lead Capture Form */}
       {step === 5 && (
         <div className="calc-step-animate">
-          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '8px', textAlign: 'center' }}>
             Almost there!
           </h3>
           <p style={{ color: COLORS.textMuted, textAlign: 'center', marginBottom: '32px' }}>
@@ -1030,7 +1085,7 @@ function ConstructionCalculator() {
           </p>
 
           <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-            <div style={{ backgroundColor: COLORS.card, borderRadius: '20px', padding: '32px' }}>
+            <div style={{ backgroundColor: COLORS.card, /* white */ borderRadius: '20px', padding: '32px' }}>
               {/* Name */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '14px', color: COLORS.textMuted, marginBottom: '8px' }}>
@@ -1043,11 +1098,11 @@ function ConstructionCalculator() {
                   placeholder="Enter your name"
                   style={{
                     width: '100%',
-                    backgroundColor: COLORS.dark,
+                    backgroundColor: COLORS.bg,
                     border: '2px solid rgba(197,156,130,0.3)',
                     borderRadius: '12px',
                     padding: '14px 18px',
-                    color: 'white',
+                    color: COLORS.text,
                     fontSize: '16px',
                     outline: 'none'
                   }}
@@ -1066,11 +1121,11 @@ function ConstructionCalculator() {
                   placeholder="Enter your phone number"
                   style={{
                     width: '100%',
-                    backgroundColor: COLORS.dark,
+                    backgroundColor: COLORS.bg,
                     border: '2px solid rgba(197,156,130,0.3)',
                     borderRadius: '12px',
                     padding: '14px 18px',
-                    color: 'white',
+                    color: COLORS.text,
                     fontSize: '16px',
                     outline: 'none'
                   }}
@@ -1089,11 +1144,11 @@ function ConstructionCalculator() {
                   placeholder="Enter your email"
                   style={{
                     width: '100%',
-                    backgroundColor: COLORS.dark,
+                    backgroundColor: COLORS.bg,
                     border: '2px solid rgba(197,156,130,0.3)',
                     borderRadius: '12px',
                     padding: '14px 18px',
-                    color: 'white',
+                    color: COLORS.text,
                     fontSize: '16px',
                     outline: 'none'
                   }}
@@ -1159,15 +1214,17 @@ function ConstructionCalculator() {
             <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '150px', height: '150px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
 
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
-              <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                <Icon3D icon={Sparkles} size={56} bg="linear-gradient(135deg, #C59C82 0%, #A67C5B 100%)" shadow="rgba(197,156,130,0.4)" />
+              </div>
+              <h3 style={{ fontSize: '28px', fontFamily: 'Oswald, sans-serif', color: COLORS.text, marginBottom: '24px' }}>
                 Construction Estimate Ready!
               </h3>
 
               {/* Built-up Area */}
               <div style={{ backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: '16px', padding: '20px', marginBottom: '16px' }}>
                 <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}>Total Built-up Area</div>
-                <div style={{ fontSize: '32px', fontWeight: 700, color: 'white' }}>{cost.builtUpArea.toLocaleString()} sq.ft</div>
+                <div style={{ fontSize: '32px', fontWeight: 700, color: COLORS.text }}>{cost.builtUpArea.toLocaleString()} sq.ft</div>
               </div>
 
               {/* Main Cost Display */}
@@ -1187,7 +1244,7 @@ function ConstructionCalculator() {
                 ].map((item, i) => (
                   <div key={i} style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '14px', borderRadius: '12px' }}>
                     <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', marginBottom: '4px', textTransform: 'uppercase' }}>{item.label}</div>
-                    <div style={{ fontSize: '15px', fontWeight: 600, color: 'white' }}>{item.value}</div>
+                    <div style={{ fontSize: '15px', fontWeight: 600, color: COLORS.text }}>{item.value}</div>
                   </div>
                 ))}
               </div>
@@ -1229,45 +1286,21 @@ export default function CostCalculator() {
   const [activeTab, setActiveTab] = useState('interior')
 
   return (
-    <section style={{ backgroundColor: COLORS.dark, padding: 'clamp(60px, 10vw, 100px) 16px' }}>
+    <div style={{ backgroundColor: COLORS.card, padding: 'clamp(20px, 4vw, 48px) clamp(12px, 2.5vw, 24px)', borderRadius: 'clamp(16px, 3vw, 28px)', boxShadow: '0 8px 40px rgba(0,0,0,0.06)', border: `1px solid ${COLORS.border}` }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: 'rgba(197,156,130,0.15)',
-            color: COLORS.accent,
-            padding: '10px 20px',
-            borderRadius: '50px',
-            fontSize: '14px',
-            fontWeight: 500,
-            marginBottom: '20px',
-            border: '1px solid rgba(197,156,130,0.3)'
-          }}>
-            <Calculator size={18} />
-            Smart Cost Estimator
-          </div>
-          <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: 'clamp(32px, 6vw, 48px)', color: 'white', marginBottom: '16px', lineHeight: 1.2 }}>
-            Get Your <span style={{ color: COLORS.accent, fontStyle: 'italic' }}>Instant</span> Quote
-          </h2>
-          <p style={{ color: COLORS.textMuted, maxWidth: '500px', margin: '0 auto', fontSize: '16px', lineHeight: 1.6 }}>
-            Calculate accurate cost estimates for your dream project in just a few clicks
-          </p>
-        </div>
 
         {/* Tab Buttons */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: '8px',
+          gap: '4px',
           marginBottom: '40px',
-          backgroundColor: COLORS.card,
-          padding: '8px',
-          borderRadius: '16px',
-          maxWidth: '500px',
-          margin: '0 auto 40px'
+          backgroundColor: COLORS.bg,
+          padding: '6px',
+          borderRadius: '14px',
+          maxWidth: '420px',
+          margin: '0 auto 40px',
+          border: `1px solid ${COLORS.border}`,
         }}>
           <button
             onClick={() => setActiveTab('interior')}
@@ -1277,18 +1310,20 @@ export default function CostCalculator() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
-              padding: '16px 24px',
-              borderRadius: '12px',
+              padding: '14px 24px',
+              borderRadius: '10px',
               border: 'none',
               cursor: 'pointer',
               fontWeight: 600,
-              fontSize: '15px',
-              transition: 'all 0.3s ease',
+              fontSize: '14px',
+              fontFamily: "'Raleway', sans-serif",
+              transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
               backgroundColor: activeTab === 'interior' ? COLORS.accent : 'transparent',
-              color: activeTab === 'interior' ? COLORS.dark : COLORS.textMuted
+              color: activeTab === 'interior' ? '#fff' : COLORS.textMuted,
+              boxShadow: activeTab === 'interior' ? '0 4px 12px rgba(197,156,130,0.3)' : 'none',
             }}
           >
-            <Sofa size={20} />
+            <Sofa size={18} />
             Interior
           </button>
           <button
@@ -1299,32 +1334,34 @@ export default function CostCalculator() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
-              padding: '16px 24px',
-              borderRadius: '12px',
+              padding: '14px 24px',
+              borderRadius: '10px',
               border: 'none',
               cursor: 'pointer',
               fontWeight: 600,
-              fontSize: '15px',
-              transition: 'all 0.3s ease',
+              fontSize: '14px',
+              fontFamily: "'Raleway', sans-serif",
+              transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
               backgroundColor: activeTab === 'construction' ? COLORS.accent : 'transparent',
-              color: activeTab === 'construction' ? 'white' : COLORS.textMuted
+              color: activeTab === 'construction' ? '#fff' : COLORS.textMuted,
+              boxShadow: activeTab === 'construction' ? '0 4px 12px rgba(197,156,130,0.3)' : 'none',
             }}
           >
-            <Building2 size={20} />
+            <Building2 size={18} />
             Construction
           </button>
         </div>
 
         {/* Calculator Content */}
         <div style={{
-          backgroundColor: COLORS.card,
-          borderRadius: '28px',
+          backgroundColor: COLORS.bg,
+          borderRadius: '24px',
           padding: 'clamp(24px, 5vw, 40px)',
-          border: '1px solid rgba(197,156,130,0.1)'
+          border: `1px solid ${COLORS.border}`,
         }}>
           {activeTab === 'interior' ? <InteriorCalculator /> : <ConstructionCalculator />}
         </div>
       </div>
-    </section>
+    </div>
   )
 }

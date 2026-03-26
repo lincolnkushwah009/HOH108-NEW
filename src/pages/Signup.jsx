@@ -1,24 +1,9 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Lock, Mail, User, Phone, AlertCircle, Check } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle, Check } from 'lucide-react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
-
-const COLORS = {
-  dark: '#111111',
-  card: '#1A1A1A',
-  cardLight: '#242424',
-  accent: '#C59C82',
-  accentLight: '#DDC5B0',
-  textMuted: '#A1A1A1',
-  textLight: '#E5E5E5',
-  white: '#FFFFFF',
-  border: 'rgba(255, 255, 255, 0.08)',
-  danger: '#EF4444',
-  success: '#22C55E',
-}
-
-const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:5001/api` : 'https://hoh108.com/api'
+import { COLORS, API_BASE } from '../constants/colors'
 
 function Signup() {
   const navigate = useNavigate()
@@ -43,14 +28,12 @@ function Signup() {
     setLoading(true)
     setError('')
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       setLoading(false)
       return
     }
 
-    // Validate password length
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters')
       setLoading(false)
@@ -76,13 +59,11 @@ function Signup() {
         throw new Error(data.message || 'Registration failed')
       }
 
-      // Save token and user data
       localStorage.setItem('hoh108_token', data.token)
       localStorage.setItem('hoh108_user', JSON.stringify(data.user))
 
       setSuccess(true)
 
-      // Redirect after 2 seconds
       setTimeout(() => {
         navigate('/')
       }, 2000)
@@ -93,8 +74,32 @@ function Signup() {
     }
   }
 
+  const inputStyle = {
+    width: '100%',
+    backgroundColor: COLORS.white,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: '12px',
+    padding: '15px 16px',
+    color: COLORS.textDark,
+    fontSize: '15px',
+    fontFamily: 'Raleway, sans-serif',
+    outline: 'none',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
+    boxSizing: 'border-box',
+  }
+
+  const focusHandler = (e) => {
+    e.currentTarget.style.borderColor = COLORS.accent
+    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(197,156,130,0.15)'
+  }
+
+  const blurHandler = (e) => {
+    e.currentTarget.style.borderColor = COLORS.border
+    e.currentTarget.style.boxShadow = 'none'
+  }
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: COLORS.dark, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: COLORS.canvas, display: 'flex', flexDirection: 'column' }}>
       <Header />
 
       <div style={{
@@ -103,111 +108,120 @@ function Signup() {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
-        paddingTop: '100px',
-        position: 'relative',
+        paddingTop: '120px',
+        paddingBottom: '60px',
       }}>
-        {/* Background Pattern */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `radial-gradient(circle at 70% 80%, ${COLORS.accent}10 0%, transparent 50%)`,
-        }} />
-
-        <div style={{ width: '100%', maxWidth: '480px', position: 'relative', zIndex: 1 }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <Link to="/" style={{ display: 'inline-block' }}>
-            <img src="/Logo.png" alt="HOH108" style={{ height: '50px', display: 'block', margin: '0 auto 20px' }} />
-          </Link>
-          <h1 style={{
-            fontFamily: "'Oswald', sans-serif",
-            fontSize: '32px',
-            color: COLORS.white,
-            marginBottom: '8px',
-          }}>
-            Create Account
-          </h1>
-          <p style={{ color: COLORS.textMuted, fontSize: '15px' }}>
-            Join us and start earning Karma Points
-          </p>
-        </div>
-
-        {/* Success Message */}
-        {success ? (
-          <div style={{
-            backgroundColor: COLORS.card,
-            borderRadius: '24px',
-            padding: '48px 32px',
-            border: `1px solid ${COLORS.border}`,
-            textAlign: 'center',
-          }}>
+        <div style={{ width: '100%', maxWidth: '860px' }}>
+          {/* Success State */}
+          {success ? (
             <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '50%',
-              backgroundColor: `${COLORS.success}20`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 24px',
+              backgroundColor: COLORS.white,
+              borderRadius: '24px',
+              padding: '56px 32px',
+              border: `1px solid ${COLORS.border}`,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
+              textAlign: 'center',
+              maxWidth: '480px',
+              margin: '0 auto',
             }}>
-              <Check size={40} color={COLORS.success} />
-            </div>
-            <h2 style={{ color: COLORS.white, fontSize: '24px', marginBottom: '12px' }}>
-              Welcome to HOH108!
-            </h2>
-            <p style={{ color: COLORS.textMuted, fontSize: '14px' }}>
-              Your account has been created successfully. Redirecting...
-            </p>
-          </div>
-        ) : (
-          /* Signup Card */
-          <div style={{
-            backgroundColor: COLORS.card,
-            borderRadius: '24px',
-            padding: '36px 32px',
-            border: `1px solid ${COLORS.border}`,
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
-          }}>
-            {/* Error Message */}
-            {error && (
               <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(34,197,94,0.08)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '14px 16px',
-                backgroundColor: `${COLORS.danger}15`,
-                borderRadius: '12px',
-                marginBottom: '20px',
-                border: `1px solid ${COLORS.danger}30`,
+                justifyContent: 'center',
+                margin: '0 auto 24px',
               }}>
-                <AlertCircle size={18} color={COLORS.danger} />
-                <p style={{ color: COLORS.danger, fontSize: '14px' }}>{error}</p>
+                <Check size={40} color="#22C55E" />
               </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              {/* Name Field */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{
-                  display: 'block',
-                  color: COLORS.textLight,
-                  fontSize: '14px',
+              <h2 style={{
+                fontFamily: "'Oswald', sans-serif",
+                color: COLORS.textDark,
+                fontSize: '28px',
+                marginBottom: '12px',
+                textTransform: 'uppercase',
+              }}>
+                Welcome to HOH108!
+              </h2>
+              <p style={{
+                fontFamily: 'Raleway, sans-serif',
+                color: COLORS.textMuted,
+                fontSize: '15px',
+              }}>
+                Your account has been created successfully. Redirecting...
+              </p>
+            </div>
+          ) : (
+            /* Signup Card */
+            <div style={{
+              backgroundColor: COLORS.white,
+              borderRadius: '24px',
+              padding: 'clamp(32px, 5vw, 56px)',
+              border: `1px solid ${COLORS.border}`,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
+              maxWidth: '480px',
+              margin: '0 auto',
+            }}>
+              {/* Heading */}
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <Link to="/" style={{ display: 'inline-block' }}>
+                  <img
+                    src="/Logo.png"
+                    alt="HOH108"
+                    style={{ height: '50px', display: 'block', margin: '0 auto 20px' }}
+                  />
+                </Link>
+                <h1 style={{
+                  fontFamily: "'Oswald', sans-serif",
+                  fontSize: 'clamp(28px, 4vw, 36px)',
+                  color: COLORS.textDark,
                   marginBottom: '8px',
-                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
                 }}>
-                  Full Name
-                </label>
+                  Create Your Account
+                </h1>
+                <p style={{
+                  fontFamily: 'Raleway, sans-serif',
+                  color: COLORS.textMuted,
+                  fontSize: '15px',
+                }}>
+                  Join us and start your design journey
+                </p>
+              </div>
+
+              {/* Error Message */}
+              {error && (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
-                  backgroundColor: COLORS.cardLight,
-                  borderRadius: '12px',
+                  gap: '10px',
                   padding: '14px 16px',
-                  border: `1px solid ${COLORS.border}`,
+                  backgroundColor: 'rgba(239,68,68,0.06)',
+                  borderRadius: '12px',
+                  marginBottom: '20px',
+                  border: '1px solid rgba(239,68,68,0.15)',
                 }}>
-                  <User size={20} color={COLORS.textMuted} />
+                  <AlertCircle size={18} color="#EF4444" />
+                  <p style={{ fontFamily: 'Raleway, sans-serif', color: '#EF4444', fontSize: '14px' }}>{error}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                {/* Name */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{
+                    display: 'block',
+                    fontFamily: 'Raleway, sans-serif',
+                    color: COLORS.textDark,
+                    fontSize: '14px',
+                    marginBottom: '8px',
+                    fontWeight: 600,
+                  }}>
+                    Full Name
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -215,39 +229,24 @@ function Signup() {
                     onChange={handleChange}
                     placeholder="John Doe"
                     required
-                    style={{
-                      flex: 1,
-                      background: 'none',
-                      border: 'none',
-                      color: COLORS.white,
-                      fontSize: '15px',
-                      outline: 'none',
-                    }}
+                    style={inputStyle}
+                    onFocus={focusHandler}
+                    onBlur={blurHandler}
                   />
                 </div>
-              </div>
 
-              {/* Email Field */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{
-                  display: 'block',
-                  color: COLORS.textLight,
-                  fontSize: '14px',
-                  marginBottom: '8px',
-                  fontWeight: 500,
-                }}>
-                  Email Address
-                </label>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  backgroundColor: COLORS.cardLight,
-                  borderRadius: '12px',
-                  padding: '14px 16px',
-                  border: `1px solid ${COLORS.border}`,
-                }}>
-                  <Mail size={20} color={COLORS.textMuted} />
+                {/* Email */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{
+                    display: 'block',
+                    fontFamily: 'Raleway, sans-serif',
+                    color: COLORS.textDark,
+                    fontSize: '14px',
+                    marginBottom: '8px',
+                    fontWeight: 600,
+                  }}>
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     name="email"
@@ -255,242 +254,195 @@ function Signup() {
                     onChange={handleChange}
                     placeholder="you@example.com"
                     required
-                    style={{
-                      flex: 1,
-                      background: 'none',
-                      border: 'none',
-                      color: COLORS.white,
-                      fontSize: '15px',
-                      outline: 'none',
-                    }}
+                    style={inputStyle}
+                    onFocus={focusHandler}
+                    onBlur={blurHandler}
                   />
                 </div>
-              </div>
 
-              {/* Phone Field */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{
-                  display: 'block',
-                  color: COLORS.textLight,
-                  fontSize: '14px',
-                  marginBottom: '8px',
-                  fontWeight: 500,
-                }}>
-                  Phone Number
-                </label>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  backgroundColor: COLORS.cardLight,
-                  borderRadius: '12px',
-                  padding: '14px 16px',
-                  border: `1px solid ${COLORS.border}`,
-                }}>
-                  <Phone size={20} color={COLORS.textMuted} />
+                {/* Phone */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{
+                    display: 'block',
+                    fontFamily: 'Raleway, sans-serif',
+                    color: COLORS.textDark,
+                    fontSize: '14px',
+                    marginBottom: '8px',
+                    fontWeight: 600,
+                  }}>
+                    Phone Number
+                  </label>
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="9876543210"
-                    style={{
-                      flex: 1,
-                      background: 'none',
-                      border: 'none',
-                      color: COLORS.white,
-                      fontSize: '15px',
-                      outline: 'none',
-                    }}
+                    style={inputStyle}
+                    onFocus={focusHandler}
+                    onBlur={blurHandler}
                   />
                 </div>
-              </div>
 
-              {/* Password Fields */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: COLORS.textLight,
-                    fontSize: '14px',
-                    marginBottom: '8px',
-                    fontWeight: 500,
-                  }}>
-                    Password
-                  </label>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    backgroundColor: COLORS.cardLight,
-                    borderRadius: '12px',
-                    padding: '14px 12px',
-                    border: `1px solid ${COLORS.border}`,
-                  }}>
-                    <Lock size={18} color={COLORS.textMuted} />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="••••••"
-                      required
-                      style={{
-                        flex: 1,
-                        background: 'none',
-                        border: 'none',
-                        color: COLORS.white,
-                        fontSize: '14px',
-                        outline: 'none',
-                        width: '100%',
-                      }}
-                    />
+                {/* Password Fields */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontFamily: 'Raleway, sans-serif',
+                      color: COLORS.textDark,
+                      fontSize: '14px',
+                      marginBottom: '8px',
+                      fontWeight: 600,
+                    }}>
+                      Password
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="Min 6 chars"
+                        required
+                        style={{ ...inputStyle, paddingRight: '44px' }}
+                        onFocus={focusHandler}
+                        onBlur={blurHandler}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: COLORS.textMuted,
+                          cursor: 'pointer',
+                          padding: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label style={{
-                    display: 'block',
-                    color: COLORS.textLight,
-                    fontSize: '14px',
-                    marginBottom: '8px',
-                    fontWeight: 500,
-                  }}>
-                    Confirm
-                  </label>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    backgroundColor: COLORS.cardLight,
-                    borderRadius: '12px',
-                    padding: '14px 12px',
-                    border: `1px solid ${COLORS.border}`,
-                  }}>
-                    <Lock size={18} color={COLORS.textMuted} />
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontFamily: 'Raleway, sans-serif',
+                      color: COLORS.textDark,
+                      fontSize: '14px',
+                      marginBottom: '8px',
+                      fontWeight: 600,
+                    }}>
+                      Confirm
+                    </label>
                     <input
                       type={showPassword ? 'text' : 'password'}
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      placeholder="••••••"
+                      placeholder="Confirm"
                       required
-                      style={{
-                        flex: 1,
-                        background: 'none',
-                        border: 'none',
-                        color: COLORS.white,
-                        fontSize: '14px',
-                        outline: 'none',
-                        width: '100%',
-                      }}
+                      style={inputStyle}
+                      onFocus={focusHandler}
+                      onBlur={blurHandler}
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* Show Password Toggle */}
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    backgroundColor: loading ? COLORS.accentLight : COLORS.accent,
+                    color: loading ? COLORS.textMuted : COLORS.white,
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontFamily: 'Raleway, sans-serif',
+                    fontWeight: 600,
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseOver={(e) => {
+                    if (!loading) {
+                      e.currentTarget.style.backgroundColor = COLORS.accentDark
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(197,156,130,0.35)'
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!loading) {
+                      e.currentTarget.style.backgroundColor = COLORS.accent
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }
+                  }}
+                >
+                  {loading ? 'Creating Account...' : 'Create Account'}
+                </button>
+              </form>
+
+              {/* Sign In Link */}
+              <p style={{
+                textAlign: 'center',
+                fontFamily: 'Raleway, sans-serif',
                 color: COLORS.textMuted,
-                fontSize: '13px',
-                marginBottom: '24px',
-                cursor: 'pointer',
+                fontSize: '14px',
+                marginTop: '24px',
               }}>
-                <input
-                  type="checkbox"
-                  checked={showPassword}
-                  onChange={() => setShowPassword(!showPassword)}
-                  style={{ accentColor: COLORS.accent }}
-                />
-                Show passwords
-              </label>
+                Already have an account?{' '}
+                <Link
+                  to="/login"
+                  style={{
+                    color: COLORS.accent,
+                    textDecoration: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          )}
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '18px',
-                  backgroundColor: loading ? COLORS.cardLight : COLORS.accent,
-                  color: loading ? COLORS.textMuted : COLORS.dark,
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.3s ease',
-                  transform: 'translateY(0)'
-                }}
-                onMouseOver={(e) => {
-                  if (!loading) {
-                    e.currentTarget.style.backgroundColor = '#A68B6A'
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(197,156,130,0.4)'
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!loading) {
-                    e.currentTarget.style.backgroundColor = COLORS.accent
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }
-                }}
-              >
-                {loading ? 'Creating Account...' : 'Create Account'}
-              </button>
-            </form>
-
-            {/* Sign In Link */}
-            <p style={{
-              textAlign: 'center',
-              color: COLORS.textMuted,
-              fontSize: '14px',
-              marginTop: '24px',
+          {/* Benefits */}
+          {!success && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '24px',
+              marginTop: '28px',
+              flexWrap: 'wrap',
             }}>
-              Already have an account?{' '}
-              <Link
-                to="/login"
-                style={{
-                  color: COLORS.accent,
-                  textDecoration: 'none',
-                  fontWeight: 500,
-                }}
-              >
-                Sign in
-              </Link>
-            </p>
-          </div>
-        )}
-
-        {/* Benefits */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '24px',
-          marginTop: '32px',
-          flexWrap: 'wrap',
-        }}>
-          {['Earn Karma Points', 'Track Projects', 'Exclusive Offers'].map((benefit, i) => (
-            <span
-              key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                color: COLORS.textMuted,
-                fontSize: '12px',
-              }}
-            >
-              <Check size={14} color={COLORS.accent} />
-              {benefit}
-            </span>
-          ))}
+              {['Earn Karma Points', 'Track Projects', 'Exclusive Offers'].map((benefit, i) => (
+                <span
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontFamily: 'Raleway, sans-serif',
+                    color: COLORS.textMuted,
+                    fontSize: '13px',
+                  }}
+                >
+                  <Check size={14} color={COLORS.accent} />
+                  {benefit}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
       </div>
 
       <Footer />

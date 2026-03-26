@@ -1,18 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import CostCalculator from './components/CostCalculator'
+import FAQBlock from './components/FAQBlock'
 import AIDesignLightbox from './components/AIDesignLightbox'
 import SpinWheelLightbox, { SpinWheelTrigger } from './components/SpinWheelLightbox'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { COLORS, API_BASE } from './constants/colors'
 import {
-  Menu,
-  X,
   Phone,
   Mail,
   MapPin,
   ChevronRight,
+  ChevronDown,
   Play,
   Star,
   Check,
@@ -26,17 +26,17 @@ import {
   Award,
   Users,
   DollarSign,
-  Facebook,
-  Instagram,
-  Twitter,
-  Linkedin,
-  Youtube,
   ArrowRight,
   Sofa,
   Sparkles,
-  User,
-  LogOut,
+  Shield,
+  Ruler,
 } from 'lucide-react'
+
+// ============================================
+// DESIGN TOKENS
+// ============================================
+const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'
 
 // ============================================
 // SCROLL REVEAL HOOK
@@ -69,130 +69,58 @@ function useScrollReveal(threshold = 0.1) {
 // ============================================
 // ANIMATED COUNTER COMPONENT
 // ============================================
-function AnimatedCounter({ end, duration = 2000, suffix = '' }) {
+function AnimatedCounter({ end, duration = 2000, suffix = '', trigger }) {
   const [count, setCount] = useState(0)
   const [ref, isRevealed] = useScrollReveal()
+  const shouldAnimate = trigger !== undefined ? trigger : isRevealed
 
   useEffect(() => {
-    if (!isRevealed) return
+    if (!shouldAnimate) return
 
     let startTime
+    let rafId
     const animate = (currentTime) => {
       if (!startTime) startTime = currentTime
       const progress = Math.min((currentTime - startTime) / duration, 1)
-      setCount(Math.floor(progress * end))
+      // Ease-out for smoother counting
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setCount(Math.floor(eased * end))
       if (progress < 1) {
-        requestAnimationFrame(animate)
+        rafId = requestAnimationFrame(animate)
       }
     }
-    requestAnimationFrame(animate)
-  }, [isRevealed, end, duration])
+    rafId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafId)
+  }, [shouldAnimate, end, duration])
 
   return <span ref={ref}>{count}{suffix}</span>
 }
 
 // ============================================
-// FLOATING PARTICLES COMPONENT
+// SECTION PILL COMPONENT
 // ============================================
-function FloatingParticles({ count = 20 }) {
+function SectionPill({ children }) {
   return (
-    <div className="particles-container">
-      {[...Array(count)].map((_, i) => (
-        <div
-          key={i}
-          className="particle"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${60 + Math.random() * 40}%`,
-            animationDelay: `${Math.random() * 5}s`,
-            animationDuration: `${8 + Math.random() * 4}s`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// ============================================
-// MAGNETIC BUTTON COMPONENT
-// ============================================
-function MagneticButton({ children, onClick, style, className = '' }) {
-  const buttonRef = useRef(null)
-
-  const handleMouseMove = (e) => {
-    const button = buttonRef.current
-    if (!button) return
-    const rect = button.getBoundingClientRect()
-    const x = e.clientX - rect.left - rect.width / 2
-    const y = e.clientY - rect.top - rect.height / 2
-    button.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`
-  }
-
-  const handleMouseLeave = () => {
-    if (buttonRef.current) {
-      buttonRef.current.style.transform = 'translate(0, 0)'
-    }
-  }
-
-  return (
-    <button
-      ref={buttonRef}
-      onClick={onClick}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className={`magnetic-btn ${className}`}
-      style={{
-        transition: 'transform 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-        ...style
-      }}
-    >
+    <span style={{
+      display: 'inline-block',
+      padding: '6px 20px',
+      borderRadius: '50px',
+      border: `1px solid ${COLORS.border}`,
+      fontSize: '11px',
+      fontWeight: 600,
+      textTransform: 'uppercase',
+      letterSpacing: '2px',
+      color: COLORS.stone,
+      fontFamily: "'Raleway', sans-serif",
+      marginBottom: '16px',
+    }}>
       {children}
-    </button>
+    </span>
   )
 }
 
 // ============================================
-// TILT CARD COMPONENT
-// ============================================
-function TiltCard({ children, style, className = '' }) {
-  const cardRef = useRef(null)
-
-  const handleMouseMove = (e) => {
-    const card = cardRef.current
-    if (!card) return
-    const rect = card.getBoundingClientRect()
-    const x = (e.clientX - rect.left) / rect.width
-    const y = (e.clientY - rect.top) / rect.height
-    const rotateX = (y - 0.5) * -20
-    const rotateY = (x - 0.5) * 20
-    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`
-  }
-
-  const handleMouseLeave = () => {
-    if (cardRef.current) {
-      cardRef.current.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)'
-    }
-  }
-
-  return (
-    <div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className={className}
-      style={{
-        transition: 'transform 0.3s ease',
-        transformStyle: 'preserve-3d',
-        ...style
-      }}
-    >
-      {children}
-    </div>
-  )
-}
-
-// ============================================
-// HERO SECTION
+// HERO SECTION (Interiorplus Style)
 // ============================================
 function HeroSection() {
   const navigate = useNavigate()
@@ -200,6 +128,50 @@ function HeroSection() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [focusedField, setFocusedField] = useState(null)
+
+  // Animated stats
+  const statsRef = useRef(null)
+  const countRefs = [useRef(null), useRef(null), useRef(null)]
+  const hasAnimatedRef = useRef(false)
+
+  useEffect(() => {
+    const targets = [500, 15, 45]
+    const suffixes = ['+', '+', '']
+    let rafId
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimatedRef.current) {
+          hasAnimatedRef.current = true
+          const duration = 2500
+          const startTime = performance.now()
+
+          const animate = (now) => {
+            const elapsed = now - startTime
+            const progress = Math.min(elapsed / duration, 1)
+            const ease = 1 - Math.pow(1 - progress, 4)
+            for (let i = 0; i < targets.length; i++) {
+              if (countRefs[i].current) {
+                countRefs[i].current.textContent = Math.round(targets[i] * ease) + suffixes[i]
+              }
+            }
+            if (progress < 1) {
+              rafId = requestAnimationFrame(animate)
+            }
+          }
+          rafId = requestAnimationFrame(animate)
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    if (statsRef.current) observer.observe(statsRef.current)
+    return () => {
+      observer.disconnect()
+      if (rafId) cancelAnimationFrame(rafId)
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -226,7 +198,7 @@ function HeroSection() {
 
       setSuccess(true)
       setFormData({ name: '', phone: '', email: '', location: '' })
-      setTimeout(() => setSuccess(false), 3000)
+      setTimeout(() => setSuccess(false), 5000)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -234,258 +206,220 @@ function HeroSection() {
     }
   }
 
+  const getInputStyle = (fieldName) => ({
+    width: '100%',
+    padding: '14px 0',
+    backgroundColor: 'transparent',
+    border: 'none',
+    borderBottom: `1px solid ${focusedField === fieldName ? '#C59C82' : 'rgba(255, 255, 255, 0.15)'}`,
+    color: '#ffffff',
+    fontSize: '14px',
+    fontFamily: "'Raleway', sans-serif",
+    outline: 'none',
+    transition: 'border-color 0.3s ease',
+    boxSizing: 'border-box',
+  })
+
+  const stats = [
+    { label: 'Happy Homes' },
+    { label: 'Years Experience' },
+    { label: 'Days Delivery' },
+  ]
+
   return (
-    <section className="morph-bg" style={{
-      minHeight: '100vh',
-      backgroundColor: COLORS.dark,
-      display: 'flex',
-      alignItems: 'center',
-      paddingTop: '80px',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Background Image with Parallax */}
-      <div className="zoom-in-out" style={{
-        position: 'absolute',
-        inset: '-10%',
-        backgroundImage: 'url(https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&h=1080&fit=crop)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        animationDuration: '20s'
-      }}>
+    <section id="consultation" style={{ padding: '80px 0 32px' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 80px)' }}>
         <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(to right, rgba(17, 17, 17, 0.95), rgba(17, 17, 17, 0.7))'
-        }} />
-      </div>
-
-      {/* Floating Particles */}
-      <FloatingParticles count={15} />
-
-      {/* Animated Geometric Lines */}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        {[...Array(5)].map((_, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              width: '1px',
-              height: '100px',
-              background: `linear-gradient(to bottom, transparent, ${COLORS.accent}40, transparent)`,
-              left: `${20 + i * 15}%`,
-              top: '-100px',
-              animation: `particleFloat ${6 + i}s ease-in-out infinite`,
-              animationDelay: `${i * 0.5}s`
-            }}
+          position: 'relative',
+          width: '100%',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          minHeight: '600px',
+        }}>
+          {/* Background Image */}
+          <img
+            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&h=1080&fit=crop"
+            alt="Dream home"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           />
-        ))}
-      </div>
+          {/* Dual gradient overlays */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(27,24,22,0.8), rgba(27,24,22,0.4), rgba(27,24,22,0.2))' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(27,24,22,0.7) 0%, rgba(27,24,22,0.1) 50%, transparent 100%)' }} />
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px', width: '100%', position: 'relative', zIndex: 1 }}>
-        <div className="grid-responsive-2" style={{ gap: '48px', alignItems: 'center' }}>
-          {/* Left Content */}
-          <div>
-            <h1 className="blur-in" style={{
-              fontFamily: "'Oswald', sans-serif",
-              fontSize: 'clamp(36px, 6vw, 56px)',
-              color: 'white',
-              marginBottom: '24px',
-              lineHeight: 1.1
-            }}>
-              <span className="hero-text-animate" style={{ display: 'block' }}>Transform Your Space Into</span>
-              <span className="hero-text-animate glow-text" style={{ display: 'block', color: COLORS.accent, fontStyle: 'italic', animationDelay: '0.3s' }}>A Masterpiece</span>
-            </h1>
-            <p style={{
-              color: COLORS.textMuted,
-              fontSize: '16px',
-              lineHeight: 1.7,
-              marginBottom: '32px',
-              maxWidth: '500px'
-            }}>
-              Transform your space with our Expert consultations. Starting from <span style={{ color: COLORS.accent, fontWeight: '700' }}>₹650 per sq. ft.</span>
-            </p>
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-              <button
-                style={{
-                  backgroundColor: COLORS.accent,
-                  color: COLORS.dark,
-                  padding: '14px 32px',
-                  borderRadius: '50px',
-                  border: 'none',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  transform: 'scale(1)'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = COLORS.accentLight
-                  e.currentTarget.style.transform = 'scale(1.05)'
-                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(197,156,130,0.3)'
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = COLORS.accent
-                  e.currentTarget.style.transform = 'scale(1)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              >
-                Get Started
-              </button>
-              <button
-                onClick={() => navigate('/floor-map-3d')}
-                style={{
-                  backgroundColor: 'transparent',
-                  color: 'white',
-                  padding: '14px 32px',
-                  borderRadius: '50px',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'all 0.3s ease',
-                  transform: 'scale(1)'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.borderColor = COLORS.accent
-                  e.currentTarget.style.color = COLORS.accent
-                  e.currentTarget.style.backgroundColor = 'rgba(197,156,130,0.1)'
-                  e.currentTarget.style.transform = 'scale(1.05)'
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-                  e.currentTarget.style.color = 'white'
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}
-              >
-                <Sparkles size={16} />
-                Try AI Design
-              </button>
+          {/* Content Grid */}
+          <div style={{ position: 'relative', zIndex: 2, padding: 'clamp(32px, 6vw, 64px)', minHeight: '600px' }}>
+            <style>{`
+              @media (min-width: 768px) { .hero-ip-grid { grid-template-columns: 1fr 400px !important; } }
+              @media (max-width: 767px) { .hero-ip-grid { gap: 32px !important; } }
+            `}</style>
+            <div className="hero-ip-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '40px', alignItems: 'center', minHeight: '520px' }}>
+
+              {/* Left Content */}
+              <div>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', padding: '8px 20px', borderRadius: '9999px',
+                  fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.15)', marginBottom: '24px',
+                }}>
+                  Design. Build. Deliver.
+                </span>
+
+                <h1 style={{
+                  fontFamily: "'Oswald', sans-serif",
+                  fontSize: 'clamp(2rem, 5.5vw, 4.5rem)',
+                  fontWeight: 300,
+                  color: '#ffffff',
+                  lineHeight: 1.05,
+                  letterSpacing: '-0.02em',
+                  textTransform: 'uppercase',
+                  marginTop: '24px',
+                  textShadow: '0 2px 20px rgba(0,0,0,0.5), 0 4px 40px rgba(0,0,0,0.3)',
+                }}>
+                  Where Architecture<br />Meets{' '}
+                  <span style={{ color: '#C59C82', fontWeight: 500 }}>Interior Craft</span>
+                </h1>
+
+                <p style={{
+                  fontSize: '15px',
+                  color: 'rgba(255,255,255,0.6)',
+                  marginTop: '20px',
+                  maxWidth: '480px',
+                  lineHeight: 1.7,
+                  textShadow: '0 1px 10px rgba(0,0,0,0.4)',
+                }}>
+                  <span className="desktop-only-text">One firm for construction, interiors, and renovation. We handle the entire journey — from structural foundation to the final finish.</span>
+                  <span className="mobile-only-text">Construction. Interiors. Renovation. One company, complete solutions.</span>
+                  {' '}Starting from <span style={{ color: '#C59C82', fontWeight: 600 }}>₹650/sq.ft</span>
+                </p>
+
+                {/* Stats */}
+                <div ref={statsRef} style={{ display: 'flex', alignItems: 'baseline', gap: 'clamp(16px, 3vw, 40px)', marginTop: '40px', flexWrap: 'wrap' }}>
+                  {stats.map((stat, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                      <span
+                        ref={countRefs[i]}
+                        style={{
+                          fontFamily: "'Oswald', sans-serif",
+                          fontSize: 'clamp(1.5rem, 3vw, 2.5rem)',
+                          fontWeight: 300,
+                          color: '#ffffff',
+                          lineHeight: 1,
+                        }}
+                      >
+                        0
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em' }}>{stat.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Glass Form Card */}
+              <div style={{
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                backgroundColor: 'rgba(27, 24, 22, 0.85)',
+                borderRadius: '20px',
+                padding: 'clamp(24px, 4vw, 32px)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}>
+                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', padding: '6px 16px', borderRadius: '9999px',
+                    fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase',
+                    color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)',
+                  }}>
+                    Free Consultation
+                  </span>
+                  <h2 style={{
+                    fontFamily: "'Oswald', sans-serif",
+                    fontSize: '1.3rem',
+                    fontWeight: 400,
+                    color: '#ffffff',
+                    marginTop: '16px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.02em',
+                  }}>
+                    Get Free 3D Design
+                  </h2>
+                  <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: '8px', fontSize: '13px' }}>
+                    Expert Consultation + Detailed Pricing Guide<br />Zero Hidden Charges
+                  </p>
+                </div>
+
+                {success ? (
+                  <div style={{ textAlign: 'center', padding: '32px 16px' }}>
+                    <div style={{
+                      width: '56px', height: '56px', borderRadius: '50%',
+                      border: '1px solid #C59C82', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', margin: '0 auto 16px',
+                    }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C59C82" strokeWidth="1.5">
+                        <polyline points="20,6 9,17 4,12" />
+                      </svg>
+                    </div>
+                    <h3 style={{ fontFamily: "'Oswald', sans-serif", color: '#ffffff', fontSize: '1.3rem', fontWeight: 300 }}>Thank You</h3>
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '8px' }}>Our design expert will contact you within 24 hours.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {error && (
+                      <div style={{
+                        padding: '10px 14px', backgroundColor: 'rgba(239,68,68,0.1)',
+                        borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)', marginBottom: '8px',
+                      }}>
+                        <p style={{ color: '#EF4444', fontSize: '13px', margin: 0 }}>{error}</p>
+                      </div>
+                    )}
+                    {[
+                      { name: 'name', type: 'text', placeholder: 'Your Name *', key: 'name' },
+                      { name: 'phone', type: 'tel', placeholder: 'Mobile Number *', key: 'phone' },
+                      { name: 'email', type: 'email', placeholder: 'Email Address *', key: 'email' },
+                      { name: 'location', type: 'text', placeholder: 'Pincode / Location *', key: 'location' },
+                    ].map((field) => (
+                      <input
+                        key={field.name}
+                        type={field.type}
+                        value={formData[field.key]}
+                        onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                        onFocus={() => setFocusedField(field.name)}
+                        onBlur={() => setFocusedField(null)}
+                        placeholder={field.placeholder}
+                        required
+                        disabled={loading}
+                        style={getInputStyle(field.name)}
+                      />
+                    ))}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={loading ? '' : 'cta-beat'}
+                      style={{
+                        width: '100%',
+                        marginTop: '20px',
+                        backgroundColor: loading ? 'rgba(255,255,255,0.05)' : '#C59C82',
+                        color: loading ? '#888' : '#ffffff',
+                        padding: '14px',
+                        borderRadius: '9999px',
+                        fontWeight: 500,
+                        fontSize: '13px',
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.3s ease',
+                        fontFamily: "'Raleway', sans-serif",
+                      }}
+                    >
+                      {loading ? 'Submitting...' : 'Get Free Quote'}
+                    </button>
+                  </form>
+                )}
+                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginTop: '16px' }}>
+                  Enter Your Details And Get A Free<br />Consultation + Cost Estimates
+                </p>
+              </div>
             </div>
-          </div>
-          {/* Form Card */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '24px',
-            padding: '32px',
-            maxWidth: '420px',
-            width: '100%',
-            marginLeft: 'auto',
-            boxShadow: '0 25px 50px rgba(0,0,0,0.25)'
-          }}>
-            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '24px', color: COLORS.dark, marginBottom: '8px' }}>
-              Get Your <span style={{ color: COLORS.accentDark }}>FREE</span> Consultation
-            </h2>
-            <p style={{ fontSize: '14px', color: '#666', marginBottom: '24px' }}>
-              Expert Consultation + Detailed Pricing Guide<br />
-              <span style={{ color: COLORS.accentDark, fontWeight: 500 }}>Zero Hidden Charges</span>
-            </p>
-
-            {success && (
-              <div style={{
-                backgroundColor: '#22C55E20',
-                border: '1px solid #22C55E',
-                borderRadius: '8px',
-                padding: '12px',
-                marginBottom: '16px',
-                color: '#22C55E',
-                fontSize: '14px',
-                textAlign: 'center'
-              }}>
-                Thank you! We'll contact you soon.
-              </div>
-            )}
-            {error && (
-              <div style={{
-                backgroundColor: '#EF444420',
-                border: '1px solid #EF4444',
-                borderRadius: '8px',
-                padding: '12px',
-                marginBottom: '16px',
-                color: '#EF4444',
-                fontSize: '14px',
-                textAlign: 'center'
-              }}>
-                {error}
-              </div>
-            )}
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  className="consultation-input"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-                <input
-                  type="tel"
-                  placeholder="Contact Number"
-                  className="consultation-input"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                />
-              </div>
-              <input
-                type="email"
-                placeholder="Email Address"
-                className="consultation-input"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-              <input
-                type="text"
-                placeholder="Your Location"
-                className="consultation-input"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                required
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  backgroundColor: loading ? '#999' : COLORS.accent,
-                  color: COLORS.dark,
-                  padding: '16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  width: '100%',
-                  transition: 'all 0.3s ease',
-                  transform: 'translateY(0)'
-                }}
-                onMouseOver={(e) => {
-                  if (!loading) {
-                    e.currentTarget.style.backgroundColor = COLORS.accentDark
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(197,156,130,0.4)'
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!loading) {
-                    e.currentTarget.style.backgroundColor = COLORS.accent
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }
-                }}
-              >
-                {loading ? 'Submitting...' : 'Book Free Consultation'}
-              </button>
-            </form>
-
-            <p style={{ fontSize: '12px', color: '#999', textAlign: 'center', marginTop: '16px' }}>
-              Enter Your Details And Get A Free<br />Consultation + Cost Estimates
-            </p>
           </div>
         </div>
       </div>
@@ -497,82 +431,311 @@ function HeroSection() {
 // WHO WE ARE SECTION
 // ============================================
 function WhoWeAreSection() {
-  const [imageRef, imageRevealed] = useScrollReveal()
-  const [contentRef, contentRevealed] = useScrollReveal()
+  const [sectionRef, sectionRevealed] = useScrollReveal(0.15)
+  const [hoveredImage, setHoveredImage] = useState(false)
+  const [hoveredStat, setHoveredStat] = useState(null)
+
+  // UI/UX Pro Max: Trust & Authority stats with icons
+  const aboutStats = [
+    { icon: Building2, value: '500+', label: 'Projects Delivered', delay: 0 },
+    { icon: Award, value: '15+', label: 'Years of Excellence', delay: 40 },
+    { icon: Users, value: '50+', label: 'Expert Team Members', delay: 80 },
+  ]
 
   return (
-    <section className="section-padding" style={{ backgroundColor: COLORS.dark, position: 'relative', overflow: 'hidden' }}>
-      {/* Background decoration */}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '-100px',
-        width: '300px',
-        height: '300px',
-        borderRadius: '50%',
-        border: `1px dashed ${COLORS.accent}20`,
-        animation: 'rotateSlow 40s linear infinite'
-      }} />
+    <section
+      ref={sectionRef}
+      style={{
+        width: '100%',
+        backgroundColor: COLORS.canvas,
+        padding: 'clamp(80px, 12vw, 140px) clamp(16px, 4vw, 80px)',
+        position: 'relative',
+      }}
+    >
+      {/* Subtle noise texture overlay (UI/UX Pro Max: texture-overlay) */}
+      <div className="noise-overlay" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <div className="grid-responsive-2" style={{ gap: '48px', alignItems: 'center' }}>
-          {/* Image with reveal animation */}
+      <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        <style>{`
+          @media (min-width: 1024px) { .about-grid-v2 { grid-template-columns: 1.1fr 1fr !important; } }
+          @media (max-width: 1023px) { .about-grid-v2 { gap: 40px !important; } }
+          @media (max-width: 640px) { .about-stats-row { grid-template-columns: 1fr !important; } }
+        `}</style>
+
+        <div className="about-grid-v2" style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr',
+          gap: 'clamp(48px, 6vw, 80px)',
+          alignItems: 'center',
+        }}>
+
+          {/* ─── Image Column ─── */}
           <div
-            ref={imageRef}
-            className={`scroll-reveal-left ${imageRevealed ? 'revealed' : ''}`}
+            onMouseEnter={() => setHoveredImage(true)}
+            onMouseLeave={() => setHoveredImage(false)}
+            className="desktop-only"
+            style={{
+              position: 'relative',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              opacity: sectionRevealed ? 1 : 0,
+              transform: sectionRevealed ? 'translateX(0)' : 'translateX(-40px)',
+              transition: `all 0.7s ${EASE}`,
+            }}
           >
-            <TiltCard style={{
-              aspectRatio: '4/3',
-              borderRadius: '20px 20px 20px 100px',
-              overflow: 'hidden'
+            {/* Main image — 4:5 portrait ratio for premium feel */}
+            <div style={{ aspectRatio: '4/5', position: 'relative', overflow: 'hidden' }}>
+              <img
+                src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&h=1000&fit=crop"
+                alt="Premium interior design showcase by HOH108"
+                loading="lazy"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: `transform 0.6s ${EASE}`,
+                  transform: hoveredImage ? 'scale(1.04)' : 'scale(1)',
+                }}
+              />
+              {/* Gradient overlay — appears on hover (UI/UX Pro Max: state-transition) */}
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(to top, rgba(15,23,42,0.35) 0%, transparent 60%)',
+                opacity: hoveredImage ? 1 : 0,
+                transition: 'opacity 0.4s ease-out',
+                pointerEvents: 'none',
+              }} />
+            </div>
+
+            {/* Floating trust badge (UI/UX Pro Max: trust-authority + elevation-consistent) */}
+            <div style={{
+              position: 'absolute',
+              bottom: '24px',
+              left: '24px',
+              right: '24px',
+              display: 'flex',
+              gap: '12px',
+              opacity: hoveredImage ? 1 : 0,
+              transform: hoveredImage ? 'translateY(0)' : 'translateY(12px)',
+              transition: `all 0.35s ${EASE}`,
             }}>
-              <div className="image-reveal" style={{ width: '100%', height: '100%' }}>
-                <img
-                  src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop"
-                  alt="Modern luxury interior"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </div>
-            </TiltCard>
+              {['Construction', 'Interiors', 'Renovation'].map((tag) => (
+                <span key={tag} style={{
+                  padding: '8px 16px',
+                  borderRadius: '9999px',
+                  backgroundColor: 'rgba(255,255,255,0.9)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  fontFamily: "'Raleway', sans-serif",
+                  color: COLORS.dark,
+                  letterSpacing: '0.02em',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
 
-          {/* Content with reveal animation */}
-          <div
-            ref={contentRef}
-            className={`scroll-reveal-right ${contentRevealed ? 'revealed' : ''}`}
-          >
-            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '48px', color: 'white', marginBottom: '8px' }}>
-              Who <span className="underline-reveal" style={{ color: COLORS.accent, fontStyle: 'italic' }}>We Are</span>
+          {/* ─── Content Column ─── */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            opacity: sectionRevealed ? 1 : 0,
+            transform: sectionRevealed ? 'translateX(0)' : 'translateX(30px)',
+            transition: `all 0.7s ${EASE} 0.15s`,
+          }}>
+
+            {/* Pill label (UI/UX Pro Max: section-pill, color-semantic) */}
+            <span style={{
+              display: 'inline-flex',
+              alignSelf: 'flex-start',
+              padding: '8px 20px',
+              borderRadius: '9999px',
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              fontFamily: "'Raleway', sans-serif",
+              color: COLORS.accent,
+              border: `1px solid ${COLORS.accent}40`,
+              backgroundColor: `${COLORS.accent}08`,
+              marginBottom: '24px',
+            }}>
+              Who We Are
+            </span>
+
+            {/* Heading (UI/UX Pro Max: heading-hierarchy, weight-hierarchy 600-700) */}
+            <h2 style={{
+              fontFamily: "'Oswald', sans-serif",
+              fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              lineHeight: 1.08,
+              color: COLORS.textDark,
+              marginBottom: '8px',
+            }}>
+              Crafting Timeless
             </h2>
-            <div className="gradient-border-animated" style={{ width: '64px', height: '4px', marginBottom: '32px' }}></div>
-            <p style={{ color: COLORS.textMuted, lineHeight: 1.7, marginBottom: '24px' }}>
-              House of Hancet 108 (HOH108) is a multi-vertical design & build company based in
-              Bangalore and Mysore. We specialize in construction, interiors and
-              renovations for residential, commercial, hospitality and institutional establishments.
+            <h2 style={{
+              fontFamily: "'Oswald', sans-serif",
+              fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)',
+              fontWeight: 300,
+              textTransform: 'uppercase',
+              lineHeight: 1.08,
+              color: COLORS.accent,
+              marginBottom: '24px',
+            }}>
+              Spaces
+            </h2>
+
+            {/* Accent line (UI/UX Pro Max: visual-hierarchy via spacing + contrast) */}
+            <div style={{
+              width: '48px',
+              height: '3px',
+              backgroundColor: COLORS.accent,
+              borderRadius: '2px',
+              marginBottom: '24px',
+            }} />
+
+            {/* Body text (UI/UX Pro Max: line-height 1.5-1.75, line-length 65-75ch, readable-font-size 16px) */}
+            <p style={{
+              fontFamily: "'Raleway', sans-serif",
+              fontSize: 'clamp(15px, 1.1vw, 17px)',
+              color: COLORS.stone,
+              lineHeight: 1.75,
+              marginBottom: '16px',
+              maxWidth: '520px',
+            }}>
+              <span className="desktop-only-text">HOH108 is a vertically integrated design and build practice. We bring together structural engineering, interior architecture, and renovation expertise under a single operational framework — eliminating the friction between separate contractors.</span>
+              <span className="mobile-only-text">Construction, interiors, and renovation — one integrated team, one seamless process.</span>
             </p>
-            <p style={{ color: COLORS.textMuted, lineHeight: 1.7, marginBottom: '32px' }}>
-              With our merger with Interior Plus, we now combine engineering strength
-              with creative interior expertise, offering clients end-to-end solutions under one roof.
+            <p style={{
+              fontFamily: "'Raleway', sans-serif",
+              fontSize: 'clamp(14px, 1vw, 16px)',
+              color: COLORS.stone,
+              lineHeight: 1.75,
+              marginBottom: '40px',
+              maxWidth: '520px',
+              opacity: 0.85,
+            }}>
+              <span className="desktop-only-text">Based in Bangalore and Mysore, we serve clients who value precision, transparency, and spaces that are built to endure.</span>
             </p>
-            <Link to="/about" style={{ textDecoration: 'none' }}>
-              <MagneticButton
+
+            {/* Stats Row (UI/UX Pro Max: trust-authority, 8dp spacing, stagger-sequence 30-50ms) */}
+            <div
+              className="about-stats-row"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '16px',
+                marginBottom: '40px',
+              }}
+            >
+              {aboutStats.map((stat, i) => {
+                const Icon = stat.icon
+                const isHovered = hoveredStat === i
+                return (
+                  <div
+                    key={i}
+                    onMouseEnter={() => setHoveredStat(i)}
+                    onMouseLeave={() => setHoveredStat(null)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      borderRadius: '16px',
+                      backgroundColor: isHovered ? COLORS.white : 'transparent',
+                      border: `1px solid ${isHovered ? COLORS.border : 'transparent'}`,
+                      boxShadow: isHovered ? '0 8px 24px rgba(0,0,0,0.04)' : 'none',
+                      transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
+                      transition: `all 0.25s ease-out`,
+                      cursor: 'default',
+                    }}
+                  >
+                    {/* Icon container (UI/UX Pro Max: icon-style-consistent, 44px touch target) */}
+                    <div style={{
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: '12px',
+                      backgroundColor: `${COLORS.accent}12`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      transition: 'background-color 0.25s ease-out',
+                      ...(isHovered && { backgroundColor: `${COLORS.accent}20` }),
+                    }}>
+                      <Icon size={20} color={COLORS.accent} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <div style={{
+                        fontFamily: "'Oswald', sans-serif",
+                        fontSize: 'clamp(22px, 2vw, 28px)',
+                        fontWeight: 700,
+                        color: COLORS.textDark,
+                        lineHeight: 1,
+                      }}>
+                        {stat.value}
+                      </div>
+                      <div style={{
+                        fontFamily: "'Raleway', sans-serif",
+                        fontSize: '12px',
+                        color: COLORS.stone,
+                        marginTop: '4px',
+                        letterSpacing: '0.02em',
+                      }}>
+                        {stat.label}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* CTA (UI/UX Pro Max: primary-action single CTA, cursor-pointer, min 44px, 150-300ms) */}
+            <Link to="/about" style={{ textDecoration: 'none', alignSelf: 'flex-start' }}>
+              <button
+                aria-label="Learn more about HOH108"
                 style={{
                   backgroundColor: COLORS.accent,
-                  color: COLORS.dark,
-                  padding: '14px 32px',
-                  borderRadius: '50px',
+                  color: '#fff',
+                  padding: '16px 40px',
+                  borderRadius: '9999px',
                   border: 'none',
                   fontSize: '14px',
                   fontWeight: 600,
+                  fontFamily: "'Raleway', sans-serif",
                   cursor: 'pointer',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: '10px',
+                  transition: 'all 0.25s ease-out',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  minHeight: '48px',
                 }}
-                className="neon-pulse"
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = COLORS.accentDark
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 12px 32px rgba(197,156,130,0.3)'
+                  e.currentTarget.querySelector('svg').style.transform = 'translateX(4px)'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = COLORS.accent
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                  e.currentTarget.querySelector('svg').style.transform = 'translateX(0)'
+                }}
               >
-                Read More <ChevronRight size={18} />
-              </MagneticButton>
+                Discover Our Story
+                <ArrowRight size={18} style={{ transition: 'transform 0.25s ease-out' }} />
+              </button>
             </Link>
           </div>
         </div>
@@ -594,7 +757,12 @@ function VerticalsSection() {
   ]
 
   return (
-    <section style={{ backgroundColor: COLORS.card, position: 'relative', overflow: 'hidden', padding: '80px 16px' }}>
+    <section style={{
+      backgroundColor: COLORS.canvas,
+      position: 'relative',
+      overflow: 'hidden',
+      padding: 'clamp(64px, 10vw, 120px) clamp(16px, 4vw, 80px)',
+    }}>
       {/* Watermark */}
       <div style={{
         position: 'absolute',
@@ -602,48 +770,58 @@ function VerticalsSection() {
         left: 10,
         right: 10,
         pointerEvents: 'none',
-        opacity: 0.15
+        opacity: 0.06,
       }}>
         <img
           src="/images/HOH108_WaterMArk.png"
           alt=""
-          style={{
-            width: '100%',
-            height: 'auto',
-            objectFit: 'contain'
-          }}
+          style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
         />
       </div>
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
 
         {/* Mobile Layout */}
         <div className="verticals-mobile-layout">
-          {/* Header */}
-          <div className="verticals-header" style={{ marginBottom: '32px' }}>
-            <h2 className="heading-xl" style={{ fontFamily: 'Oswald, sans-serif', color: 'white', marginBottom: '16px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <SectionPill>Our Verticals</SectionPill>
+            <h2 style={{
+              fontFamily: "'Oswald', sans-serif",
+              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              color: COLORS.textDark,
+              textTransform: 'uppercase',
+              fontWeight: 700,
+              marginBottom: '12px',
+            }}>
               Our <span style={{ color: COLORS.accent, fontStyle: 'italic' }}>Verticals</span>
             </h2>
-            <p style={{ color: COLORS.textMuted, maxWidth: '400px' }}>
-              <span style={{ color: 'white', fontWeight: 500 }}>One brand. Multiple capabilities.</span><br />
-              From ground-up construction to luxury interiors and complete renovations.
+            <p style={{
+              fontFamily: "'Raleway', sans-serif",
+              color: COLORS.stone,
+              maxWidth: '400px',
+              margin: '0 auto',
+              fontSize: '15px',
+              lineHeight: 1.7,
+            }}>
+              <span style={{ color: COLORS.textDark, fontWeight: 600 }}>One brand. Multiple capabilities.</span><br />
+              A unified practice. Multiple disciplines. Every vertical operates with shared quality standards and a single chain of command.
             </p>
           </div>
 
-          {/* Mobile Grid */}
           <div className="verticals-mobile-grid">
             {verticals.map((v) => {
               const cardContent = (
                 <div key={v.name} className="verticals-mobile-card" style={{
-                  backgroundColor: COLORS.dark,
-                  borderRadius: '16px',
-                  border: '2px solid rgba(201,168,141,0.3)',
+                  backgroundColor: COLORS.white,
+                  borderRadius: '20px',
+                  border: `1px solid ${COLORS.border}`,
                   padding: '24px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '12px'
+                  gap: '12px',
+                  transition: `all 0.4s ${EASE}`,
                 }}>
                   <img
                     src={v.logo}
@@ -653,7 +831,7 @@ function VerticalsSection() {
                       height: '160px',
                       objectFit: 'contain',
                       display: 'block',
-                      margin: '0 auto'
+                      margin: '0 auto',
                     }}
                     className="verticals-icon"
                   />
@@ -680,12 +858,28 @@ function VerticalsSection() {
         <div className="verticals-desktop-layout">
           {/* Left - Header Text */}
           <div className="verticals-header" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '86px', color: 'white', marginBottom: '28px', lineHeight: 1.1 }}>
+            <SectionPill>Our Verticals</SectionPill>
+            <h2 style={{
+              fontFamily: "'Oswald', sans-serif",
+              fontSize: 'clamp(3rem, 5vw, 5rem)',
+              color: COLORS.textDark,
+              marginBottom: '28px',
+              lineHeight: 1.1,
+              textTransform: 'uppercase',
+              fontWeight: 700,
+            }}>
               Our <span style={{ color: COLORS.accent, fontStyle: 'italic' }}>Verticals</span>
             </h2>
-            <p style={{ color: COLORS.textMuted, maxWidth: '600px', marginBottom: '48px', fontSize: '22px', lineHeight: 1.7 }}>
-              <span style={{ color: 'white', fontWeight: 500, fontSize: '30px' }}>One brand. Multiple capabilities.</span><br />
-              From ground-up construction to luxury interiors and complete renovations.
+            <p style={{
+              fontFamily: "'Raleway', sans-serif",
+              color: COLORS.stone,
+              maxWidth: '600px',
+              marginBottom: '48px',
+              fontSize: '18px',
+              lineHeight: 1.7,
+            }}>
+              <span style={{ color: COLORS.textDark, fontWeight: 600, fontSize: '22px' }}>One brand. Multiple capabilities.</span><br />
+              A unified practice. Multiple disciplines. Every vertical operates with shared quality standards and a single chain of command.
             </p>
             <a
               href="/about"
@@ -696,16 +890,22 @@ function VerticalsSection() {
                 color: COLORS.accent,
                 textDecoration: 'none',
                 fontWeight: 600,
-                fontSize: '20px'
+                fontSize: '16px',
+                fontFamily: "'Raleway', sans-serif",
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                transition: `color 0.3s ${EASE}`,
               }}
+              onMouseOver={(e) => e.currentTarget.style.color = COLORS.accentDark}
+              onMouseOut={(e) => e.currentTarget.style.color = COLORS.accent}
             >
-              Explore Our Services <ArrowRight size={22} />
+              Explore Our Services <ArrowRight size={20} />
             </a>
           </div>
 
           {/* Right - Radial Layout */}
           <div className="verticals-radial-wrapper" style={{ transform: 'scale(1.25)', transformOrigin: 'center center' }}>
-            {/* Center Logo - Static */}
+            {/* Center Logo */}
             <div className="verticals-center-logo" style={{
               position: 'absolute',
               top: '50%',
@@ -719,7 +919,8 @@ function VerticalsSection() {
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 2,
-              padding: '18px'
+              padding: '18px',
+              boxShadow: '0 8px 32px rgba(197,156,130,0.3)',
             }}>
               <img
                 src="/Logo.png"
@@ -728,7 +929,7 @@ function VerticalsSection() {
                   width: '100%',
                   height: '100%',
                   objectFit: 'contain',
-                  filter: 'brightness(0) saturate(100%)'
+                  filter: 'brightness(0) saturate(100%)',
                 }}
               />
             </div>
@@ -741,13 +942,13 @@ function VerticalsSection() {
               transform: 'translate(-50%, -50%)',
               width: '440px',
               height: '440px',
-              border: '1px solid rgba(201,168,141,0.1)',
-              borderRadius: '50%'
-            }}></div>
+              border: `1px solid ${COLORS.border}`,
+              borderRadius: '50%',
+            }} />
 
-            {/* Orbiting Container - rotates the nodes around center */}
+            {/* Orbiting Container */}
             <div className="verticals-orbit-container">
-              {/* Dashed Circle - rotates with container */}
+              {/* Dashed Circle */}
               <div style={{
                 position: 'absolute',
                 top: '50%',
@@ -755,9 +956,9 @@ function VerticalsSection() {
                 transform: 'translate(-50%, -50%)',
                 width: '420px',
                 height: '420px',
-                border: '1px dashed rgba(201,168,141,0.3)',
-                borderRadius: '50%'
-              }}></div>
+                border: `1px dashed ${COLORS.borderHover}`,
+                borderRadius: '50%',
+              }} />
 
               {/* Orbiting Nodes */}
               {verticals.map((v, i) => {
@@ -775,10 +976,11 @@ function VerticalsSection() {
                     height: '140px',
                     backgroundColor: COLORS.dark,
                     borderRadius: '50%',
-                    border: '2px solid rgba(201,168,141,0.3)',
-                    cursor: 'pointer'
+                    border: `1px solid rgba(197,156,130,0.2)`,
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                    transition: `all 0.4s ${EASE}`,
                   }}>
-                    {/* Counter-rotating content to keep text upright */}
                     <div className="verticals-node-content">
                       <img
                         src={v.logo}
@@ -788,7 +990,7 @@ function VerticalsSection() {
                           height: '120px',
                           objectFit: 'contain',
                           display: 'block',
-                          margin: '0 auto'
+                          margin: '0 auto',
                         }}
                         className="verticals-icon"
                       />
@@ -812,65 +1014,144 @@ function VerticalsSection() {
             </div>
           </div>
         </div>
-
       </div>
     </section>
   )
 }
 
 // ============================================
-// OUR SERVICES SECTION
+// OUR SERVICES SECTION (Advantage Bento Style)
 // ============================================
 function ServicesSection() {
-  const [active, setActive] = useState(1)
   const [sectionRef, sectionRevealed] = useScrollReveal()
+  const [activeIndex, setActiveIndex] = useState(0)
+  const isPaused = useRef(false)
+  const timerRef = useRef(null)
+  const CYCLE_MS = 4000
+
   const services = [
-    { title: 'Interior Design', icon: Paintbrush, desc: 'Transform your space with expert interior design', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&h=800&fit=crop' },
-    { title: 'Construction', icon: HardHat, desc: 'Quality construction for residential and commercial', image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=800&fit=crop' },
-    { title: 'Renovation', icon: Hammer, desc: 'Breathe new life into existing spaces', image: 'https://images.unsplash.com/photo-1585128792020-803d29415281?w=600&h=800&fit=crop' },
+    {
+      icon: Paintbrush,
+      label: 'Interior Design',
+      title: 'Interior Design',
+      description: 'Thoughtfully designed spaces that balance form and function. From material selection to final styling — every detail is intentional.',
+      image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&h=900&fit=crop',
+      link: '/interior',
+    },
+    {
+      icon: HardHat,
+      label: 'Construction',
+      title: 'Construction',
+      description: 'Engineered for permanence. Residential and commercial builds executed with structural integrity, premium materials, and zero-defect standards.',
+      image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=900&fit=crop',
+      link: '/construction',
+    },
+    {
+      icon: Hammer,
+      label: 'Renovation',
+      title: 'Renovation',
+      description: 'Strategic upgrades that respect existing character while delivering modern performance. Structural, aesthetic, and functional — handled end-to-end.',
+      image: 'https://images.unsplash.com/photo-1585128792020-803d29415281?w=800&h=900&fit=crop',
+      link: '/renovation',
+    },
   ]
 
+  // Auto-cycle: starts when section scrolls into view, pauses on hover
+  useEffect(() => {
+    if (!sectionRevealed) return
+    const tick = () => {
+      timerRef.current = setTimeout(() => {
+        if (!isPaused.current) {
+          setActiveIndex((prev) => (prev + 1) % services.length)
+        }
+        tick()
+      }, CYCLE_MS)
+    }
+    tick()
+    return () => clearTimeout(timerRef.current)
+  }, [sectionRevealed, services.length])
+
+  const handleMouseEnter = useCallback((i) => {
+    isPaused.current = true
+    setActiveIndex(i)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    isPaused.current = false
+  }, [])
+
   return (
-    <section className="section-padding" style={{ backgroundColor: COLORS.card, position: 'relative', overflow: 'hidden' }}>
-      {/* Animated background pattern */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        opacity: 0.03,
-        backgroundImage: `radial-gradient(${COLORS.accent} 1px, transparent 1px)`,
-        backgroundSize: '30px 30px',
-        animation: 'gridMove 30s linear infinite'
-      }} />
+    <section style={{
+      backgroundColor: COLORS.canvas,
+      padding: 'clamp(64px, 10vw, 120px) 0',
+      overflow: 'hidden',
+    }}>
+      <div ref={sectionRef} style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 40px)' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(40px, 6vw, 64px)' }}>
+          <SectionPill>What We Do</SectionPill>
+          <h2 style={{
+            fontFamily: "'Oswald', sans-serif",
+            fontSize: 'clamp(2rem, 4.5vw, 3.5rem)',
+            fontWeight: 700,
+            color: COLORS.textDark,
+            textTransform: 'uppercase',
+            letterSpacing: '0.02em',
+            marginBottom: '16px',
+            opacity: sectionRevealed ? 1 : 0,
+            transform: sectionRevealed ? 'translateY(0)' : 'translateY(30px)',
+            transition: `opacity 1s ${EASE}, transform 1s ${EASE}`,
+          }}>
+            The HOH108 <span style={{ color: COLORS.accent }}>Services</span>
+          </h2>
+          <p style={{
+            fontFamily: "'Raleway', sans-serif",
+            color: COLORS.stone,
+            maxWidth: '600px',
+            margin: '0 auto',
+            fontSize: '15px',
+            lineHeight: 1.7,
+            opacity: sectionRevealed ? 1 : 0,
+            transform: sectionRevealed ? 'translateY(0)' : 'translateY(20px)',
+            transition: `opacity 1s 0.15s ${EASE}, transform 1s 0.15s ${EASE}`,
+          }}>
+            Construction, interiors, and renovation — delivered by one integrated team with complete accountability.
+          </p>
+        </div>
 
-      <div ref={sectionRef} style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <h2
-          className={`heading-xl scroll-reveal ${sectionRevealed ? 'revealed' : ''}`}
-          style={{ fontFamily: 'Oswald, sans-serif', color: 'white', textAlign: 'center', marginBottom: '48px' }}
+        {/* Bento Cards */}
+        <div
+          className="services-bento-grid"
+          style={{
+            display: 'flex',
+            gap: 'clamp(10px, 1.2vw, 16px)',
+            height: 'clamp(420px, 45vw, 560px)',
+            opacity: sectionRevealed ? 1 : 0,
+            transform: sectionRevealed ? 'translateY(0)' : 'translateY(40px)',
+            transition: `opacity 1s 0.3s ${EASE}, transform 1s 0.3s ${EASE}`,
+          }}
         >
-          Our <span className="glow-text" style={{ color: COLORS.accent, fontStyle: 'italic' }}>Services</span>
-        </h2>
-
-        <div className="grid-responsive-3 stagger-children">
           {services.map((s, i) => {
-            const isActive = i === active
+            const Icon = s.icon
+            const isActive = i === activeIndex
+
             return (
               <div
                 key={s.title}
-                onClick={() => setActive(i)}
+                onMouseEnter={() => handleMouseEnter(i)}
+                onMouseLeave={handleMouseLeave}
+                onClick={() => setActiveIndex(i)}
                 style={{
-                  borderRadius: '24px',
-                  height: isActive ? '420px' : '380px',
-                  padding: '24px',
-                  cursor: 'pointer',
-                  opacity: isActive ? 1 : 0.7,
-                  transition: 'all 0.5s cubic-bezier(0.23, 1, 0.32, 1)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-end',
                   position: 'relative',
-                  overflow: 'hidden'
+                  borderRadius: '20px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  flex: isActive ? '4' : '1',
+                  transition: `flex 0.7s ${EASE}`,
+                  minWidth: 0,
                 }}
               >
+                {/* Background Image */}
                 <img
                   src={s.image}
                   alt={s.title}
@@ -879,69 +1160,157 @@ function ServicesSection() {
                     inset: 0,
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover'
+                    objectFit: 'cover',
+                    transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                    transition: `transform 4s ${EASE}`,
                   }}
                 />
+
+                {/* Overlay */}
                 <div style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'linear-gradient(to top, rgba(17,17,17,0.9) 0%, rgba(17,17,17,0.3) 50%, rgba(17,17,17,0.1) 100%)'
+                  background: isActive
+                    ? 'linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.3) 50%, rgba(15,23,42,0.1) 100%)'
+                    : 'rgba(15,23,42,0.5)',
+                  transition: `all 0.7s ${EASE}`,
                 }} />
-                {isActive && (
+
+                {/* Watermark text */}
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: isActive ? 'translate(-50%, -50%) scale(1)' : 'translate(-50%, -50%) scale(0.8)',
+                  fontFamily: "'Oswald', sans-serif",
+                  fontSize: 'clamp(60px, 10vw, 140px)',
+                  fontWeight: 700,
+                  color: 'rgba(255,255,255,0.06)',
+                  textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                  letterSpacing: '8px',
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                  opacity: isActive ? 1 : 0,
+                  transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
+                }}>
+                  {s.label}
+                </div>
+
+                {/* Collapsed state — icon + vertical text */}
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '24px',
+                  opacity: isActive ? 0 : 1,
+                  pointerEvents: isActive ? 'none' : 'auto',
+                  transition: `opacity 0.5s ${EASE}`,
+                }}>
                   <div style={{
-                    position: 'absolute',
-                    top: '16px',
-                    right: '16px',
-                    width: '32px',
-                    height: '32px',
-                    backgroundColor: COLORS.accent,
+                    width: '48px',
+                    height: '48px',
+                    backgroundColor: 'rgba(15,23,42,0.5)',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 2
+                    backdropFilter: 'blur(8px)',
+                    flexShrink: 0,
                   }}>
-                    <ChevronRight size={18} color={COLORS.dark} />
+                    <Icon size={20} color={COLORS.white} strokeWidth={1.5} />
                   </div>
-                )}
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <h3 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '24px', color: 'white', marginBottom: '8px' }}>{s.title}</h3>
-                  {isActive && <p style={{ color: COLORS.textMuted, fontSize: '14px' }}>{s.desc}</p>}
+                  <span style={{
+                    fontFamily: "'Oswald', sans-serif",
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: COLORS.white,
+                    textTransform: 'uppercase',
+                    letterSpacing: '3px',
+                    writingMode: 'vertical-lr',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {s.label}
+                  </span>
+                </div>
+
+                {/* Expanded state — content */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  padding: 'clamp(24px, 3vw, 40px)',
+                  opacity: isActive ? 1 : 0,
+                  transform: isActive ? 'translateY(0)' : 'translateY(24px)',
+                  pointerEvents: isActive ? 'auto' : 'none',
+                  transition: `opacity 0.6s 0.2s ${EASE}, transform 0.6s 0.2s ${EASE}`,
+                }}>
+                  <div style={{
+                    width: '52px',
+                    height: '52px',
+                    backgroundColor: 'rgba(15,23,42,0.5)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backdropFilter: 'blur(8px)',
+                    marginBottom: '20px',
+                  }}>
+                    <Icon size={22} color={COLORS.white} strokeWidth={1.5} />
+                  </div>
+
+                  <h3 style={{
+                    fontFamily: "'Oswald', sans-serif",
+                    fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)',
+                    fontWeight: 700,
+                    color: COLORS.white,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    marginBottom: '12px',
+                  }}>
+                    {s.title}
+                  </h3>
+
+                  <p style={{
+                    fontFamily: "'Raleway', sans-serif",
+                    color: 'rgba(255,255,255,0.7)',
+                    fontSize: 'clamp(13px, 1.2vw, 15px)',
+                    lineHeight: 1.7,
+                    maxWidth: '520px',
+                    marginBottom: '24px',
+                  }}>
+                    {s.description}
+                  </p>
+
+                  <Link
+                    to={s.link}
+                    onClick={(e) => e.stopPropagation()}
+                    className="services-cta-btn"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 28px',
+                      borderRadius: '50px',
+                      fontWeight: 700,
+                      fontFamily: "'Raleway', sans-serif",
+                      fontSize: '13px',
+                      textDecoration: 'none',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      border: '1px solid rgba(15,23,42,0.1)',
+                    }}
+                  >
+                    Book Free Consultation
+                  </Link>
                 </div>
               </div>
             )
           })}
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '32px' }}>
-          {services.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActive(i)}
-              style={{
-                width: i === active ? '32px' : '8px',
-                height: '8px',
-                borderRadius: '4px',
-                backgroundColor: i === active ? COLORS.accent : 'rgba(255,255,255,0.3)',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                transform: 'scale(1)'
-              }}
-              onMouseOver={(e) => {
-                if (i !== active) {
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.5)'
-                  e.currentTarget.style.transform = 'scale(1.2)'
-                }
-              }}
-              onMouseOut={(e) => {
-                if (i !== active) {
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.3)'
-                  e.currentTarget.style.transform = 'scale(1)'
-                }
-              }}
-            />
-          ))}
         </div>
       </div>
     </section>
@@ -952,118 +1321,162 @@ function ServicesSection() {
 // COST ESTIMATOR SECTION
 // ============================================
 function CostEstimatorSection() {
-  const [calcType, setCalcType] = useState('interior')
-  const [workType, setWorkType] = useState('full')
+  const [sectionRef, sectionRevealed] = useScrollReveal()
+
+  const trustPoints = [
+    { icon: Check, text: 'Zero Hidden Charges' },
+    { icon: Clock, text: 'Instant Results' },
+    { icon: Shield, text: 'Expert-Verified Rates' },
+  ]
 
   return (
-    <section style={{ backgroundColor: COLORS.dark, padding: '48px 16px' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        {/* Beige Container */}
-        <div className="beige-container">
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '36px', color: COLORS.dark, marginBottom: '12px' }}>
-              Get Instant Cost Estimates
-            </h2>
-            <p style={{ color: 'rgba(17,17,17,0.7)', fontSize: '14px' }}>
-              Calculate the approximate cost for your interior design or construction project
-            </p>
-          </div>
+    <section style={{ padding: 'clamp(32px, 5vw, 64px) 0' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 80px)' }}>
+        <div style={{
+          borderRadius: '24px',
+          overflow: 'hidden',
+          position: 'relative',
+        }}>
+          {/* Background image with overlay */}
+          <img
+            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&h=1080&fit=crop"
+            alt=""
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(197,156,130,0.92) 0%, rgba(166,139,106,0.95) 100%)' }} />
 
-          {/* Feature Pills */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
-            {['No Hidden Costs', 'Accurate Estimates', 'Instant Results'].map(f => (
-              <span key={f} style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                backgroundColor: 'rgba(17,17,17,0.1)',
-                color: COLORS.dark,
-                padding: '8px 16px',
+          {/* Decorative floating circles (hidden on mobile) */}
+          <div className="desktop-only" style={{
+            position: 'absolute', top: '-80px', right: '-80px', width: '300px', height: '300px',
+            borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'none',
+            animation: 'float-slow 8s ease-in-out infinite',
+          }} />
+          <div style={{
+            position: 'absolute', bottom: '-60px', left: '-60px', width: '200px', height: '200px',
+            borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', pointerEvents: 'none',
+            animation: 'float-slow 10s ease-in-out infinite reverse',
+          }} />
+          <div style={{
+            position: 'absolute', top: '30%', right: '10%', width: '120px', height: '120px',
+            borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none',
+            animation: 'float-slow 6s ease-in-out infinite',
+          }} />
+
+          {/* Content */}
+          <div ref={sectionRef} style={{ position: 'relative', zIndex: 1 }}>
+            {/* Header */}
+            <div className="cost-estimator-header" style={{
+              textAlign: 'center',
+              padding: 'clamp(56px, 8vw, 88px) clamp(24px, 4vw, 60px) clamp(32px, 5vw, 48px)',
+            }}>
+              <span style={{
+                display: 'inline-block',
+                padding: '8px 24px',
                 borderRadius: '50px',
-                fontSize: '13px'
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                fontSize: '11px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '2px',
+                color: '#fff',
+                fontFamily: "'Raleway', sans-serif",
+                marginBottom: '20px',
+                opacity: sectionRevealed ? 1 : 0,
+                transform: sectionRevealed ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.95)',
+                transition: `all 0.6s ${EASE}`,
               }}>
-                <Check size={14} /> {f}
+                Cost Calculator
               </span>
-            ))}
-          </div>
 
-          {/* Toggle Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
-            <div className="calc-toggle-container">
-              <button
-                onClick={() => setCalcType('interior')}
-                className={calcType === 'interior' ? 'calc-toggle-btn calc-toggle-btn-active' : 'calc-toggle-btn calc-toggle-btn-inactive'}
-              >
-                Interior Cost Calculator
-              </button>
-              <button
-                onClick={() => setCalcType('construction')}
-                className={calcType === 'construction' ? 'calc-toggle-btn calc-toggle-btn-active' : 'calc-toggle-btn calc-toggle-btn-inactive'}
-              >
-                Construction Cost Calculator
-              </button>
-            </div>
-          </div>
+              <h2 style={{
+                fontFamily: "'Oswald', sans-serif",
+                fontSize: 'clamp(2.2rem, 5vw, 3.5rem)',
+                fontWeight: 700,
+                color: '#fff',
+                textTransform: 'uppercase',
+                letterSpacing: '0.02em',
+                marginBottom: '16px',
+                textShadow: '0 2px 16px rgba(0,0,0,0.15)',
+                opacity: sectionRevealed ? 1 : 0,
+                transform: sectionRevealed ? 'translateY(0)' : 'translateY(24px)',
+                transition: `opacity 0.8s 0.1s ${EASE}, transform 0.8s 0.1s ${EASE}`,
+              }}>
+                Get Instant <span style={{ color: COLORS.dark }}>Cost Estimates</span>
+              </h2>
 
-          {/* White Card */}
-          <div className="white-card">
-            <h3 style={{ color: COLORS.dark, fontWeight: 500, marginBottom: '24px' }}>Select Work Type</h3>
-            <div className="grid-responsive-2" style={{ gap: '16px' }}>
-              {[
-                { id: 'full', name: 'Full Home Interiors', desc: 'Complete interior design for your entire home', icon: Home },
-                { id: 'specific', name: 'Specific Rooms Only', desc: 'Select specific spaces you want to design', icon: Sofa }
-              ].map(type => {
-                const Icon = type.icon
-                const selected = workType === type.id
-                return (
-                  <button
-                    key={type.id}
-                    onClick={() => setWorkType(type.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '16px',
-                      padding: '24px',
-                      borderRadius: '16px',
-                      border: `2px solid ${selected ? COLORS.accent : '#e5e5e5'}`,
-                      backgroundColor: selected ? 'rgba(201,168,141,0.05)' : 'transparent',
-                      cursor: 'pointer',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '12px',
-                      backgroundColor: selected ? COLORS.accent : '#f5f5f5',
+              <p style={{
+                fontFamily: "'Raleway', sans-serif",
+                color: 'rgba(255,255,255,0.8)',
+                fontSize: 'clamp(14px, 1.4vw, 16px)',
+                lineHeight: 1.7,
+                maxWidth: '540px',
+                margin: '0 auto 32px',
+                opacity: sectionRevealed ? 1 : 0,
+                transform: sectionRevealed ? 'translateY(0)' : 'translateY(18px)',
+                transition: `opacity 0.8s 0.2s ${EASE}, transform 0.8s 0.2s ${EASE}`,
+              }}>
+                Calculate accurate cost estimates for your dream project in just a few clicks.
+              </p>
+
+              {/* Trust Points — glass cards */}
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: '10px',
+                opacity: sectionRevealed ? 1 : 0,
+                transform: sectionRevealed ? 'translateY(0)' : 'translateY(16px)',
+                transition: `opacity 0.8s 0.3s ${EASE}, transform 0.8s 0.3s ${EASE}`,
+              }}>
+                {trustPoints.map((t, i) => {
+                  const TIcon = t.icon
+                  return (
+                    <div key={i} style={{
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <Icon size={24} color={selected ? COLORS.dark : '#666'} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ color: selected ? COLORS.accentDark : COLORS.dark, fontWeight: 500, marginBottom: '4px' }}>{type.name}</h4>
-                      <p style={{ color: '#666', fontSize: '13px' }}>{type.desc}</p>
-                    </div>
-                    {selected && (
-                      <div style={{
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '50%',
-                        backgroundColor: COLORS.accent,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
+                      gap: '8px',
+                      backgroundColor: 'rgba(255,255,255,0.12)',
+                      backdropFilter: 'blur(8px)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: '50px',
+                      padding: '8px 18px',
+                      transition: `all 0.3s ${EASE}`,
+                    }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.22)'
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.12)'
+                        e.currentTarget.style.transform = 'translateY(0)'
+                      }}
+                    >
+                      <TIcon size={14} color="#fff" strokeWidth={2} />
+                      <span style={{
+                        fontFamily: "'Raleway', sans-serif",
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#fff',
+                        letterSpacing: '0.3px',
                       }}>
-                        <Check size={14} color={COLORS.dark} />
-                      </div>
-                    )}
-                  </button>
-                )
-              })}
+                        {t.text}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Calculator Card */}
+            <div style={{
+              padding: '0 clamp(16px, 3vw, 40px) clamp(24px, 4vw, 40px)',
+              opacity: sectionRevealed ? 1 : 0,
+              transform: sectionRevealed ? 'translateY(0)' : 'translateY(30px)',
+              transition: `opacity 1s 0.4s ${EASE}, transform 1s 0.4s ${EASE}`,
+            }}>
+              <CostCalculator />
             </div>
           </div>
         </div>
@@ -1073,259 +1486,306 @@ function CostEstimatorSection() {
 }
 
 // ============================================
-// WHY CHOOSE US SECTION
+// SCROLL CARD REVEAL HOOK (per-card animation)
+// ============================================
+function useCardReveal() {
+  const ref = useRef(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.05, rootMargin: '0px 0px 50px 0px' }
+    )
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+
+  return [ref, isVisible]
+}
+
+// Bento feature card with scroll animation
+function FeatureCard({ feature, index, style: gridStyle }) {
+  const [cardRef, isVisible] = useCardReveal()
+  const Icon = feature.icon
+
+  // Card color themes — using HOH108 palette only (dark black, accent, canvas, white)
+  const themes = [
+    { bg: COLORS.canvas, text: COLORS.textDark, desc: COLORS.stone, iconBg: 'rgba(197,156,130,0.2)', iconColor: '#111', badgeBg: COLORS.accent, badgeColor: '#fff' },
+    { bg: '#111111', text: '#fff', desc: 'rgba(255,255,255,0.6)', iconBg: 'rgba(197,156,130,0.15)', iconColor: COLORS.accent, badgeBg: COLORS.accent, badgeColor: '#111' },
+    { bg: COLORS.accent, text: '#111', desc: 'rgba(17,17,17,0.7)', iconBg: 'rgba(17,17,17,0.12)', iconColor: '#111', badgeBg: '#111', badgeColor: COLORS.accent },
+    { bg: COLORS.accentLight, text: '#111', desc: 'rgba(17,17,17,0.6)', iconBg: 'rgba(17,17,17,0.1)', iconColor: '#111', badgeBg: '#111', badgeColor: COLORS.accent },
+    { bg: '#111111', text: '#fff', desc: 'rgba(255,255,255,0.6)', iconBg: 'rgba(197,156,130,0.15)', iconColor: COLORS.accent, badgeBg: COLORS.accent, badgeColor: '#111' },
+    { bg: COLORS.canvas, text: COLORS.textDark, desc: COLORS.stone, iconBg: 'rgba(197,156,130,0.2)', iconColor: '#111', badgeBg: COLORS.accent, badgeColor: '#fff' },
+  ]
+  const t = themes[index] || themes[0]
+
+  return (
+    <div
+      ref={cardRef}
+      style={{
+        ...gridStyle,
+        position: 'relative',
+        padding: 'clamp(28px, 3vw, 36px)',
+        borderRadius: '20px',
+        backgroundColor: t.bg,
+        cursor: 'default',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.96)',
+        transition: `opacity 0.8s ${EASE}, transform 0.7s ${EASE}, box-shadow 0.4s ${EASE}`,
+        transitionDelay: `${index * 0.1}s`,
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.transform = 'translateY(-6px) scale(1.02)'
+        e.currentTarget.style.boxShadow = '0 24px 64px rgba(0,0,0,0.12)'
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.transform = 'translateY(0) scale(1)'
+        e.currentTarget.style.boxShadow = 'none'
+      }}
+    >
+      {/* Step Badge */}
+      <div style={{
+        position: 'absolute',
+        top: '16px',
+        right: '16px',
+        width: '38px',
+        height: '38px',
+        backgroundColor: t.badgeBg,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: t.badgeColor,
+        fontWeight: 700,
+        fontSize: '12px',
+        fontFamily: "'Oswald', sans-serif",
+        letterSpacing: '1px',
+      }}>
+        {feature.step}
+      </div>
+
+      {/* Icon */}
+      <div style={{
+        width: '50px',
+        height: '50px',
+        backgroundColor: t.iconBg,
+        borderRadius: '14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '20px',
+      }}>
+        <Icon size={22} color={t.iconColor} strokeWidth={1.5} />
+      </div>
+
+      <h3 style={{
+        fontFamily: "'Oswald', sans-serif",
+        fontSize: 'clamp(1.1rem, 1.6vw, 1.3rem)',
+        fontWeight: 700,
+        color: t.text,
+        textTransform: 'uppercase',
+        letterSpacing: '0.04em',
+        marginBottom: '10px',
+        lineHeight: 1.3,
+      }}>
+        {feature.title}
+      </h3>
+      <p className="desktop-only" style={{
+        fontFamily: "'Raleway', sans-serif",
+        color: t.desc,
+        fontSize: '13px',
+        lineHeight: 1.7,
+        margin: 0,
+      }}>
+        {feature.desc}
+      </p>
+    </div>
+  )
+}
+
+// ============================================
+// WHY CHOOSE US SECTION (White + Scroll Cards)
 // ============================================
 function WhyChooseUsSection() {
   const [sectionRef, sectionRevealed] = useScrollReveal()
+
   const features = [
-    { title: 'Turnkey Project Delivery', icon: Home },
-    { title: 'Premium Finish Quality', icon: Award },
-    { title: 'Design + Execution Under One Roof', icon: Building2 },
-    { title: 'On-Time Completion', icon: Clock },
-    { title: 'Skilled Architects & Designers', icon: Users },
-    { title: 'Transparent Pricing & Workflow', icon: DollarSign },
+    { step: '01', title: 'Single-Point Accountability', desc: 'One team owns every phase — design, engineering, execution, and handover.', icon: Home },
+    { step: '02', title: 'Material Integrity', desc: 'Curated materials verified for longevity. No substitutions, no compromises.', icon: Award },
+    { step: '03', title: 'Integrated Design + Build', desc: 'Architecture and interiors developed in parallel — zero coordination gaps.', icon: Building2 },
+    { step: '04', title: 'Milestone-Driven Timelines', desc: 'Every project phase tracked and reported. Delays are the exception, not the norm.', icon: Clock },
+    { step: '05', title: '50+ Specialists', desc: 'Architects, structural engineers, interior designers, and project managers — in-house.', icon: Users },
+    { step: '06', title: 'Open-Book Pricing', desc: 'Line-item cost breakdowns. Client approval at every stage. No hidden charges.', icon: DollarSign },
   ]
 
   const stats = [
-    { number: 500, suffix: '+', label: 'Projects Completed' },
-    { number: 15, suffix: '+', label: 'Years Experience' },
-    { number: 98, suffix: '%', label: 'Client Satisfaction' },
-    { number: 50, suffix: '+', label: 'Expert Team Members' },
+    { number: 500, suffix: '+', label: 'Projects Delivered' },
+    { number: 15, suffix: '+', label: 'Years of Trust' },
+    { number: 98, suffix: '%', label: 'Happy Clients' },
+    { number: 50, suffix: '+', label: 'Team Experts' },
   ]
 
   return (
-    <section className="section-padding" style={{ backgroundColor: COLORS.dark, position: 'relative', overflow: 'hidden' }}>
-      {/* Animated background circles */}
-      <div style={{
-        position: 'absolute',
-        top: '20%',
-        right: '-100px',
-        width: '400px',
-        height: '400px',
-        borderRadius: '50%',
-        border: `1px solid ${COLORS.accent}10`,
-        animation: 'rotateSlow 50s linear infinite'
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '10%',
-        left: '-150px',
-        width: '300px',
-        height: '300px',
-        borderRadius: '50%',
-        border: `1px dashed ${COLORS.accent}15`,
-        animation: 'rotateSlow 40s linear infinite reverse'
-      }} />
+    <section style={{ backgroundColor: COLORS.white, padding: 'clamp(80px, 12vw, 120px) 0' }}>
+      <div ref={sectionRef} style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 40px)' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(40px, 6vw, 56px)' }}>
+          <SectionPill>The HOH108 Difference</SectionPill>
+          <h2 style={{
+            fontFamily: "'Oswald', sans-serif",
+            fontSize: 'clamp(2rem, 4.5vw, 3rem)',
+            fontWeight: 700,
+            color: COLORS.textDark,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: '16px',
+            opacity: sectionRevealed ? 1 : 0,
+            transform: sectionRevealed ? 'translateY(0)' : 'translateY(20px)',
+            transition: `all 0.8s ${EASE}`,
+          }}>
+            Why Clients <span style={{ color: COLORS.accent, fontStyle: 'italic' }}>Trust Us</span>
+          </h2>
+          <p style={{
+            fontFamily: "'Raleway', sans-serif",
+            color: COLORS.stone,
+            maxWidth: '672px',
+            margin: '0 auto',
+            fontSize: '15px',
+            lineHeight: 1.7,
+            opacity: sectionRevealed ? 1 : 0,
+            transform: sectionRevealed ? 'translateY(0)' : 'translateY(15px)',
+            transition: `all 0.8s 0.1s ${EASE}`,
+          }}>
+            15 years of consistent delivery. Every project backed by transparent timelines, verified pricing, and a team that stays accountable from start to finish.
+          </p>
+        </div>
 
-      <div ref={sectionRef} style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <h2
-          className={`heading-xl scroll-reveal ${sectionRevealed ? 'revealed' : ''}`}
-          style={{ fontFamily: 'Oswald, sans-serif', color: 'white', textAlign: 'center', marginBottom: '48px' }}
-        >
-          Why <span className="underline-reveal" style={{ color: COLORS.accent, fontStyle: 'italic' }}>Choose Us</span>
-        </h2>
-
-        {/* Animated Stats */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+        {/* Stats Row */}
+        <div className="grid-responsive-4" style={{
           gap: '24px',
-          marginBottom: '60px',
-          textAlign: 'center'
-        }} className="grid-responsive-4">
+          marginBottom: 'clamp(48px, 6vw, 64px)',
+        }}>
           {stats.map((stat, i) => (
             <div
               key={stat.label}
-              className="gradient-border-animated hover-lift"
               style={{
-                padding: '32px 20px',
-                animationDelay: `${i * 0.1}s`
+                backgroundColor: COLORS.canvas,
+                borderRadius: '16px',
+                padding: 'clamp(24px, 3vw, 32px) 20px',
+                textAlign: 'center',
+                border: `1px solid ${COLORS.border}`,
+                transition: `all 0.4s ${EASE}`,
+                opacity: sectionRevealed ? 1 : 0,
+                transform: sectionRevealed ? 'translateY(0)' : 'translateY(20px)',
+                transitionDelay: `${0.15 + i * 0.08}s`,
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)'
+                e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.06)'
+                e.currentTarget.style.borderColor = COLORS.accent
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+                e.currentTarget.style.borderColor = COLORS.border
               }}
             >
               <div style={{
                 fontFamily: "'Oswald', sans-serif",
-                fontSize: '48px',
-                fontWeight: 700,
+                fontSize: 'clamp(32px, 4vw, 48px)',
+                fontWeight: 300,
                 color: COLORS.accent,
-                marginBottom: '8px'
+                marginBottom: '4px',
+                lineHeight: 1,
               }}>
-                <AnimatedCounter end={stat.number} suffix={stat.suffix} />
+                <AnimatedCounter end={stat.number} suffix={stat.suffix} trigger={sectionRevealed} />
               </div>
-              <p style={{ color: COLORS.textMuted, fontSize: '14px' }}>{stat.label}</p>
+              <p style={{
+                fontFamily: "'Raleway', sans-serif",
+                color: COLORS.stone,
+                fontSize: '12px',
+                textTransform: 'uppercase',
+                letterSpacing: '1.5px',
+                margin: 0,
+              }}>
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>
 
-        <div className="grid-responsive-6 stagger-children">
+        {/* Feature Cards — Bento Grid (complete square) */}
+        <div className="why-bento-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateRows: '260px 260px',
+          gap: '16px',
+          marginBottom: 'clamp(40px, 6vw, 56px)',
+        }}>
           {features.map((f, i) => {
-            const Icon = f.icon
-            return (
-              <div
-                key={f.title}
-                className="feature-card-animated"
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                  borderRadius: '16px',
-                  padding: '24px',
-                  textAlign: 'center',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-8px)'
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'
-                  e.currentTarget.style.borderColor = `${COLORS.accent}30`
-                  e.currentTarget.style.boxShadow = `0 15px 30px rgba(0,0,0,0.3), 0 0 20px ${COLORS.accent}20`
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              >
-                <div className="breathing" style={{
-                  width: '56px',
-                  height: '56px',
-                  margin: '0 auto 16px',
-                  backgroundColor: `${COLORS.accent}15`,
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.3s ease'
-                }}>
-                  <Icon size={28} color={COLORS.accent} strokeWidth={1.5} />
-                </div>
-                <p style={{ color: 'white', fontSize: '13px', fontWeight: 500, lineHeight: 1.4 }}>{f.title}</p>
-              </div>
-            )
+            /*  4-col grid, 2 rows — complete rectangle
+                Row 1:  [01 small]  [02 wide -------]  [03 small]
+                Row 2:  [04 small]  [05 small]  [06 wide -------]  */
+            const gridStyles = [
+              { gridColumn: '1 / 2', gridRow: '1 / 2' },       // 01
+              { gridColumn: '2 / 4', gridRow: '1 / 2' },       // 02 wide
+              { gridColumn: '4 / 5', gridRow: '1 / 2' },       // 03
+              { gridColumn: '1 / 2', gridRow: '2 / 3' },       // 04
+              { gridColumn: '2 / 3', gridRow: '2 / 3' },       // 05
+              { gridColumn: '3 / 5', gridRow: '2 / 3' },       // 06 wide
+            ][i]
+            return <FeatureCard key={f.title} feature={f} index={i} style={gridStyles} />
           })}
         </div>
-      </div>
-    </section>
-  )
-}
 
-// ============================================
-// PORTFOLIO SECTION
-// ============================================
-function PortfolioSection() {
-  const [activeSlide, setActiveSlide] = useState(0)
-
-  const portfolioSlides = [
-    {
-      left: { label: 'Interior Design', image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=600&h=500&fit=crop' },
-      right: { label: 'Construction', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=500&fit=crop' }
-    },
-    {
-      left: { label: 'Living Room', image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=500&fit=crop' },
-      right: { label: 'Villa Exterior', image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&h=500&fit=crop' }
-    },
-    {
-      left: { label: 'Kitchen Design', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=500&fit=crop' },
-      right: { label: 'Modern Home', image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=500&fit=crop' }
-    },
-    {
-      left: { label: 'Bedroom', image: 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=600&h=500&fit=crop' },
-      right: { label: 'Commercial', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=500&fit=crop' }
-    },
-    {
-      left: { label: 'Renovation', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&h=500&fit=crop' },
-      right: { label: 'Luxury Home', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&h=500&fit=crop' }
-    }
-  ]
-
-  const currentSlide = portfolioSlides[activeSlide]
-
-  return (
-    <section style={{ backgroundColor: COLORS.dark, padding: '48px 16px' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        {/* Beige Container */}
-        <div className="beige-container">
-          {/* Header */}
-          <h2 className="heading-xl" style={{ fontFamily: 'Oswald, sans-serif', color: COLORS.dark, fontStyle: 'italic', marginBottom: '32px' }}>
-            Portfolio
-          </h2>
-
-          {/* Images Grid */}
-          <div className="grid-responsive-2" style={{ gap: '24px' }}>
-            {/* Left Image */}
-            <div style={{ transition: 'opacity 0.3s ease' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <span style={{
-                  display: 'inline-block',
-                  backgroundColor: 'white',
-                  color: COLORS.dark,
-                  padding: '8px 24px',
-                  borderRadius: '50px',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}>
-                  {currentSlide.left.label}
-                </span>
-              </div>
-              <div style={{
-                aspectRatio: '6/5',
-                borderRadius: '20px 100px 20px 100px',
-                overflow: 'hidden'
-              }}>
-                <img
-                  src={currentSlide.left.image}
-                  alt={currentSlide.left.label}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
-                />
-              </div>
-            </div>
-
-            {/* Right Image */}
-            <div style={{ transition: 'opacity 0.3s ease' }}>
-              <div style={{ marginBottom: '16px', textAlign: 'right' }}>
-                <span style={{
-                  display: 'inline-block',
-                  backgroundColor: 'white',
-                  color: COLORS.dark,
-                  padding: '8px 24px',
-                  borderRadius: '50px',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}>
-                  {currentSlide.right.label}
-                </span>
-              </div>
-              <div style={{
-                aspectRatio: '6/5',
-                borderRadius: '100px 20px 100px 20px',
-                overflow: 'hidden'
-              }}>
-                <img
-                  src={currentSlide.right.image}
-                  alt={currentSlide.right.label}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', marginTop: '32px' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {portfolioSlides.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveSlide(i)}
-                  className={i === activeSlide ? 'nav-dot nav-dot-active' : 'nav-dot nav-dot-inactive'}
-                />
-              ))}
-            </div>
-            <Link to="/construction" style={{ textDecoration: 'none' }}>
-              <button className="view-all-btn">
-                View All Projects <ArrowRight size={16} />
-              </button>
-            </Link>
-          </div>
+        {/* Bottom CTA */}
+        <div style={{
+          textAlign: 'center',
+          opacity: sectionRevealed ? 1 : 0,
+          transform: sectionRevealed ? 'translateY(0)' : 'translateY(20px)',
+          transition: `all 0.8s 0.5s ${EASE}`,
+        }}>
+          <Link
+            to="/contact-us"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              backgroundColor: COLORS.accent,
+              color: COLORS.white,
+              padding: '16px 36px',
+              borderRadius: '50px',
+              fontWeight: 600,
+              fontFamily: "'Raleway', sans-serif",
+              fontSize: '14px',
+              textDecoration: 'none',
+              letterSpacing: '0.5px',
+              transition: `all 0.3s ${EASE}`,
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = COLORS.accentDark
+              e.currentTarget.style.transform = 'translateY(-3px)'
+              e.currentTarget.style.boxShadow = '0 12px 32px rgba(197,156,130,0.35)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = COLORS.accent
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = 'none'
+            }}
+          >
+            Start Your Project Today
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </div>
     </section>
@@ -1333,256 +1793,56 @@ function PortfolioSection() {
 }
 
 // ============================================
-// TESTIMONIALS SECTION
+// FAQ SECTION (Dark Background)
 // ============================================
-function TestimonialsSection() {
-  const [videoRef, videoRevealed] = useScrollReveal()
-  const [cardsRef, cardsRevealed] = useScrollReveal()
-
-  const testimonials = [
-    { name: 'Rahul Sharma', role: 'Homeowner', text: 'HOH108 transformed our 3BHK into a stunning modern home. Their attention to detail and quality of work exceeded our expectations. Highly recommend!', rating: 5 },
-    { name: 'Prathima Mysore', role: 'Business Owner', text: 'Professional team that delivered our office interior on time and within budget. The design perfectly reflects our brand identity. Excellent service!', rating: 5 },
+function FAQSection() {
+  const homeFaqs = [
+    {
+      question: 'What services does HOH108 offer?',
+      answer: 'HOH108 is a full-service construction and interior design company. We build homes from the ground up, design complete interiors, and handle renovations — for residential, commercial, hospitality, and institutional projects. One company, end-to-end.',
+    },
+    {
+      question: 'How much does interior design cost per sq. ft.?',
+      answer: 'Our interior design services start from Rs.650 per sq. ft. The final cost depends on the scope, materials, and finishes you choose. Use our cost calculator for a quick estimate, or book a free consultation for a detailed quote.',
+    },
+    {
+      question: 'Do you handle both design and construction?',
+      answer: 'Yes — that\'s what makes HOH108 different. We are both a construction company and an interior design firm. You get one team that builds your home and designs every room inside it. No separate contractors, no coordination headaches.',
+    },
+    {
+      question: 'What areas do you serve?',
+      answer: 'We are based in Bangalore and Mysore, serving clients across Karnataka. We take on projects across South India for larger engagements.',
+    },
+    {
+      question: 'How long does a typical project take?',
+      answer: 'Project timelines vary based on scope and complexity. A standard 2-3 BHK interior project typically takes 45-60 days. Construction projects depend on the scale. We pride ourselves on on-time delivery with transparent progress tracking.',
+    },
+    {
+      question: 'Is the consultation really free?',
+      answer: 'Yes, your initial consultation is completely free with zero hidden charges. We will discuss your requirements, provide design ideas, and give you a detailed pricing guide.',
+    },
   ]
 
   return (
-    <section className="section-padding morph-bg" style={{ backgroundColor: COLORS.dark }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <div style={{ marginBottom: '48px' }}>
-          <p className="blur-in" style={{ color: COLORS.accent, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Client Testimonials</p>
-          <h2 style={{ fontFamily: 'Oswald, sans-serif', fontSize: '28px', color: 'white' }}>
-            What Our Clients Say About<br />
-            <span className="glow-text" style={{ color: COLORS.accent, fontStyle: 'italic' }}>Working with Us</span>
-          </h2>
-        </div>
-
-        <div className="grid-responsive-2" style={{ gap: '32px' }}>
-          {/* Video */}
-          <div
-            ref={videoRef}
-            className={`scroll-reveal-scale ${videoRevealed ? 'revealed' : ''}`}
-            style={{ position: 'relative' }}
-          >
-            <TiltCard style={{
-              aspectRatio: '16/9',
-              borderRadius: '24px',
-              overflow: 'hidden',
-              position: 'relative'
-            }}>
-              <img
-                src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&h=450&fit=crop"
-                alt="Client testimonial"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <div
-                  className="breathing neon-pulse"
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    backgroundColor: COLORS.accent,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    transform: 'scale(1)'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.1)'
-                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(197,156,130,0.5)'
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  <Play size={32} color={COLORS.dark} fill={COLORS.dark} />
-                </div>
-              </div>
-            </TiltCard>
-            {/* Rating Badge */}
-            <div style={{
-              position: 'absolute',
-              bottom: '16px',
-              left: '16px',
-              backgroundColor: 'white',
-              borderRadius: '16px',
-              padding: '16px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '28px', fontWeight: 'bold', color: COLORS.dark }}>4.9</span>
-                <div>
-                  <div style={{ display: 'flex', gap: '2px' }}>
-                    {[...Array(5)].map((_, i) => <Star key={i} size={12} color="#fbbf24" fill="#fbbf24" />)}
-                  </div>
-                  <span style={{ fontSize: '11px', color: '#666' }}>Average Rating</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Cards */}
-          <div
-            ref={cardsRef}
-            className={`scroll-reveal-right ${cardsRevealed ? 'revealed' : ''} stagger-children`}
-            style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
-          >
-            {testimonials.map((t, i) => (
-              <TiltCard
-                key={i}
-                className="hover-lift"
-                style={{ backgroundColor: 'white', borderRadius: '16px', padding: '24px' }}
-              >
-                <p style={{ color: '#666', fontSize: '14px', lineHeight: 1.6, marginBottom: '16px' }}>{t.text}</p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div className="breathing" style={{
-                      width: '40px',
-                      height: '40px',
-                      backgroundColor: 'rgba(201,168,141,0.2)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <span style={{ color: COLORS.accent, fontWeight: 500 }}>{t.name[0]}</span>
-                    </div>
-                    <div>
-                      <p style={{ color: COLORS.dark, fontWeight: 500, fontSize: '14px' }}>{t.name}</p>
-                      <p style={{ color: '#666', fontSize: '12px' }}>{t.role}</p>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '2px' }}>
-                    {[...Array(t.rating)].map((_, idx) => (
-                      <Star
-                        key={idx}
-                        size={14}
-                        color="#fbbf24"
-                        fill="#fbbf24"
-                        className="wave-animation"
-                        style={{ animationDelay: `${idx * 0.1}s` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </TiltCard>
-            ))}
-          </div>
-        </div>
-      </div>
+    <section style={{ padding: 'clamp(32px, 5vw, 64px) 0' }}>
+      <FAQBlock faqs={homeFaqs} />
     </section>
   )
 }
-
-// ============================================
-// CTA SECTION
-// ============================================
-function CTASection() {
-  const [sectionRef, sectionRevealed] = useScrollReveal()
-
-  return (
-    <section style={{ backgroundColor: COLORS.dark, padding: '48px 16px', position: 'relative', overflow: 'hidden' }}>
-      {/* Floating decorative elements */}
-      <div style={{
-        position: 'absolute',
-        top: '20%',
-        left: '5%',
-        width: '100px',
-        height: '100px',
-        borderRadius: '50%',
-        border: `1px solid ${COLORS.accent}20`,
-        animation: 'rotateSlow 20s linear infinite'
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '10%',
-        right: '8%',
-        width: '60px',
-        height: '60px',
-        borderRadius: '50%',
-        backgroundColor: `${COLORS.accent}10`,
-        animation: 'breathing 4s ease-in-out infinite'
-      }} />
-
-      <div ref={sectionRef} style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <TiltCard
-          className={`beige-container scroll-reveal-scale ${sectionRevealed ? 'revealed' : ''}`}
-          style={{ textAlign: 'center' }}
-        >
-          <h2 className="heading-xl" style={{ fontFamily: 'Oswald, sans-serif', color: COLORS.dark, marginBottom: '16px' }}>
-            Let's Build Your <span style={{ fontStyle: 'italic' }}>Dream Space</span>
-          </h2>
-          <p style={{ color: 'rgba(17,17,17,0.7)', marginBottom: '32px' }}>
-            From concept to completion, we create meaningful spaces.
-          </p>
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/about" style={{ textDecoration: 'none' }}>
-              <MagneticButton
-                className="elastic-scale"
-                style={{
-                  border: `2px solid ${COLORS.dark}`,
-                  backgroundColor: 'transparent',
-                  color: COLORS.dark,
-                  padding: '14px 32px',
-                  borderRadius: '50px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                View Services
-              </MagneticButton>
-            </Link>
-            <Link to="/contact-us" style={{ textDecoration: 'none' }}>
-              <MagneticButton
-                className="elastic-scale"
-                style={{
-                  backgroundColor: COLORS.dark,
-                  color: 'white',
-                  padding: '14px 32px',
-                  borderRadius: '50px',
-                  border: 'none',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-                }}
-              >
-                Book Consultation
-              </MagneticButton>
-            </Link>
-          </div>
-        </TiltCard>
-      </div>
-    </section>
-  )
-}
-
 
 // ============================================
 // SPLASH SCREEN
 // ============================================
 function SplashScreen({ onComplete }) {
   const [progress, setProgress] = useState(0)
-  const [phase, setPhase] = useState(1) // 1: Logo reveal, 2: Animation, 3: Exit
+  const [phase, setPhase] = useState(1)
   const onCompleteRef = useRef(onComplete)
 
-  // Keep the ref updated
   useEffect(() => {
     onCompleteRef.current = onComplete
   }, [onComplete])
 
   useEffect(() => {
-    // Progress animation
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
@@ -1593,12 +1853,11 @@ function SplashScreen({ onComplete }) {
       })
     }, 40)
 
-    // Phase transitions
-    const phase2Timer = setTimeout(() => setPhase(2), 800)
-    const phase3Timer = setTimeout(() => setPhase(3), 2800)
+    const phase2Timer = setTimeout(() => setPhase(2), 600)
+    const phase3Timer = setTimeout(() => setPhase(3), 2200)
     const completeTimer = setTimeout(() => {
       onCompleteRef.current?.()
-    }, 3500)
+    }, 2900)
 
     return () => {
       clearInterval(progressInterval)
@@ -1612,130 +1871,41 @@ function SplashScreen({ onComplete }) {
     <div style={{
       position: 'fixed',
       inset: 0,
-      backgroundColor: COLORS.dark,
-      zIndex: 9999,
+      backgroundColor: COLORS.canvas,
+      zIndex: 10000,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       overflow: 'hidden',
       opacity: phase === 3 ? 0 : 1,
-      transition: 'opacity 0.7s ease-out'
+      pointerEvents: phase === 3 ? 'none' : 'auto',
+      transition: `opacity 0.7s ${EASE}`,
     }}>
-      {/* Animated Background Grid */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        opacity: 0.03,
-        backgroundImage: `
-          linear-gradient(${COLORS.accent} 1px, transparent 1px),
-          linear-gradient(90deg, ${COLORS.accent} 1px, transparent 1px)
-        `,
-        backgroundSize: '50px 50px',
-        animation: 'gridMove 20s linear infinite'
-      }} />
-
-      {/* Floating Blueprint Lines */}
-      {[...Array(8)].map((_, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            width: `${150 + i * 50}px`,
-            height: '2px',
-            background: `linear-gradient(90deg, transparent, ${COLORS.accent}40, transparent)`,
-            top: `${10 + i * 12}%`,
-            left: '-200px',
-            animation: `blueprintLine ${3 + i * 0.3}s ease-in-out infinite`,
-            animationDelay: `${i * 0.2}s`,
-            opacity: 0.6
-          }}
-        />
-      ))}
-
-      {/* Rotating Design Elements */}
-      <div style={{
-        position: 'absolute',
-        width: '500px',
-        height: '500px',
-        border: `1px dashed ${COLORS.accent}20`,
-        borderRadius: '50%',
-        animation: 'rotateSlow 30s linear infinite'
-      }} />
-      <div style={{
-        position: 'absolute',
-        width: '400px',
-        height: '400px',
-        border: `1px solid ${COLORS.accent}15`,
-        borderRadius: '50%',
-        animation: 'rotateSlow 25s linear infinite reverse'
-      }} />
-      <div style={{
-        position: 'absolute',
-        width: '600px',
-        height: '600px',
-        border: `1px dashed ${COLORS.accent}10`,
-        borderRadius: '50%',
-        animation: 'rotateSlow 35s linear infinite'
-      }} />
-
-      {/* Corner Design Elements */}
-      {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((corner, i) => (
-        <div
-          key={corner}
-          style={{
-            position: 'absolute',
-            width: '150px',
-            height: '150px',
-            [corner.includes('top') ? 'top' : 'bottom']: '40px',
-            [corner.includes('left') ? 'left' : 'right']: '40px',
-            borderTop: corner.includes('top') ? `2px solid ${COLORS.accent}40` : 'none',
-            borderBottom: corner.includes('bottom') ? `2px solid ${COLORS.accent}40` : 'none',
-            borderLeft: corner.includes('left') ? `2px solid ${COLORS.accent}40` : 'none',
-            borderRight: corner.includes('right') ? `2px solid ${COLORS.accent}40` : 'none',
-            opacity: phase >= 2 ? 1 : 0,
-            transform: phase >= 2 ? 'scale(1)' : 'scale(0.5)',
-            transition: 'all 0.6s ease-out',
-            transitionDelay: `${i * 0.1}s`
-          }}
-        />
-      ))}
-
       {/* Main Content */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         gap: '40px',
-        zIndex: 10
+        zIndex: 10,
       }}>
-        {/* Logo Container with Glow */}
+        {/* Logo */}
         <div style={{
           position: 'relative',
           transform: phase >= 1 ? 'scale(1)' : 'scale(0.8)',
           opacity: phase >= 1 ? 1 : 0,
-          transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          transition: `all 0.8s ${EASE}`,
         }}>
-          {/* Glow Effect */}
           <div style={{
-            position: 'absolute',
-            inset: '-40px',
-            background: `radial-gradient(circle, ${COLORS.accent}30 0%, transparent 70%)`,
-            animation: 'pulseGlow 2s ease-in-out infinite',
-            borderRadius: '50%'
-          }} />
-
-          {/* Logo */}
-          <div style={{
-            width: '180px',
-            height: '180px',
+            width: 'clamp(100px, 25vw, 160px)',
+            height: 'clamp(100px, 25vw, 160px)',
             backgroundColor: COLORS.accent,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             padding: '30px',
-            boxShadow: `0 0 60px ${COLORS.accent}50`,
-            animation: 'logoFloat 3s ease-in-out infinite'
+            boxShadow: '0 16px 48px rgba(197,156,130,0.3)',
           }}>
             <img
               src="/Logo.png"
@@ -1744,42 +1914,10 @@ function SplashScreen({ onComplete }) {
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
-                filter: 'brightness(0) saturate(100%)'
+                filter: 'brightness(0) saturate(100%)',
               }}
             />
           </div>
-
-          {/* Orbiting Icons */}
-          {[Paintbrush, HardHat, Hammer, Sofa, Building2].map((Icon, i) => {
-            const angle = (i * 72 - 90) * (Math.PI / 180)
-            const radius = 140
-            const x = Math.cos(angle) * radius
-            const y = Math.sin(angle) * radius
-            return (
-              <div
-                key={i}
-                style={{
-                  position: 'absolute',
-                  left: `calc(50% + ${x}px)`,
-                  top: `calc(50% + ${y}px)`,
-                  transform: 'translate(-50%, -50%)',
-                  width: '45px',
-                  height: '45px',
-                  backgroundColor: COLORS.card,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: `1px solid ${COLORS.accent}50`,
-                  opacity: phase >= 2 ? 1 : 0,
-                  animation: phase >= 2 ? `iconPop 0.5s ease-out forwards` : 'none',
-                  animationDelay: `${i * 0.1}s`
-                }}
-              >
-                <Icon size={20} color={COLORS.accent} />
-              </div>
-            )
-          })}
         </div>
 
         {/* Brand Text */}
@@ -1787,15 +1925,17 @@ function SplashScreen({ onComplete }) {
           textAlign: 'center',
           opacity: phase >= 2 ? 1 : 0,
           transform: phase >= 2 ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'all 0.6s ease-out',
-          transitionDelay: '0.3s'
+          transition: `all 0.6s ${EASE}`,
+          transitionDelay: '0.3s',
         }}>
           <h1 style={{
-            fontFamily: 'Oswald, sans-serif',
-            fontSize: '42px',
-            color: 'white',
+            fontFamily: "'Oswald', sans-serif",
+            fontSize: 'clamp(24px, 6vw, 36px)',
+            color: COLORS.textDark,
             marginBottom: '8px',
-            letterSpacing: '4px'
+            letterSpacing: '4px',
+            textTransform: 'uppercase',
+            fontWeight: 700,
           }}>
             HOUSE OF HANCET
           </h1>
@@ -1803,25 +1943,27 @@ function SplashScreen({ onComplete }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '16px'
+            gap: '16px',
           }}>
             <div style={{ width: '60px', height: '1px', backgroundColor: COLORS.accent }} />
             <span style={{
               color: COLORS.accent,
               fontSize: '18px',
               letterSpacing: '6px',
-              fontWeight: 300
+              fontWeight: 300,
+              fontFamily: "'Oswald', sans-serif",
             }}>
               108
             </span>
             <div style={{ width: '60px', height: '1px', backgroundColor: COLORS.accent }} />
           </div>
           <p style={{
-            color: COLORS.textMuted,
-            fontSize: '14px',
+            fontFamily: "'Raleway', sans-serif",
+            color: COLORS.stone,
+            fontSize: '13px',
             marginTop: '16px',
             letterSpacing: '3px',
-            textTransform: 'uppercase'
+            textTransform: 'uppercase',
           }}>
             Where Vision Meets Home
           </p>
@@ -1831,14 +1973,14 @@ function SplashScreen({ onComplete }) {
         <div style={{
           width: '200px',
           opacity: phase >= 2 ? 1 : 0,
-          transition: 'opacity 0.5s ease-out',
-          transitionDelay: '0.5s'
+          transition: `opacity 0.5s ${EASE}`,
+          transitionDelay: '0.5s',
         }}>
           <div style={{
-            height: '3px',
-            backgroundColor: `${COLORS.accent}20`,
+            height: '2px',
+            backgroundColor: COLORS.border,
             borderRadius: '10px',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}>
             <div style={{
               height: '100%',
@@ -1846,50 +1988,20 @@ function SplashScreen({ onComplete }) {
               backgroundColor: COLORS.accent,
               borderRadius: '10px',
               transition: 'width 0.1s ease-out',
-              boxShadow: `0 0 10px ${COLORS.accent}`
             }} />
           </div>
           <p style={{
-            color: COLORS.textMuted,
-            fontSize: '12px',
+            fontFamily: "'Raleway', sans-serif",
+            color: COLORS.stone,
+            fontSize: '11px',
             textAlign: 'center',
-            marginTop: '12px'
+            marginTop: '12px',
+            letterSpacing: '1px',
           }}>
             {progress < 100 ? 'Crafting your experience...' : 'Welcome'}
           </p>
         </div>
       </div>
-
-      {/* Splash Screen Animations */}
-      <style>{`
-        @keyframes gridMove {
-          0% { transform: translate(0, 0); }
-          100% { transform: translate(50px, 50px); }
-        }
-        @keyframes blueprintLine {
-          0% { left: -200px; opacity: 0; }
-          10% { opacity: 0.6; }
-          90% { opacity: 0.6; }
-          100% { left: 110%; opacity: 0; }
-        }
-        @keyframes rotateSlow {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulseGlow {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.1); }
-        }
-        @keyframes logoFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes iconPop {
-          0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-          50% { transform: translate(-50%, -50%) scale(1.2); }
-          100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-      `}</style>
     </div>
   )
 }
@@ -1900,7 +2012,6 @@ function SplashScreen({ onComplete }) {
 function App() {
   const [isAILightboxOpen, setIsAILightboxOpen] = useState(false)
   const [isSpinWheelOpen, setIsSpinWheelOpen] = useState(false)
-  // Initialize showSplash based on sessionStorage - only show if NOT already shown
   const [showSplash, setShowSplash] = useState(() => {
     return !sessionStorage.getItem('splashShown')
   })
@@ -1911,7 +2022,7 @@ function App() {
   }, [])
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: COLORS.dark }}>
+    <div style={{ minHeight: '100vh', backgroundColor: COLORS.canvas }}>
       {/* Splash Screen */}
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       <Header />
@@ -1920,11 +2031,9 @@ function App() {
         <WhoWeAreSection />
         <VerticalsSection />
         <ServicesSection />
-        <CostCalculator />
+        <CostEstimatorSection />
         <WhyChooseUsSection />
-        <PortfolioSection />
-        <TestimonialsSection />
-        <CTASection />
+        <FAQSection />
       </main>
       <Footer />
 
