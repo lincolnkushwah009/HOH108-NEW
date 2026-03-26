@@ -5,6 +5,7 @@ import Material from '../models/Material.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -12,6 +13,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('purchase_requisitions', 'view'))
 
 // Get all purchase requisitions
 router.get('/', async (req, res) => {

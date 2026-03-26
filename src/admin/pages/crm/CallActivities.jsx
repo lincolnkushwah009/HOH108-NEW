@@ -689,52 +689,46 @@ export default function CallActivities() {
     (user?.role || '').toLowerCase()
   )
   const [searchParams] = useSearchParams()
-  const [activities, setActivities] = useState([])
-  const [callyzerCalls, setCallyzerCalls] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [loadingCallyzer, setLoadingCallyzer] = useState(true)
   const [showLogCallModal, setShowLogCallModal] = useState(false)
   const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [selectedCall, setSelectedCall] = useState(null)
-  const [callyzerStats, setCallyzerStats] = useState(null)
   const [callyzerConfigured, setCallyzerConfigured] = useState(false)
-  const [syncing, setSyncing] = useState(false)
-  const [viewMode, setViewMode] = useState('callyzer')
-  const [callyzerPagination, setCallyzerPagination] = useState({ total: 0, page: 1, pageSize: 50 })
-  const [loadingMore, setLoadingMore] = useState(false)
+  const [callyzerStats, setCallyzerStats] = useState(null)
 
   // Analytics (infographics) state
   const [analyticsOpen, setAnalyticsOpen] = useState(true)
   const [dashboardData, setDashboardData] = useState(null)
   const [loadingDashboard, setLoadingDashboard] = useState(false)
 
-  // Filter state
-  const [callyzerFilters, setCallyzerFilters] = useState({
+  // Unified filter state — drives both stats & analytics
+  const [filters, setFilters] = useState({
     startDate: getToday(),
     endDate: getToday(),
     callType: '',
     empNumber: '',
     duration: '',
-    search: '',
   })
   const [employees, setEmployees] = useState([])
 
-  // Initial config check
+  // Initial load
   useEffect(() => {
     checkConfig()
   }, [])
 
-  // Re-fetch when filters change
+  // Re-fetch stats & analytics when filters change
   useEffect(() => {
     if (callyzerConfigured) {
-      fetchCallyzerCalls().then(() => fetchCallyzerStats())
       fetchDashboardData()
+      fetchCallyzerStats()
     }
-  }, [callyzerConfigured, callyzerFilters.startDate, callyzerFilters.endDate, callyzerFilters.callType, callyzerFilters.empNumber, callyzerFilters.duration])
+  }, [callyzerConfigured, filters.startDate, filters.endDate, filters.callType, filters.empNumber, filters.duration])
 
+  // Fetch employee list when dates change (not other filters)
   useEffect(() => {
-    fetchActivities()
-  }, [])
+    if (callyzerConfigured) {
+      fetchEmployeeList()
+    }
+  }, [callyzerConfigured, filters.startDate, filters.endDate])
 
   const checkConfig = async () => {
     try {
@@ -747,12 +741,46 @@ export default function CallActivities() {
     }
   }
 
+  const buildApiParams = useCallback(() => {
+    const params = {}
+    if (filters.startDate) params.startDate = filters.startDate
+    if (filters.endDate) params.endDate = filters.endDate
+    if (filters.callType) params.callType = filters.callType
+    if (filters.empNumber) params.empNumber = filters.empNumber
+    const dur = DURATION_OPTIONS.find(d => d.value === filters.duration)
+    if (dur && dur.min !== undefined) params.minDuration = dur.min
+    if (dur && dur.max !== undefined) params.maxDuration = dur.max
+    return params
+  }, [filters])
+
+  const fetchEmployeeList = async () => {
+    try {
+      const params = {}
+      if (filters.startDate) params.startDate = filters.startDate
+      if (filters.endDate) params.endDate = filters.endDate
+      const callsRes = await callyzerAPI.getCalls(params)
+      if (callsRes.success) {
+        const empMap = new Map()
+        ;(callsRes.data || []).forEach(c => {
+          if (c.empNumber && !empMap.has(c.empNumber)) {
+            empMap.set(c.empNumber, { empNumber: c.empNumber, empName: c.empName || c.empNumber })
+          }
+        })
+        setEmployees(Array.from(empMap.values()))
+      }
+    } catch (e) {
+      console.error('Error fetching employees:', e)
+    }
+  }
+
   const fetchDashboardData = async () => {
     try {
       setLoadingDashboard(true)
       const params = {}
-      if (callyzerFilters.startDate) params.startDate = callyzerFilters.startDate
-      if (callyzerFilters.endDate) params.endDate = callyzerFilters.endDate
+      if (filters.startDate) params.startDate = filters.startDate
+      if (filters.endDate) params.endDate = filters.endDate
+      if (filters.empNumber) params.empNumber = filters.empNumber
+      if (filters.callType) params.callType = filters.callType
       const result = await callyzerAPI.getDashboard(params)
       if (result.success) {
         setDashboardData(result.data)
@@ -764,37 +792,13 @@ export default function CallActivities() {
     }
   }
 
-  const buildApiParams = useCallback(() => {
-    const params = {}
-    if (callyzerFilters.startDate) params.startDate = callyzerFilters.startDate
-    if (callyzerFilters.endDate) params.endDate = callyzerFilters.endDate
-    if (callyzerFilters.callType) params.callType = callyzerFilters.callType
-    if (callyzerFilters.empNumber) params.empNumber = callyzerFilters.empNumber
-    const dur = DURATION_OPTIONS.find(d => d.value === callyzerFilters.duration)
-    if (dur && dur.min !== undefined) params.minDuration = dur.min
-    if (dur && dur.max !== undefined) params.maxDuration = dur.max
-    return params
-  }, [callyzerFilters])
-
-  const fetchActivities = async () => {
-    setLoading(true)
-    try {
-      const response = await callActivitiesAPI.getAll({ limit: 50 })
-      setActivities(response.data || [])
-    } catch (error) {
-      console.error('Error fetching activities:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const fetchCallyzerStats = async () => {
     try {
       const params = {}
-      if (callyzerFilters.startDate) params.startDate = callyzerFilters.startDate
-      if (callyzerFilters.endDate) params.endDate = callyzerFilters.endDate
-      if (callyzerFilters.empNumber) params.employeeNumber = callyzerFilters.empNumber
-      if (callyzerFilters.callType) params.callType = callyzerFilters.callType
+      if (filters.startDate) params.startDate = filters.startDate
+      if (filters.endDate) params.endDate = filters.endDate
+      if (filters.empNumber) params.employeeNumber = filters.empNumber
+      if (filters.callType) params.callType = filters.callType
       const statsRes = await callyzerAPI.getStats(params)
       if (statsRes.success) {
         setCallyzerStats(statsRes.data?.summary || null)
@@ -804,67 +808,18 @@ export default function CallActivities() {
     }
   }
 
-  const fetchCallyzerCalls = async (pageNum = 1, append = false) => {
-    if (!append) setLoadingCallyzer(true)
-    setLoadingMore(pageNum > 1)
-    try {
-      const params = { ...buildApiParams(), page: pageNum }
-      const callsRes = await callyzerAPI.getCalls(params)
-      if (callsRes.success) {
-        const calls = callsRes.data || []
-        setCallyzerCalls(prev => append ? [...prev, ...calls] : calls)
-        setCallyzerPagination(callsRes.pagination || { total: 0, page: pageNum, pageSize: 50 })
-        const empMap = new Map()
-        calls.forEach(c => {
-          if (c.empNumber && !empMap.has(c.empNumber)) {
-            empMap.set(c.empNumber, { empNumber: c.empNumber, empName: c.empName || c.empNumber })
-          }
-        })
-        setEmployees(prev => {
-          const merged = new Map(prev.map(e => [e.empNumber, e]))
-          empMap.forEach((v, k) => merged.set(k, v))
-          return Array.from(merged.values())
-        })
-      }
-    } catch (e) {
-      console.error('Error fetching callyzer calls:', e)
-    } finally {
-      setLoadingCallyzer(false)
-      setLoadingMore(false)
-    }
-  }
-
-  const loadMoreCalls = () => {
-    const nextPage = callyzerPagination.page + 1
-    fetchCallyzerCalls(nextPage, true)
-  }
-
-  const filteredCalls = useMemo(() => {
-    if (!callyzerFilters.search.trim()) return callyzerCalls
-    const q = callyzerFilters.search.toLowerCase()
-    return callyzerCalls.filter(c =>
-      (c.clientName && c.clientName.toLowerCase().includes(q)) ||
-      (c.clientNumber && c.clientNumber.includes(q)) ||
-      (c.empName && c.empName.toLowerCase().includes(q))
-    )
-  }, [callyzerCalls, callyzerFilters.search])
-
   const handleFilterChange = (key, value) => {
-    setCallyzerFilters(prev => ({ ...prev, [key]: value }))
+    setFilters(prev => ({ ...prev, [key]: value }))
   }
 
   const handleResetFilters = () => {
-    setCallyzerFilters({ startDate: getToday(), endDate: getToday(), callType: '', empNumber: '', duration: '', search: '' })
+    setFilters({ startDate: getToday(), endDate: getToday(), callType: '', empNumber: '', duration: '' })
   }
 
   const handleRefreshCallyzer = async () => {
-    await fetchCallyzerCalls()
-    await fetchCallyzerStats()
     fetchDashboardData()
+    fetchCallyzerStats()
   }
-
-  const handleStartCall = (call) => { setSelectedCall(call); setShowLogCallModal(true) }
-  const handleCompleteCall = (call) => { setSelectedCall(call); setShowLogCallModal(true) }
 
   // Use dashboard data as fallback when stats endpoint returns incomplete data
   const ds = dashboardData?.summary || {}
@@ -1026,15 +981,6 @@ export default function CallActivities() {
               <RefreshCw size={16} /> Refresh
             </button>
           )}
-          <button onClick={() => { setSelectedCall(null); setShowLogCallModal(true) }}
-            style={{
-              padding: '12px 20px', backgroundColor: '#3B82F6', color: '#FFFFFF',
-              border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '500',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-            }}>
-            <Plus size={18} /> Log New Call
-          </button>
         </div>
       </div>
 
@@ -1546,20 +1492,20 @@ export default function CallActivities() {
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: '500', color: '#6B7280', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>From</label>
-              <input type="date" value={callyzerFilters.startDate} onChange={(e) => handleFilterChange('startDate', e.target.value)}
+              <input type="date" value={filters.startDate} onChange={(e) => handleFilterChange('startDate', e.target.value)}
                 style={{ padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '10px', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB', color: '#374151' }} />
             </div>
             <span style={{ color: '#9CA3AF', fontSize: '13px', paddingTop: '18px' }}>–</span>
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: '500', color: '#6B7280', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>To</label>
-              <input type="date" value={callyzerFilters.endDate} onChange={(e) => handleFilterChange('endDate', e.target.value)}
+              <input type="date" value={filters.endDate} onChange={(e) => handleFilterChange('endDate', e.target.value)}
                 style={{ padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '10px', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB', color: '#374151' }} />
             </div>
           </div>
 
           <div>
             <label style={{ display: 'block', fontSize: '11px', fontWeight: '500', color: '#6B7280', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Call Type</label>
-            <select value={callyzerFilters.callType} onChange={(e) => handleFilterChange('callType', e.target.value)}
+            <select value={filters.callType} onChange={(e) => handleFilterChange('callType', e.target.value)}
               style={{ padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '10px', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB', color: '#374151', cursor: 'pointer', minWidth: '130px' }}>
               <option value="">All Types</option>
               <option value="Incoming">Incoming</option>
@@ -1572,7 +1518,7 @@ export default function CallActivities() {
           {!isPreSales && (
             <div>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: '500', color: '#6B7280', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Employee</label>
-              <select value={callyzerFilters.empNumber} onChange={(e) => handleFilterChange('empNumber', e.target.value)}
+              <select value={filters.empNumber} onChange={(e) => handleFilterChange('empNumber', e.target.value)}
                 style={{ padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '10px', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB', color: '#374151', cursor: 'pointer', minWidth: '150px' }}>
                 <option value="">All Employees</option>
                 {employees.map(emp => (
@@ -1584,22 +1530,12 @@ export default function CallActivities() {
 
           <div>
             <label style={{ display: 'block', fontSize: '11px', fontWeight: '500', color: '#6B7280', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Duration</label>
-            <select value={callyzerFilters.duration} onChange={(e) => handleFilterChange('duration', e.target.value)}
+            <select value={filters.duration} onChange={(e) => handleFilterChange('duration', e.target.value)}
               style={{ padding: '8px 12px', border: '1px solid #E5E7EB', borderRadius: '10px', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB', color: '#374151', cursor: 'pointer', minWidth: '130px' }}>
               {DURATION_OPTIONS.map(d => (
                 <option key={d.value} value={d.value}>{d.label}</option>
               ))}
             </select>
-          </div>
-
-          <div style={{ flex: 1, minWidth: '180px' }}>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: '500', color: '#6B7280', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Search</label>
-            <div style={{ position: 'relative' }}>
-              <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
-              <input type="text" placeholder="Name or number..." value={callyzerFilters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                style={{ width: '100%', padding: '8px 12px 8px 30px', border: '1px solid #E5E7EB', borderRadius: '10px', fontSize: '13px', outline: 'none', backgroundColor: '#F9FAFB', color: '#374151', boxSizing: 'border-box' }} />
-            </div>
           </div>
 
           <button onClick={handleResetFilters}
@@ -1613,61 +1549,6 @@ export default function CallActivities() {
         </div>
       </div>
 
-      {/* Call List */}
-      {loadingCallyzer ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px' }}>
-          <div style={{
-            width: '48px', height: '48px',
-            border: '3px solid #F5E6D3', borderTopColor: '#C59C82',
-            borderRadius: '50%', animation: 'spin 1s linear infinite',
-          }} />
-        </div>
-      ) : filteredCalls.length === 0 ? (
-        <div style={{
-          backgroundColor: '#FFFFFF', borderRadius: '16px', padding: '64px',
-          textAlign: 'center', border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-        }}>
-          <div style={{
-            width: '80px', height: '80px', backgroundColor: '#FDF8F4', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto',
-          }}>
-            <Phone size={36} style={{ color: '#D4B49A' }} />
-          </div>
-          <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#374151', margin: '0 0 8px 0' }}>
-            No Callyzer calls found
-          </h3>
-          <p style={{ color: '#6B7280', margin: '0 0 8px 0' }}>
-            {callyzerConfigured
-              ? (callyzerFilters.search || callyzerFilters.callType || callyzerFilters.empNumber || callyzerFilters.duration
-                ? 'No calls match your filters. Try adjusting or resetting.'
-                : 'No call data available for this date range. Make some calls or change dates.')
-              : 'Configure Callyzer in Settings to see call data here.'}
-          </p>
-        </div>
-      ) : (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-            {filteredCalls.map((call, idx) => (
-              <CallyzerCallCard key={call.id || idx} call={call} />
-            ))}
-          </div>
-          {callyzerPagination.total > callyzerCalls.length && (
-            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-              <p style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '12px' }}>
-                Showing {filteredCalls.length} of {callyzerPagination.total} calls
-              </p>
-              <button onClick={loadMoreCalls} disabled={loadingMore}
-                style={{
-                  padding: '10px 28px', backgroundColor: loadingMore ? '#E5E7EB' : '#FFFFFF',
-                  color: '#374151', border: '1px solid #D1D5DB', borderRadius: '10px',
-                  fontSize: '14px', fontWeight: '500', cursor: loadingMore ? 'not-allowed' : 'pointer',
-                }}>
-                {loadingMore ? 'Loading...' : 'Load More'}
-              </button>
-            </div>
-          )}
-        </>
-      )}
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -1678,14 +1559,14 @@ export default function CallActivities() {
         isOpen={showLogCallModal}
         onClose={() => { setShowLogCallModal(false); setSelectedCall(null) }}
         lead={selectedCall?.lead}
-        onSuccess={() => { fetchActivities(); fetchCallyzerCalls(); fetchCallyzerStats(); fetchDashboardData() }}
+        onSuccess={() => { fetchActivities() }}
       />
 
       <ScheduleMeetingModal
         isOpen={showMeetingModal}
         onClose={() => { setShowMeetingModal(false); setSelectedCall(null) }}
         callActivity={selectedCall}
-        onSuccess={() => { fetchActivities(); fetchCallyzerCalls(); fetchCallyzerStats(); fetchDashboardData() }}
+        onSuccess={() => { fetchActivities() }}
       />
     </div>
   )

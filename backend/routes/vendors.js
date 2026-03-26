@@ -4,6 +4,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
@@ -13,6 +14,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('vendors', 'view'))
 
 // Get all vendors
 router.get('/', async (req, res) => {
@@ -443,9 +445,12 @@ router.put('/:id/reset-portal-password', async (req, res) => {
   }
 })
 
-// Delete vendor
+// Delete vendor (super_admin only)
 router.delete('/:id', async (req, res) => {
   try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ success: false, message: 'Only super admin can delete vendors' })
+    }
     // Require specific company context for deleting vendors
     if (!req.activeCompany?._id) {
       return res.status(400).json({

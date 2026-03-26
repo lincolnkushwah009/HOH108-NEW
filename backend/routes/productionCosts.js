@@ -5,6 +5,7 @@ import Project from '../models/Project.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 import mongoose from 'mongoose'
@@ -13,6 +14,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('production_costs', 'view'))
 
 // Get all production costs
 router.get('/', async (req, res) => {

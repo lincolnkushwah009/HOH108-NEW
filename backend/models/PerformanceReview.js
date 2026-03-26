@@ -232,6 +232,21 @@ const performanceReviewSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  },
+
+  // Sales Performance & Incentive Data
+  targetData: {
+    role: String,
+    targets: mongoose.Schema.Types.Mixed,       // { revenue, conversionRate, totalCalls, etc. }
+    actuals: mongoose.Schema.Types.Mixed,        // Actual achievement values
+    achievementPercent: Number,                  // Overall target achievement %
+    incentiveEligible: Boolean,
+    incentiveAmount: { type: Number, default: 0 },
+    incentiveStatus: {
+      type: String,
+      enum: ['not_eligible', 'pending', 'approved', 'paid'],
+      default: 'not_eligible'
+    }
   }
 }, { timestamps: true })
 

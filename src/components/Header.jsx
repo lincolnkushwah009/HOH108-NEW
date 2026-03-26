@@ -24,7 +24,12 @@ function Header() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('hoh108_user')
-    if (storedUser) setUser(JSON.parse(storedUser))
+    const storedCustomer = localStorage.getItem('hoh108_customer')
+    if (storedUser) {
+      setUser(JSON.parse(storedUser))
+    } else if (storedCustomer) {
+      setUser(JSON.parse(storedCustomer))
+    }
   }, [])
 
   useEffect(() => {
@@ -54,6 +59,8 @@ function Header() {
   const handleLogout = () => {
     localStorage.removeItem('hoh108_token')
     localStorage.removeItem('hoh108_user')
+    localStorage.removeItem('hoh108_customer_token')
+    localStorage.removeItem('hoh108_customer')
     setUser(null)
     setShowDropdown(false)
     navigate('/')

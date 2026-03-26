@@ -15,7 +15,7 @@ export const LEAD_STATUSES = {
 }
 
 export const PRE_SALES_STATUSES = ['new', 'rnr', 'qualified', 'future_prospect', 'lost']
-export const SALES_STATUSES = ['meeting_status', 'cold', 'warm', 'hot', 'won', 'lost']
+export const SALES_STATUSES = ['qualified', 'meeting_status', 'cold', 'warm', 'hot', 'won', 'lost']
 
 // Lead priorities (legacy — kept for backward compat)
 export const LEAD_PRIORITIES = {
@@ -83,6 +83,24 @@ export const USER_ROLES = {
   operations: { label: 'Operations', color: 'indigo' },
   finance: { label: 'Finance', color: 'emerald' },
   viewer: { label: 'Viewer', color: 'gray' },
+  // New roles from Roles & Permission matrix
+  hr: { label: 'HR Executive', color: 'rose' },
+  hr_head: { label: 'HR Head', color: 'rose' },
+  manager: { label: 'Manager', color: 'slate' },
+  architect: { label: 'Architect', color: 'amber' },
+  agm_business: { label: 'AGM - Business', color: 'violet' },
+  agm_operations: { label: 'AGM - Operations', color: 'violet' },
+  agm_sales: { label: 'AGM - Sales', color: 'violet' },
+  community_manager: { label: 'Community Manager', color: 'sky' },
+  assoc_community_manager: { label: 'Assoc. Community Manager', color: 'sky' },
+  drm: { label: 'Design Relationship Manager', color: 'fuchsia' },
+  assoc_drm: { label: 'Assoc. DRM', color: 'fuchsia' },
+  business_ops_lead: { label: 'Business Ops Lead', color: 'lime' },
+  it_admin: { label: 'IT Admin', color: 'purple' },
+  mmt_technician: { label: 'MMT Technician', color: 'stone' },
+  channel_partner_manager: { label: 'Channel Partner Manager', color: 'emerald' },
+  procurement_manager: { label: 'Procurement', color: 'amber' },
+  quality_controller: { label: 'Quality Controller', color: 'red' },
 }
 
 // CRM Cities

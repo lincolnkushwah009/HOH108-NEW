@@ -8,6 +8,7 @@ import Stock from '../models/Stock.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -15,6 +16,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('mrp', 'view'))
 
 // Get all material requirements (MRP)
 router.get('/', async (req, res) => {

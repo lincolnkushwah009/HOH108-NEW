@@ -1,11 +1,12 @@
 import express from 'express'
 import QCMaster from '../models/QCMaster.js'
-import { protect, setCompanyContext, companyScopedQuery } from '../middleware/rbac.js'
+import { protect, setCompanyContext, requireModulePermission, companyScopedQuery } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('qc_master', 'view'))
 
 // GET /api/qc-master/dashboard — Dashboard stats
 router.get('/dashboard', async (req, res) => {

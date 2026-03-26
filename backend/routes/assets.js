@@ -1,10 +1,12 @@
 import express from 'express'
 import Asset from '../models/Asset.js'
-import { protect } from '../middleware/auth.js'
+import { protect, setCompanyContext, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('asset_management', 'view'))
 
 // Get all assets
 router.get('/', async (req, res) => {

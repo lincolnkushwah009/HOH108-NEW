@@ -1,12 +1,18 @@
 import express from 'express'
 import Stock from '../models/Stock.js'
 import Material from '../models/Material.js'
-import { protect } from '../middleware/auth.js'
+import {
+  protect,
+  setCompanyContext,
+  requireModulePermission
+} from '../middleware/rbac.js'
 
 const router = express.Router()
 
 // Apply auth middleware to all routes
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('stock_management', 'view'))
 
 // Get all stock with filters
 router.get('/', async (req, res) => {

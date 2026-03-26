@@ -62,7 +62,20 @@ const Employees = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
 
   const [selectedEmployee, setSelectedEmployee] = useState(null)
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '', role: 'employee', userRole: '', department: '', designation: '', company: '' })
+  const [formData, setFormData] = useState({
+    name: '', email: '', phone: '', password: '', role: 'viewer', userRole: '', department: '', designation: '', company: '',
+    empId: '', entity: 'IP', branch: '', region: '', subDepartment: '',
+    dateOfJoining: '', employmentType: 'probation', probationEndDate: '',
+    dateOfBirth: '', gender: '', bloodGroup: '', nationality: 'Indian',
+    personalEmail: '', alternatePhone: '',
+    city: '', showroom: '',
+    permanentAddress: { street: '', city: '', state: '', pincode: '' },
+    currentAddress: { street: '', city: '', state: '', pincode: '' },
+    emergencyContact: { name: '', relationship: '', phone: '' },
+    bankDetails: { bankName: '', accountNumber: '', ifscCode: '', branch: '' },
+    basicSalary: '', hra: '', otherAllowances: '', grossSalary: '', ctc: '',
+    aadharNumber: '', panNumber: '', uanNumber: '', pfAccountNumber: '',
+  })
   const [editFormData, setEditFormData] = useState({ name: '', email: '', phone: '', role: '', userRole: '', department: '', designation: '', company: '', isActive: true })
   const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '' })
   const [hrDetailsData, setHRDetailsData] = useState({
@@ -224,9 +237,62 @@ const Employees = () => {
       if (!cleanedData.userRole) delete cleanedData.userRole
       if (!cleanedData.company) delete cleanedData.company
 
+      // Build HR details and salary from form
+      if (formData.dateOfJoining || formData.city || formData.employmentType) {
+        cleanedData.hrDetails = {
+          dateOfJoining: formData.dateOfJoining || undefined,
+          employmentType: formData.employmentType || 'probation',
+          probationEndDate: formData.probationEndDate || undefined,
+          dateOfBirth: formData.dateOfBirth || undefined,
+          gender: formData.gender || undefined,
+          bloodGroup: formData.bloodGroup || undefined,
+          nationality: formData.nationality || 'Indian',
+          personalEmail: formData.personalEmail || undefined,
+          alternatePhone: formData.alternatePhone || undefined,
+          city: formData.city || undefined,
+          showroom: formData.showroom || undefined,
+          permanentAddress: formData.permanentAddress?.street ? formData.permanentAddress : undefined,
+          currentAddress: formData.currentAddress?.street ? formData.currentAddress : undefined,
+          emergencyContact: formData.emergencyContact?.name ? formData.emergencyContact : undefined,
+          bankDetails: formData.bankDetails?.accountNumber ? formData.bankDetails : undefined,
+          aadharNumber: formData.aadharNumber || undefined,
+          panNumber: formData.panNumber || undefined,
+          uanNumber: formData.uanNumber || undefined,
+          pfAccountNumber: formData.pfAccountNumber || undefined,
+        }
+      }
+      if (formData.basicSalary) {
+        const basic = parseFloat(formData.basicSalary) || 0
+        const hra = parseFloat(formData.hra) || 0
+        const other = parseFloat(formData.otherAllowances) || 0
+        const gross = parseFloat(formData.grossSalary) || (basic + hra + other)
+        cleanedData.salary = {
+          basicSalary: basic, hra, otherAllowances: other, grossSalary: gross,
+          ctc: parseFloat(formData.ctc) || gross,
+        }
+      }
+      cleanedData.empId = formData.empId || undefined
+      cleanedData.entity = formData.entity || 'IP'
+      cleanedData.branch = formData.branch || undefined
+      cleanedData.region = formData.region || undefined
+      cleanedData.subDepartment = formData.subDepartment || undefined
+
       await employeesAPI.create(cleanedData)
       setShowCreateModal(false)
-      setFormData({ name: '', email: '', phone: '', password: '', role: 'employee', userRole: '', department: '', designation: '', company: '' })
+      setFormData({
+        name: '', email: '', phone: '', password: '', role: 'viewer', userRole: '', department: '', designation: '', company: '',
+        empId: '', entity: 'IP', branch: '', region: '', subDepartment: '',
+        dateOfJoining: '', employmentType: 'probation', probationEndDate: '',
+        dateOfBirth: '', gender: '', bloodGroup: '', nationality: 'Indian',
+        personalEmail: '', alternatePhone: '',
+        city: '', showroom: '',
+        permanentAddress: { street: '', city: '', state: '', pincode: '' },
+        currentAddress: { street: '', city: '', state: '', pincode: '' },
+        emergencyContact: { name: '', relationship: '', phone: '' },
+        bankDetails: { bankName: '', accountNumber: '', ifscCode: '', branch: '' },
+        basicSalary: '', hra: '', otherAllowances: '', grossSalary: '', ctc: '',
+        aadharNumber: '', panNumber: '', uanNumber: '', pfAccountNumber: '',
+      })
       loadEmployees()
     } catch (err) {
       console.error('Failed to create employee:', err)
@@ -692,44 +758,185 @@ const Employees = () => {
         )}
       </Card>
 
-      {/* Create Employee Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Add Employee">
-        <form onSubmit={handleCreate} className="space-y-4">
+      {/* Create Employee Modal - Comprehensive Onboarding Form */}
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Add Employee - Onboarding" size="lg">
+        <form onSubmit={handleCreate}>
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div style={{ padding: '10px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', fontSize: 13, marginBottom: 16 }}>
               {error}
             </div>
           )}
-          <Input label="Full Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
-            <Input label="Phone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required />
+
+          {/* Section: Basic Info */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Basic Information</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <Input label="Full Name *" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+              <Input label="Employee ID" value={formData.empId} onChange={(e) => setFormData({ ...formData, empId: e.target.value })} placeholder="e.g., HOHIP001" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <Input label="Official Email *" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
+              <Input label="Phone *" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <Input label="Password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} placeholder="Default: Welcome@123" />
+              <Input label="Designation *" value={formData.designation} onChange={(e) => setFormData({ ...formData, designation: e.target.value })} placeholder="e.g., Sales Executive" />
+            </div>
           </div>
-          <Input label="Password" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} placeholder="Leave empty for default (Welcome@123)" />
-          <Input label="Designation" value={formData.designation} onChange={(e) => setFormData({ ...formData, designation: e.target.value })} placeholder="e.g., Software Engineer" />
-          <div className="grid grid-cols-2 gap-4">
-            <Select label="System Role" options={roleOptions} value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />
-            <Select
-              label="Permission Role"
-              options={[{ value: '', label: 'Select Role' }, ...roles.filter(r => r.isActive).map(r => ({ value: r._id, label: r.roleName }))]}
-              value={formData.userRole}
-              onChange={(e) => setFormData({ ...formData, userRole: e.target.value })}
-            />
+
+          {/* Section: Role & Department */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Role & Department</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <Select label="System Role *" options={roleOptions} value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} />
+              <Select label="Permission Role" options={[{ value: '', label: 'Select Role' }, ...roles.filter(r => r.isActive).map(r => ({ value: r._id, label: r.roleName }))]} value={formData.userRole} onChange={(e) => setFormData({ ...formData, userRole: e.target.value })} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <Select label="Department *" options={[{ value: '', label: 'Select Department' }, ...departments.map(d => ({ value: d.code, label: d.name }))]} value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} />
+              <Select label="Sub-Department" options={[
+                { value: '', label: 'Select Sub-Dept' },
+                { value: 'pre_sales', label: 'Pre Sales' },
+                { value: 'crm', label: 'CRM' },
+                { value: 'sales_closure', label: 'Sales Closure' },
+                { value: 'design', label: 'Design' },
+                { value: 'operations', label: 'Operations' },
+                { value: 'finance', label: 'Finance' },
+                { value: 'management', label: 'Management' },
+              ]} value={formData.subDepartment} onChange={(e) => setFormData({ ...formData, subDepartment: e.target.value })} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <Select label="Company" options={[{ value: '', label: 'Select Company' }, ...companies.map(c => ({ value: c._id, label: c.name })), { value: 'both', label: 'HOH108+IP(Both)' }]} value={formData.company} onChange={(e) => setFormData({ ...formData, company: e.target.value })} />
+              <Select label="Entity" options={[
+                { value: 'IP', label: 'Interior Plus (IP)' },
+                { value: 'HOH', label: 'HOH108' },
+                { value: 'Both', label: 'Both' },
+              ]} value={formData.entity} onChange={(e) => setFormData({ ...formData, entity: e.target.value })} />
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Select
-              label="Department"
-              options={[{ value: '', label: 'Select Department' }, ...departments.map(d => ({ value: d.code, label: d.name }))]}
-              value={formData.department}
-              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-            />
-            <Select
-              label="Company"
-              options={[{ value: '', label: 'Select Company' }, ...companies.map(c => ({ value: c._id, label: c.name })), { value: 'both', label: 'HOH108+IP(Both)' }]}
-              value={formData.company}
-              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-            />
+
+          {/* Section: Location Assignment (Critical for Round-Robin) */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Location Assignment (for Lead Round-Robin)</h4>
+            <div style={{ padding: '10px 14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, color: '#92400e', fontSize: 12, marginBottom: 12 }}>
+              City and Branch determine which leads get auto-assigned to this employee via round-robin.
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+              <Select label="City *" options={[
+                { value: '', label: 'Select City' },
+                { value: 'Bengaluru', label: 'Bengaluru' },
+                { value: 'Mysuru', label: 'Mysuru' },
+                { value: 'Hyderabad', label: 'Hyderabad' },
+              ]} value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
+              <Select label="Branch" options={[
+                { value: '', label: 'Select Branch' },
+                { value: 'HSR', label: 'HSR Layout' },
+                { value: 'Horamavu', label: 'Horamavu' },
+                { value: 'Whitefield', label: 'Whitefield' },
+                { value: 'Koramangala', label: 'Koramangala' },
+                { value: 'Jayanagar', label: 'Jayanagar' },
+                { value: 'Mysore', label: 'Mysore' },
+                { value: 'Hyderabad', label: 'Hyderabad' },
+              ]} value={formData.branch} onChange={(e) => setFormData({ ...formData, branch: e.target.value })} />
+              <Select label="Region" options={[
+                { value: '', label: 'Select Region' },
+                { value: 'Karnataka', label: 'Karnataka' },
+                { value: 'Telangana', label: 'Telangana' },
+              ]} value={formData.region} onChange={(e) => setFormData({ ...formData, region: e.target.value })} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginTop: 12 }}>
+              <Input label="Showroom / Experience Center" value={formData.showroom} onChange={(e) => setFormData({ ...formData, showroom: e.target.value })} placeholder="e.g., HSR Experience Center" />
+            </div>
           </div>
+
+          {/* Section: Employment Details */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Employment Details</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+              <Input label="Date of Joining *" type="date" value={formData.dateOfJoining} onChange={(e) => setFormData({ ...formData, dateOfJoining: e.target.value })} />
+              <Select label="Employment Type" options={[
+                { value: 'probation', label: 'Probation' },
+                { value: 'permanent', label: 'Permanent' },
+                { value: 'contract', label: 'Contract' },
+                { value: 'intern', label: 'Intern' },
+                { value: 'consultant', label: 'Consultant' },
+              ]} value={formData.employmentType} onChange={(e) => setFormData({ ...formData, employmentType: e.target.value })} />
+              <Input label="Probation End Date" type="date" value={formData.probationEndDate} onChange={(e) => setFormData({ ...formData, probationEndDate: e.target.value })} />
+            </div>
+          </div>
+
+          {/* Section: Personal Details */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Personal Details</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
+              <Input label="Date of Birth" type="date" value={formData.dateOfBirth} onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })} />
+              <Select label="Gender" options={[{ value: '', label: 'Select' }, { value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }, { value: 'other', label: 'Other' }]} value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} />
+              <Select label="Blood Group" options={[{ value: '', label: 'Select' }, { value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' }, { value: 'B+', label: 'B+' }, { value: 'B-', label: 'B-' }, { value: 'O+', label: 'O+' }, { value: 'O-', label: 'O-' }, { value: 'AB+', label: 'AB+' }, { value: 'AB-', label: 'AB-' }]} value={formData.bloodGroup} onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })} />
+              <Input label="Nationality" value={formData.nationality} onChange={(e) => setFormData({ ...formData, nationality: e.target.value })} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <Input label="Personal Email" type="email" value={formData.personalEmail} onChange={(e) => setFormData({ ...formData, personalEmail: e.target.value })} />
+              <Input label="Alternate Phone" value={formData.alternatePhone} onChange={(e) => setFormData({ ...formData, alternatePhone: e.target.value })} />
+            </div>
+          </div>
+
+          {/* Section: Emergency Contact */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Emergency Contact</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+              <Input label="Contact Name" value={formData.emergencyContact.name} onChange={(e) => setFormData({ ...formData, emergencyContact: { ...formData.emergencyContact, name: e.target.value } })} />
+              <Input label="Relationship" value={formData.emergencyContact.relationship} onChange={(e) => setFormData({ ...formData, emergencyContact: { ...formData.emergencyContact, relationship: e.target.value } })} placeholder="e.g., Father, Spouse" />
+              <Input label="Phone" value={formData.emergencyContact.phone} onChange={(e) => setFormData({ ...formData, emergencyContact: { ...formData.emergencyContact, phone: e.target.value } })} />
+            </div>
+          </div>
+
+          {/* Section: Address */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Current Address</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12 }}>
+              <Input label="Street" value={formData.currentAddress.street} onChange={(e) => setFormData({ ...formData, currentAddress: { ...formData.currentAddress, street: e.target.value } })} />
+              <Input label="City" value={formData.currentAddress.city} onChange={(e) => setFormData({ ...formData, currentAddress: { ...formData.currentAddress, city: e.target.value } })} />
+              <Input label="Pincode" value={formData.currentAddress.pincode} onChange={(e) => setFormData({ ...formData, currentAddress: { ...formData.currentAddress, pincode: e.target.value } })} />
+            </div>
+          </div>
+
+          {/* Section: Statutory (KYC) */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Statutory & KYC</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <Input label="Aadhar Number" value={formData.aadharNumber} onChange={(e) => setFormData({ ...formData, aadharNumber: e.target.value })} placeholder="12-digit Aadhar" />
+              <Input label="PAN Number" value={formData.panNumber} onChange={(e) => setFormData({ ...formData, panNumber: e.target.value })} placeholder="e.g., ABCDE1234F" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <Input label="UAN Number" value={formData.uanNumber} onChange={(e) => setFormData({ ...formData, uanNumber: e.target.value })} placeholder="Universal Account Number (PF)" />
+              <Input label="PF Account Number" value={formData.pfAccountNumber} onChange={(e) => setFormData({ ...formData, pfAccountNumber: e.target.value })} />
+            </div>
+          </div>
+
+          {/* Section: Bank Details */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Bank Details (for Salary)</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <Input label="Bank Name" value={formData.bankDetails.bankName} onChange={(e) => setFormData({ ...formData, bankDetails: { ...formData.bankDetails, bankName: e.target.value } })} />
+              <Input label="Account Number" value={formData.bankDetails.accountNumber} onChange={(e) => setFormData({ ...formData, bankDetails: { ...formData.bankDetails, accountNumber: e.target.value } })} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <Input label="IFSC Code" value={formData.bankDetails.ifscCode} onChange={(e) => setFormData({ ...formData, bankDetails: { ...formData.bankDetails, ifscCode: e.target.value } })} />
+              <Input label="Branch" value={formData.bankDetails.branch} onChange={(e) => setFormData({ ...formData, bankDetails: { ...formData.bankDetails, branch: e.target.value } })} />
+            </div>
+          </div>
+
+          {/* Section: Salary */}
+          <div style={{ marginBottom: 20 }}>
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: '#C59C82', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, borderBottom: '2px solid #C59C82', paddingBottom: 6 }}>Salary Structure</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 12 }}>
+              <Input label="Basic" type="number" value={formData.basicSalary} onChange={(e) => setFormData({ ...formData, basicSalary: e.target.value })} placeholder="Monthly" />
+              <Input label="HRA" type="number" value={formData.hra} onChange={(e) => setFormData({ ...formData, hra: e.target.value })} />
+              <Input label="Other Allowances" type="number" value={formData.otherAllowances} onChange={(e) => setFormData({ ...formData, otherAllowances: e.target.value })} />
+              <Input label="Gross Salary" type="number" value={formData.grossSalary} onChange={(e) => setFormData({ ...formData, grossSalary: e.target.value })} />
+              <Input label="CTC (Annual)" type="number" value={formData.ctc} onChange={(e) => setFormData({ ...formData, ctc: e.target.value })} />
+            </div>
+          </div>
+
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowCreateModal(false)}>Cancel</Button>
             <Button type="submit" loading={saving}>Add Employee</Button>

@@ -1,10 +1,12 @@
 import express from 'express'
 import TrainingSkillMatrix from '../models/TrainingSkillMatrix.js'
-import { protect } from '../middleware/auth.js'
+import { protect, setCompanyContext, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('skill_matrix', 'view'))
 
 // Get all skill matrices
 router.get('/', async (req, res) => {

@@ -235,8 +235,8 @@ const vendorSchema = new mongoose.Schema({
   // SCM Mastersheet Fields
   vendorType: {
     type: String,
-    enum: ['interiors', 'construction'],
-    default: 'interiors'
+    enum: ['supplier', 'contractor', 'service_provider', 'consultant', 'interiors', 'construction', 'other'],
+    default: 'supplier'
   },
   subCategory: String, // e.g., 'Modular, Job Work', 'Civil Labour Contract', 'Hardware'
   scopeOfWork: String, // Detailed scope description
@@ -441,8 +441,9 @@ const vendorSchema = new mongoose.Schema({
 // Generate vendor ID
 vendorSchema.pre('save', async function(next) {
   if (!this.vendorId) {
-    const count = await this.constructor.countDocuments({ company: this.company })
-    this.vendorId = `VEN-${String(count + 1).padStart(4, '0')}`
+    const last = await this.constructor.findOne({ company: this.company }, { vendorId: 1 }).sort({ vendorId: -1 }).lean()
+    const lastNum = last?.vendorId ? parseInt(last.vendorId.replace('VEN-', '')) || 0 : 0
+    this.vendorId = `VEN-${String(lastNum + 1).padStart(4, '0')}`
   }
 
   // Hash password if modified

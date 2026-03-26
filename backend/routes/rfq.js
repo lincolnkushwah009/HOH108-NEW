@@ -1,16 +1,20 @@
 import express from 'express'
 import RequestForQuotation from '../models/RequestForQuotation.js'
 import Material from '../models/Material.js'
+import Vendor from '../models/Vendor.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
+import { notifyProcurementEvent } from '../utils/notificationService.js'
 
 const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('rfq', 'view'))
 
 // Get all RFQs
 router.get('/', async (req, res) => {
@@ -185,7 +189,19 @@ router.put('/:id/send', async (req, res) => {
 
     await rfq.save()
 
-    // TODO: Send email notifications to vendors here
+    // Notify procurement team about RFQ being sent
+    try {
+      const vendors = await Vendor.find({ _id: { $in: rfq.invitedVendors } }).select('name').lean()
+      const vendorNames = vendors.map(v => v.name).join(', ')
+      await notifyProcurementEvent('rfq_sent', {
+        rfq,
+        vendor: { name: vendorNames },
+        company: req.activeCompany,
+        performedBy: req.user._id
+      })
+    } catch (e) {
+      console.error('Notification error:', e)
+    }
 
     res.json({ success: true, data: rfq, message: 'RFQ sent to vendors' })
   } catch (error) {
@@ -240,6 +256,19 @@ router.put('/:id/quotation/:vendorId', async (req, res) => {
     })
 
     await rfq.save()
+
+    // Notify procurement team that a vendor submitted a quotation
+    try {
+      const vendorDoc = await Vendor.findById(req.params.vendorId).select('name').lean()
+      await notifyProcurementEvent('quotation_received', {
+        rfq,
+        vendor: vendorDoc || { name: 'Unknown Vendor' },
+        company: req.activeCompany,
+        performedBy: req.user._id
+      })
+    } catch (e) {
+      console.error('Notification error:', e)
+    }
 
     res.json({ success: true, data: rfq, message: 'Quotation submitted successfully' })
   } catch (error) {
@@ -360,9 +389,13 @@ router.get('/vendor/:vendorId', async (req, res) => {
   }
 })
 
-// Delete RFQ (only draft)
+// Delete RFQ (Super Admin only)
 router.delete('/:id', async (req, res) => {
   try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ success: false, message: 'Only super admin can delete' })
+    }
+
     const rfq = await RequestForQuotation.findOneAndDelete({
       _id: req.params.id,
       company: req.activeCompany._id,

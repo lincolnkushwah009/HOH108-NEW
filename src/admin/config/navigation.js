@@ -50,13 +50,13 @@ import {
 
 // Define which roles can access which menu items
 // 'all' means accessible by everyone, otherwise specify roles
-const ADMIN_ROLES = ['superadmin', 'super_admin', 'admin', 'company_admin']
-const MANAGER_ROLES = [...ADMIN_ROLES, 'manager', 'project_manager', 'sales_manager']
-const HR_ROLES = [...ADMIN_ROLES, 'hr', 'manager']
+const ADMIN_ROLES = ['super_admin', 'company_admin', 'it_admin']
+const MANAGER_ROLES = [...ADMIN_ROLES, 'manager', 'project_manager', 'sales_manager', 'agm_business', 'agm_operations', 'agm_sales', 'business_ops_lead']
+const HR_ROLES = [...ADMIN_ROLES, 'hr', 'hr_head', 'manager']
 const FINANCE_ROLES = [...ADMIN_ROLES, 'finance', 'manager']
-const SALES_ROLES = [...MANAGER_ROLES, 'sales_executive', 'designer']
-const OPERATIONS_ROLES = [...MANAGER_ROLES, 'operations', 'site_engineer']
-const PRODUCTION_OPS_ROLES = [...ADMIN_ROLES, 'manager', 'project_manager', 'operations', 'site_engineer']
+const SALES_ROLES = [...MANAGER_ROLES, 'sales_executive', 'designer', 'architect', 'drm', 'assoc_drm', 'community_manager', 'assoc_community_manager', 'channel_partner_manager']
+const OPERATIONS_ROLES = [...MANAGER_ROLES, 'operations', 'site_engineer', 'quality_controller', 'mmt_technician']
+const PRODUCTION_OPS_ROLES = [...ADMIN_ROLES, 'manager', 'project_manager', 'operations', 'site_engineer', 'procurement_manager', 'quality_controller', 'agm_operations']
 // Pre-Sales only sees CRM Dashboard, Leads, and Call Activities
 const PRE_SALES_RESTRICTED_ROLES = ['pre_sales']
 
@@ -199,6 +199,7 @@ export const navigation = [
       { id: 'ledger-master', label: 'Ledger Master', path: '/admin/ledger-master' },
       { id: 'ledger-mapping', label: 'Ledger Mapping', path: '/admin/ledger-mapping' },
       { id: 'aging-dashboard', label: 'Aging Dashboard', path: '/admin/aging-dashboard' },
+      { id: 'project-pnl', label: 'Project P&L', path: '/admin/project-pnl' },
     ],
   },
   {

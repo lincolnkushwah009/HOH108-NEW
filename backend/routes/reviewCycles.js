@@ -1,10 +1,12 @@
 import express from 'express'
 import ReviewCycle from '../models/ReviewCycle.js'
-import { protect } from '../middleware/auth.js'
+import { protect, setCompanyContext, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('review_cycles', 'view'))
 
 // Get all review cycles
 router.get('/', async (req, res) => {

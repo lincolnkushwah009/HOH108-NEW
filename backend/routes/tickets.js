@@ -7,6 +7,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
@@ -17,6 +18,7 @@ const router = express.Router()
 // All routes require authentication
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('all_tickets', 'view'))
 
 // Debug logger for ticket routes
 router.use((req, res, next) => {

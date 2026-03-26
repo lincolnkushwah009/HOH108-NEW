@@ -3,6 +3,7 @@ import VendorPaymentMilestone from '../models/VendorPaymentMilestone.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -10,6 +11,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('vendor_milestones', 'view'))
 
 /**
  * @route   GET /api/vendor-payment-milestones

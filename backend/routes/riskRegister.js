@@ -1,10 +1,12 @@
 import express from 'express'
 import RiskRegister from '../models/RiskRegister.js'
-import { protect } from '../middleware/auth.js'
+import { protect, setCompanyContext, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('risk_register', 'view'))
 
 // Get all risks
 router.get('/', async (req, res) => {

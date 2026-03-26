@@ -11,6 +11,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
@@ -47,6 +48,7 @@ const upload = multer({
 // All routes protected
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('employees_module', 'view'))
 
 /**
  * @desc    Get all employees (with HR details)

@@ -161,7 +161,7 @@ export const uploadFloorPlan = multer({
   storage: floorPlanStorage,
   fileFilter: floorPlanFilter,
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15MB max
+    fileSize: 100 * 1024 * 1024, // 100MB max
     files: 1
   }
 })
@@ -188,6 +188,51 @@ export const uploadDesignFiles = multer({
   limits: {
     fileSize: 20 * 1024 * 1024, // 20MB max
     files: 10
+  }
+})
+
+// Configure storage for project site media (photos, videos, any format)
+const siteMediaDir = 'uploads/site-media'
+if (!fs.existsSync(siteMediaDir)) {
+  fs.mkdirSync(siteMediaDir, { recursive: true })
+}
+
+const siteMediaStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, siteMediaDir)
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, 'site-' + uniqueSuffix + path.extname(file.originalname))
+  }
+})
+
+// Accept any image, video, or document format
+const siteMediaFilter = (req, file, cb) => {
+  const allowed = [
+    // Images
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+    'image/bmp', 'image/tiff', 'image/svg+xml', 'image/heic', 'image/heif',
+    // Videos
+    'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv',
+    'video/webm', 'video/mpeg', 'video/3gpp', 'video/x-matroska',
+    // Documents
+    'application/pdf',
+  ]
+
+  if (allowed.includes(file.mimetype) || file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+    cb(null, true)
+  } else {
+    cb(new Error('Invalid file type. Allowed: images (JPG, PNG, HEIC, etc.), videos (MP4, MOV, AVI, etc.), and PDF.'), false)
+  }
+}
+
+export const uploadSiteMedia = multer({
+  storage: siteMediaStorage,
+  fileFilter: siteMediaFilter,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB max per file (for videos)
+    files: 20 // Max 20 files per upload
   }
 })
 

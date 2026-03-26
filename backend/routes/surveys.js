@@ -1,13 +1,14 @@
 import express from 'express'
 import Survey from '../models/Survey.js'
-import { protect } from '../middleware/auth.js'
+import { protect, setCompanyContext, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
 
 // Get all surveys
-router.get('/', async (req, res) => {
+router.get('/', requireModulePermission('surveys', 'view'), async (req, res) => {
     try {
         const { search, surveyType, isActive, page = 1, limit = 50 } = req.query
 
@@ -37,7 +38,7 @@ router.get('/', async (req, res) => {
 })
 
 // Get single survey with responses
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireModulePermission('surveys', 'view'), async (req, res) => {
     try {
         const survey = await Survey.findOne({ _id: req.params.id, company: req.user.company })
             .populate('createdBy', 'name')
@@ -52,7 +53,7 @@ router.get('/:id', async (req, res) => {
 })
 
 // Create survey
-router.post('/', async (req, res) => {
+router.post('/', requireModulePermission('surveys', 'edit'), async (req, res) => {
     try {
         const survey = await Survey.create({ ...req.body, company: req.user.company, createdBy: req.user._id })
         res.status(201).json({ success: true, data: survey })
@@ -62,7 +63,7 @@ router.post('/', async (req, res) => {
 })
 
 // Update survey
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireModulePermission('surveys', 'edit'), async (req, res) => {
     try {
         const survey = await Survey.findOne({ _id: req.params.id, company: req.user.company })
         if (!survey) return res.status(404).json({ success: false, message: 'Survey not found' })
@@ -75,7 +76,7 @@ router.put('/:id', async (req, res) => {
 })
 
 // Submit survey response
-router.post('/:id/responses', async (req, res) => {
+router.post('/:id/responses', requireModulePermission('surveys', 'edit'), async (req, res) => {
     try {
         const survey = await Survey.findOne({ _id: req.params.id, company: req.user.company })
         if (!survey) return res.status(404).json({ success: false, message: 'Survey not found' })
@@ -89,7 +90,7 @@ router.post('/:id/responses', async (req, res) => {
 })
 
 // Delete survey
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireModulePermission('surveys', 'edit'), async (req, res) => {
     try {
         const survey = await Survey.findOneAndDelete({ _id: req.params.id, company: req.user.company })
         if (!survey) return res.status(404).json({ success: false, message: 'Survey not found' })

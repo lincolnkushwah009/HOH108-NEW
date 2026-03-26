@@ -5,6 +5,7 @@ import User from '../models/User.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 import mongoose from 'mongoose'
@@ -13,6 +14,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('labor_tracking', 'view'))
 
 // Get all labor entries
 router.get('/', async (req, res) => {

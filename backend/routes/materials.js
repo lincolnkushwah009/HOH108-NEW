@@ -1,10 +1,16 @@
 import express from 'express'
 import Material from '../models/Material.js'
-import { protect } from '../middleware/auth.js'
+import {
+  protect,
+  setCompanyContext,
+  requireModulePermission
+} from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('materials', 'view'))
 
 // Get all materials
 router.get('/', async (req, res) => {

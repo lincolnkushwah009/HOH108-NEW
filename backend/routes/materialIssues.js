@@ -8,6 +8,7 @@ import StockMovement from '../models/StockMovement.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -15,6 +16,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('material_issues', 'view'))
 
 // Get all material issues
 router.get('/', async (req, res) => {

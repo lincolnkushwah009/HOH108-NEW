@@ -737,13 +737,336 @@ router.delete('/materials/:materialId', protectVendor, async (req, res) => {
   }
 })
 
-// Update dashboard to include RFQ stats
-router.get('/dashboard-enhanced', protectVendor, async (req, res) => {
+// =====================
+// GRN VISIBILITY ROUTES
+// =====================
+
+// GET /grns - List GRNs for this vendor's POs
+router.get('/grns', protectVendor, async (req, res) => {
+  try {
+    const GoodsReceipt = (await import('../models/GoodsReceipt.js')).default
+
+    const vendorId = req.vendor._id
+
+    // Find all POs for this vendor
+    const vendorPOs = await PurchaseOrder.find({ vendor: vendorId }).select('_id poNumber')
+    const poIds = vendorPOs.map(po => po._id)
+
+    // Find GRNs linked to those POs
+    const grns = await GoodsReceipt.find({ purchaseOrder: { $in: poIds } })
+      .select('grnNumber purchaseOrder status receiptDate lineItems totalReceivedQuantity totalAcceptedQuantity totalRejectedQuantity qualityInspection createdAt')
+      .populate('purchaseOrder', 'poNumber')
+      .sort({ createdAt: -1 })
+
+    res.json({ success: true, data: grns })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// =====================
+// INVOICE ROUTES
+// =====================
+
+// POST /invoices - Vendor submits an invoice
+router.post('/invoices', protectVendor, async (req, res) => {
+  try {
+    const VendorInvoice = (await import('../models/VendorInvoice.js')).default
+
+    const vendor = req.vendor
+    const {
+      purchaseOrder, vendorInvoiceNumber, invoiceDate, dueDate,
+      lineItems, invoiceTotal, taxAmount, notes
+    } = req.body
+
+    if (!vendorInvoiceNumber || !invoiceDate || !lineItems || !invoiceTotal) {
+      return res.status(400).json({
+        success: false,
+        message: 'vendorInvoiceNumber, invoiceDate, lineItems, and invoiceTotal are required'
+      })
+    }
+
+    // Verify the PO belongs to this vendor if provided
+    if (purchaseOrder) {
+      const po = await PurchaseOrder.findOne({ _id: purchaseOrder, vendor: vendor._id })
+      if (!po) {
+        return res.status(404).json({ success: false, message: 'Purchase order not found or does not belong to you' })
+      }
+    }
+
+    const invoice = new VendorInvoice({
+      vendor: vendor._id,
+      company: vendor.company,
+      purchaseOrder: purchaseOrder || undefined,
+      vendorInvoiceNumber,
+      invoiceDate,
+      dueDate,
+      lineItems: lineItems || [],
+      invoiceTotal,
+      totalTax: taxAmount || 0,
+      internalNotes: notes,
+      status: 'pending_verification',
+      threeWayMatchStatus: 'pending',
+      dataEntrySource: 'manual',
+      activities: [{
+        action: 'invoice_submitted',
+        description: 'Invoice submitted via vendor portal',
+        performedByName: vendor.name,
+        createdAt: new Date()
+      }]
+    })
+
+    await invoice.save()
+
+    res.status(201).json({
+      success: true,
+      message: 'Invoice submitted successfully',
+      data: invoice
+    })
+  } catch (error) {
+    // Handle duplicate invoice error
+    if (error.code === 'DUPLICATE_INVOICE') {
+      return res.status(409).json({ success: false, message: error.message })
+    }
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// GET /invoices - List vendor's invoices with payment status
+router.get('/invoices', protectVendor, async (req, res) => {
+  try {
+    const VendorInvoice = (await import('../models/VendorInvoice.js')).default
+
+    const vendorId = req.vendor._id
+    const { status, page = 1, limit = 20 } = req.query
+
+    const query = { vendor: vendorId }
+    if (status) query.status = status
+
+    const total = await VendorInvoice.countDocuments(query)
+    const invoices = await VendorInvoice.find(query)
+      .select('invoiceNumber vendorInvoiceNumber invoiceDate dueDate invoiceTotal paidAmount balanceAmount status paymentStatus threeWayMatchStatus payments createdAt')
+      .populate('purchaseOrder', 'poNumber')
+      .sort({ invoiceDate: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+
+    res.json({
+      success: true,
+      data: invoices,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / limit),
+        limit: parseInt(limit)
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// GET /invoices/:id - Get invoice detail
+router.get('/invoices/:id', protectVendor, async (req, res) => {
+  try {
+    const VendorInvoice = (await import('../models/VendorInvoice.js')).default
+
+    const invoice = await VendorInvoice.findOne({
+      _id: req.params.id,
+      vendor: req.vendor._id
+    }).populate('purchaseOrder', 'poNumber')
+
+    if (!invoice) {
+      return res.status(404).json({ success: false, message: 'Invoice not found' })
+    }
+
+    res.json({ success: true, data: invoice })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// =====================
+// PO ACCEPTANCE ROUTES
+// =====================
+
+// PUT /purchase-orders/:id/acknowledge - Vendor acknowledges/accepts PO
+router.put('/purchase-orders/:id/acknowledge', protectVendor, async (req, res) => {
   try {
     const vendorId = req.vendor._id
 
-    // Get order statistics
-    const [orderStats, rfqStats, recentOrders, recentRfqs] = await Promise.all([
+    const po = await PurchaseOrder.findOne({
+      _id: req.params.id,
+      vendor: vendorId
+    })
+
+    if (!po) {
+      return res.status(404).json({ success: false, message: 'Purchase order not found' })
+    }
+
+    if (po.status === 'confirmed') {
+      return res.status(400).json({ success: false, message: 'Purchase order is already confirmed' })
+    }
+
+    po.status = 'confirmed'
+
+    if (!Array.isArray(po.activities)) {
+      po.activities = []
+    }
+    po.activities.push({
+      action: 'po_acknowledged',
+      description: `PO acknowledged by vendor ${req.vendor.name} via vendor portal`,
+      performedByName: req.vendor.name,
+      createdAt: new Date()
+    })
+
+    await po.save()
+
+    // Try to trigger notification to procurement team
+    try {
+      const { notifyEvent } = await import('../utils/notifications.js')
+      if (notifyEvent) {
+        await notifyEvent('po_acknowledged', {
+          purchaseOrder: po,
+          vendor: req.vendor,
+          company: po.company
+        })
+      }
+    } catch (notifyErr) {
+      // Notification failure should not block the response
+      console.log('Notification not sent (non-critical):', notifyErr.message)
+    }
+
+    res.json({
+      success: true,
+      message: 'Purchase order acknowledged successfully',
+      data: po
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// =====================
+// PAYMENT STATUS ROUTES
+// =====================
+
+// GET /payments - Get payment history for vendor
+router.get('/payments', protectVendor, async (req, res) => {
+  try {
+    const VendorInvoice = (await import('../models/VendorInvoice.js')).default
+
+    const vendorId = req.vendor._id
+
+    const invoices = await VendorInvoice.find({ vendor: vendorId })
+      .select('invoiceNumber vendorInvoiceNumber invoiceTotal paidAmount balanceAmount status paymentStatus payments invoiceDate dueDate')
+      .populate('purchaseOrder', 'poNumber')
+      .sort({ invoiceDate: -1 })
+
+    // Extract all payments from all invoices
+    const allPayments = []
+    let totalInvoiced = 0
+    let totalPaid = 0
+    let totalPending = 0
+
+    invoices.forEach(inv => {
+      totalInvoiced += inv.invoiceTotal || 0
+      totalPaid += inv.paidAmount || 0
+      totalPending += inv.balanceAmount || 0
+
+      if (inv.payments && inv.payments.length > 0) {
+        inv.payments.forEach(payment => {
+          allPayments.push({
+            invoiceNumber: inv.invoiceNumber,
+            vendorInvoiceNumber: inv.vendorInvoiceNumber,
+            paymentDate: payment.paymentDate,
+            amount: payment.amount,
+            paymentMethod: payment.paymentMethod,
+            referenceNumber: payment.referenceNumber,
+            bankName: payment.bankName,
+            chequeNumber: payment.chequeNumber,
+            remarks: payment.remarks
+          })
+        })
+      }
+    })
+
+    // Sort payments by date descending
+    allPayments.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
+
+    res.json({
+      success: true,
+      data: {
+        summary: {
+          totalInvoiced,
+          totalPaid,
+          totalPending
+        },
+        payments: allPayments,
+        invoices
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// =====================
+// CREDIT/DEBIT NOTE ROUTES
+// =====================
+
+// GET /credit-notes - List credit/debit notes for vendor
+router.get('/credit-notes', protectVendor, async (req, res) => {
+  try {
+    const CreditDebitNote = (await import('../models/CreditDebitNote.js')).default
+
+    const vendorId = req.vendor._id
+    const { noteType, status, page = 1, limit = 20 } = req.query
+
+    const query = { vendor: vendorId }
+    if (noteType) query.noteType = noteType
+    if (status) query.status = status
+
+    const total = await CreditDebitNote.countDocuments(query)
+    const notes = await CreditDebitNote.find(query)
+      .select('noteNumber noteType reason lineItems subTotal totalTax totalAmount status appliedToInvoice appliedAmount createdAt')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+
+    res.json({
+      success: true,
+      data: notes,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / limit),
+        limit: parseInt(limit)
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// =====================
+// ENHANCED DASHBOARD (with GRN, Invoice, Payment stats)
+// =====================
+
+// Update dashboard to include RFQ, GRN, Invoice, and Payment stats
+router.get('/dashboard-enhanced', protectVendor, async (req, res) => {
+  try {
+    const GoodsReceipt = (await import('../models/GoodsReceipt.js')).default
+    const VendorInvoice = (await import('../models/VendorInvoice.js')).default
+
+    const vendorId = req.vendor._id
+
+    // Get all PO IDs for GRN lookup
+    const vendorPOs = await PurchaseOrder.find({ vendor: vendorId }).select('_id')
+    const poIds = vendorPOs.map(po => po._id)
+
+    // Get order, RFQ, GRN, and invoice statistics in parallel
+    const [orderStats, rfqStats, grnStats, invoiceStats, recentOrders, recentRfqs] = await Promise.all([
       PurchaseOrder.aggregate([
         { $match: { vendor: vendorId } },
         {
@@ -778,6 +1101,45 @@ router.get('/dashboard-enhanced', protectVendor, async (req, res) => {
           }
         }
       ]),
+      GoodsReceipt.aggregate([
+        { $match: { purchaseOrder: { $in: poIds } } },
+        {
+          $group: {
+            _id: null,
+            totalGrns: { $sum: 1 },
+            pendingInspection: {
+              $sum: { $cond: [{ $in: ['$status', ['draft', 'received', 'inspection_pending']] }, 1, 0] }
+            },
+            accepted: {
+              $sum: { $cond: [{ $in: ['$status', ['accepted', 'inspection_completed']] }, 1, 0] }
+            },
+            rejected: {
+              $sum: { $cond: [{ $eq: ['$status', 'rejected'] }, 1, 0] }
+            }
+          }
+        }
+      ]),
+      VendorInvoice.aggregate([
+        { $match: { vendor: vendorId } },
+        {
+          $group: {
+            _id: null,
+            totalInvoices: { $sum: 1 },
+            pendingInvoices: {
+              $sum: { $cond: [{ $in: ['$status', ['draft', 'pending_verification', 'pending_approval']] }, 1, 0] }
+            },
+            approvedInvoices: {
+              $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] }
+            },
+            paidInvoices: {
+              $sum: { $cond: [{ $eq: ['$status', 'paid'] }, 1, 0] }
+            },
+            totalInvoiced: { $sum: '$invoiceTotal' },
+            totalPaid: { $sum: '$paidAmount' },
+            totalPending: { $sum: '$balanceAmount' }
+          }
+        }
+      ]),
       PurchaseOrder.find({ vendor: vendorId })
         .populate('company', 'name')
         .populate('project', 'name')
@@ -804,10 +1166,34 @@ router.get('/dashboard-enhanced', protectVendor, async (req, res) => {
       awardedRfqs: 0
     }
 
+    const grnStatsData = grnStats[0] || {
+      totalGrns: 0,
+      pendingInspection: 0,
+      accepted: 0,
+      rejected: 0
+    }
+
+    const invoiceStatsData = invoiceStats[0] || {
+      totalInvoices: 0,
+      pendingInvoices: 0,
+      approvedInvoices: 0,
+      paidInvoices: 0,
+      totalInvoiced: 0,
+      totalPaid: 0,
+      totalPending: 0
+    }
+
     res.json({
       success: true,
       data: {
         stats: { ...stats, ...rfqStatsData },
+        grnStats: grnStatsData,
+        invoiceStats: invoiceStatsData,
+        paymentSummary: {
+          totalInvoiced: invoiceStatsData.totalInvoiced,
+          totalPaid: invoiceStatsData.totalPaid,
+          totalPending: invoiceStatsData.totalPending
+        },
         recentOrders,
         recentRfqs,
         vendor: {

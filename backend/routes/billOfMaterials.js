@@ -5,6 +5,7 @@ import Project from '../models/Project.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -12,6 +13,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('bill_of_materials', 'view'))
 
 // Get all BOMs
 router.get('/', async (req, res) => {

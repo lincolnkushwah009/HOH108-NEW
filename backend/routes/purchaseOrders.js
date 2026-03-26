@@ -5,14 +5,17 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
+import { notifyProcurementEvent } from '../utils/notificationService.js'
 
 const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('purchase_orders', 'view'))
 
 // Get all purchase orders
 router.get('/', async (req, res) => {
@@ -245,6 +248,19 @@ router.put('/:id/approve', async (req, res) => {
       }
     }
 
+    // Notify procurement team about PO approval
+    try {
+      const vendorDoc = await Vendor.findById(order.vendor).select('name').lean()
+      await notifyProcurementEvent('po_acknowledged', {
+        purchaseOrder: order,
+        vendor: vendorDoc || { name: 'Unknown Vendor' },
+        company: req.activeCompany,
+        performedBy: req.user._id
+      })
+    } catch (e) {
+      console.error('Notification error:', e)
+    }
+
     res.json({ success: true, data: order })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
@@ -349,9 +365,13 @@ router.put('/:id/cancel', async (req, res) => {
   }
 })
 
-// Delete purchase order (only drafts)
+// Delete purchase order (Super Admin only)
 router.delete('/:id', async (req, res) => {
   try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({ success: false, message: 'Only super admin can delete' })
+    }
+
     const order = await PurchaseOrder.findOneAndDelete({
       _id: req.params.id,
       company: req.activeCompany._id,

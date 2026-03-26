@@ -1,10 +1,12 @@
 import express from 'express'
 import Payroll from '../models/Payroll.js'
-import { protect } from '../middleware/auth.js'
+import { protect, setCompanyContext, requireModulePermission } from '../middleware/rbac.js'
 
 const router = express.Router()
 
 router.use(protect)
+router.use(setCompanyContext)
+router.use(requireModulePermission('payroll', 'view'))
 
 // Get all payroll records
 router.get('/', async (req, res) => {

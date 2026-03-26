@@ -7,6 +7,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   canAccessProject,
   companyScopedQuery,
   PERMISSIONS
@@ -25,6 +26,7 @@ router.use(setCompanyContext)
  * @access  Private
  */
 router.get('/',
+  requireModulePermission('design_iterations', 'view'),
   requirePermission(PERMISSIONS.PROJECTS_VIEW),
   async (req, res) => {
     try {
@@ -85,6 +87,7 @@ router.get('/',
  * @access  Private
  */
 router.get('/project/:projectId',
+  requireModulePermission('design_iterations', 'view'),
   requirePermission(PERMISSIONS.PROJECTS_VIEW),
   async (req, res) => {
     try {
@@ -132,6 +135,7 @@ router.get('/project/:projectId',
  * @access  Private
  */
 router.get('/:id',
+  requireModulePermission('design_iterations', 'view'),
   requirePermission(PERMISSIONS.PROJECTS_VIEW),
   async (req, res) => {
     try {
@@ -182,6 +186,7 @@ router.get('/:id',
  * @access  Private
  */
 router.post('/',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {
@@ -276,6 +281,7 @@ router.post('/',
  * @access  Private
  */
 router.put('/:id',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {
@@ -337,6 +343,7 @@ router.put('/:id',
  * @access  Private
  */
 router.post('/:id/files',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {
@@ -389,6 +396,7 @@ router.post('/:id/files',
  * @access  Private
  */
 router.put('/:id/submit',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {
@@ -449,6 +457,7 @@ router.put('/:id/submit',
  * @access  Private
  */
 router.put('/:id/internal-review',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {
@@ -520,6 +529,7 @@ router.put('/:id/internal-review',
  * @access  Private
  */
 router.post('/:id/feedback',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_VIEW),
   async (req, res) => {
     try {
@@ -562,6 +572,7 @@ router.post('/:id/feedback',
  * @access  Private
  */
 router.put('/:id/client-approve',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {
@@ -621,6 +632,7 @@ router.put('/:id/client-approve',
  * @access  Private
  */
 router.put('/:id/design-head-approve',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {
@@ -678,6 +690,7 @@ router.put('/:id/design-head-approve',
  * @access  Private
  */
 router.post('/:id/request-revision',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {
@@ -730,6 +743,7 @@ router.post('/:id/request-revision',
  * @access  Private
  */
 router.put('/:id/materials/:materialId',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {
@@ -783,6 +797,7 @@ router.put('/:id/materials/:materialId',
  * @access  Private
  */
 router.get('/my/assigned',
+  requireModulePermission('design_iterations', 'view'),
   requirePermission(PERMISSIONS.PROJECTS_VIEW),
   async (req, res) => {
     try {
@@ -823,6 +838,7 @@ router.get('/my/assigned',
  * @access  Private
  */
 router.post('/:id/generate-bom',
+  requireModulePermission('design_iterations', 'edit'),
   requirePermission(PERMISSIONS.PROJECTS_EDIT),
   async (req, res) => {
     try {

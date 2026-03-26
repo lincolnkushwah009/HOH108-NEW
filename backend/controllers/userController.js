@@ -7,11 +7,12 @@ import Company from '../models/Company.js'
 // @access  Private/Admin
 export const getUsers = async (req, res) => {
   try {
-    const { role, page = 1, limit = 20, search } = req.query
+    const { role, subDepartment, page = 1, limit = 20, search } = req.query
 
     const query = {}
 
     if (role) query.role = role
+    if (subDepartment) query.subDepartment = subDepartment
 
     if (search) {
       query.$or = [

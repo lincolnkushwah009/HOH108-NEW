@@ -7,6 +7,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   canAccessLead,
   companyScopedQuery,
   PERMISSIONS
@@ -24,6 +25,7 @@ router.use(setCompanyContext)
  * @access  Private
  */
 router.get('/',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -98,6 +100,7 @@ router.get('/',
  * @access  Private
  */
 router.get('/lead/:leadId',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -150,6 +153,7 @@ router.get('/lead/:leadId',
  * @access  Private
  */
 router.get('/:id',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -193,6 +197,7 @@ router.get('/:id',
  * @access  Private
  */
 router.post('/',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -292,6 +297,7 @@ router.post('/',
  * @access  Private
  */
 router.put('/:id/complete',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -394,6 +400,7 @@ router.put('/:id/complete',
  * @access  Private
  */
 router.post('/:id/schedule-meeting',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -470,6 +477,7 @@ router.post('/:id/schedule-meeting',
  * @access  Private
  */
 router.put('/:id/meeting-status',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -534,6 +542,7 @@ router.put('/:id/meeting-status',
  * @access  Private
  */
 router.post('/:id/recording',
+  requireModulePermission('call_activities', 'edit'),
   requirePermission(PERMISSIONS.LEADS_EDIT),
   async (req, res) => {
     try {
@@ -574,6 +583,7 @@ router.post('/:id/recording',
  * @access  Private
  */
 router.get('/stats/user/:userId',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
@@ -613,20 +623,51 @@ router.get('/stats/user/:userId',
  * @access  Private
  */
 router.get('/stats/me',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {
-      const { startDate, endDate } = req.query
+      const userId = req.user._id
+      const companyQuery = companyScopedQuery(req)
 
-      const stats = await CallActivity.getUserCallStats(
-        req.user._id,
-        startDate ? new Date(startDate) : undefined,
-        endDate ? new Date(endDate) : undefined
-      )
+      // Today's date range
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      // Build user filter (admins see all, others see own)
+      const userFilter = ['super_admin', 'company_admin', 'sales_manager'].includes(req.user.role)
+        ? companyQuery
+        : { ...companyQuery, calledBy: userId }
+
+      // Count calls made today (completed calls)
+      const todayCalls = await CallActivity.countDocuments({
+        ...userFilter,
+        status: { $in: ['completed', 'no_answer', 'busy', 'voicemail', 'wrong_number'] },
+        createdAt: { $gte: today, $lt: tomorrow }
+      })
+
+      // Count scheduled meetings (future meetings from call activities)
+      const scheduledMeetings = await CallActivity.countDocuments({
+        ...userFilter,
+        'meetingScheduled.isScheduled': true,
+        'meetingScheduled.scheduledDate': { $gte: today }
+      })
+
+      // Also get outcome breakdown for additional stats
+      const outcomeStats = await CallActivity.aggregate([
+        { $match: { ...userFilter, createdAt: { $gte: today, $lt: tomorrow } } },
+        { $group: { _id: '$outcome', count: { $sum: 1 } } }
+      ])
 
       res.json({
         success: true,
-        data: stats
+        data: {
+          todayCalls,
+          scheduledMeetings,
+          outcomeBreakdown: outcomeStats
+        }
       })
     } catch (error) {
       res.status(500).json({
@@ -643,6 +684,7 @@ router.get('/stats/me',
  * @access  Private
  */
 router.get('/scheduled/today',
+  requireModulePermission('call_activities', 'view'),
   requirePermission(PERMISSIONS.LEADS_VIEW),
   async (req, res) => {
     try {

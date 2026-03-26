@@ -50,6 +50,9 @@ const CustomerDetail = () => {
     category: 'interior',
     budget: ''
   })
+  const [portalPassword, setPortalPassword] = useState('')
+  const [portalLoading, setPortalLoading] = useState(false)
+  const [portalMsg, setPortalMsg] = useState('')
 
   useEffect(() => {
     loadCustomer()
@@ -201,6 +204,40 @@ const CustomerDetail = () => {
     })
   }
 
+  const handlePortalPassword = async (e) => {
+    e.preventDefault()
+    if (!portalPassword || portalPassword.length < 6) {
+      setPortalMsg('Password must be at least 6 characters')
+      return
+    }
+    setPortalLoading(true)
+    setPortalMsg('')
+    try {
+      await customersAPI.resetPortalPassword(id, portalPassword)
+      setPortalMsg('Portal password updated successfully')
+      setPortalPassword('')
+      loadCustomer()
+    } catch (err) {
+      setPortalMsg(err.message || 'Failed to update password')
+    } finally {
+      setPortalLoading(false)
+    }
+  }
+
+  const handleTogglePortal = async (enabled) => {
+    setPortalLoading(true)
+    setPortalMsg('')
+    try {
+      await customersAPI.enablePortalAccess(id, { enabled, password: enabled && !customer.portalAccess?.enabled ? 'Welcome@123' : undefined })
+      setPortalMsg(enabled ? 'Portal access enabled (default password: Welcome@123)' : 'Portal access disabled')
+      loadCustomer()
+    } catch (err) {
+      setPortalMsg(err.message || 'Failed to update portal access')
+    } finally {
+      setPortalLoading(false)
+    }
+  }
+
   if (loading) return <PageLoader />
   if (!customer) return <div className="text-center py-12 text-gray-500">Customer not found</div>
 
@@ -259,6 +296,76 @@ const CustomerDetail = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </Card>
+
+          {/* Customer Portal Access */}
+          <Card>
+            <div style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, color: '#1e293b', margin: '0 0 4px' }}>Customer Portal Access</h3>
+                  <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>
+                    {customer.portalAccess?.enabled
+                      ? 'Portal is enabled - customer can login at /login'
+                      : 'Portal is disabled - customer cannot login'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleTogglePortal(!customer.portalAccess?.enabled)}
+                  disabled={portalLoading}
+                  style={{
+                    padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    border: 'none',
+                    background: customer.portalAccess?.enabled ? '#fee2e2' : '#dcfce7',
+                    color: customer.portalAccess?.enabled ? '#dc2626' : '#16a34a',
+                  }}
+                >
+                  {customer.portalAccess?.enabled ? 'Disable' : 'Enable'}
+                </button>
+              </div>
+
+              {customer.portalAccess?.enabled && customer.email && (
+                <form onSubmit={handlePortalPassword} style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 6 }}>
+                      Set / Reset Portal Password
+                    </label>
+                    <input
+                      type="text"
+                      value={portalPassword}
+                      onChange={(e) => setPortalPassword(e.target.value)}
+                      placeholder="Enter new password (min 6 chars)"
+                      style={{
+                        width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 14,
+                        border: '1px solid #e2e8f0', outline: 'none', boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={portalLoading || !portalPassword}
+                    style={{
+                      padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                      background: '#C59C82', color: '#fff', border: 'none', cursor: 'pointer',
+                      opacity: portalLoading || !portalPassword ? 0.5 : 1,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {portalLoading ? 'Saving...' : 'Update Password'}
+                  </button>
+                </form>
+              )}
+
+              {portalMsg && (
+                <p style={{
+                  fontSize: 13, marginTop: 10, padding: '8px 12px', borderRadius: 6,
+                  background: portalMsg.includes('success') || portalMsg.includes('enabled') ? '#dcfce7' : portalMsg.includes('disabled') ? '#fee2e2' : '#fef3c7',
+                  color: portalMsg.includes('success') || portalMsg.includes('enabled') ? '#16a34a' : portalMsg.includes('disabled') ? '#dc2626' : '#92400e',
+                }}>
+                  {portalMsg}
+                </p>
+              )}
             </div>
           </Card>
 

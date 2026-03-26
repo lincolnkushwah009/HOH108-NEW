@@ -5,6 +5,7 @@ import CustomerInvoice from '../models/CustomerInvoice.js'
 import {
   protect,
   setCompanyContext,
+  requireModulePermission,
   companyScopedQuery
 } from '../middleware/rbac.js'
 
@@ -12,6 +13,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('payments', 'view'))
 
 // Get all payments
 router.get('/', async (req, res) => {
@@ -155,6 +157,22 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // Auto-post to General Ledger
+    try {
+      const LedgerActivityMapping = (await import('../models/LedgerActivityMapping.js')).default
+      const triggerEvent = payment.paymentType === 'incoming'
+        ? 'payment_incoming_completed'
+        : 'payment_outgoing_completed'
+      await LedgerActivityMapping.executeMapping(
+        payment.company,
+        triggerEvent,
+        { amount: payment.amount, method: payment.paymentMethod, reference: payment.paymentNumber, vendor: payment.vendor, customer: payment.customer, project: payment.project },
+        req.user._id
+      )
+    } catch (glErr) {
+      console.error('GL auto-posting error (non-blocking):', glErr.message)
+    }
+
     const populatedPayment = await Payment.findById(payment._id)
       .populate('vendor', 'name vendorId')
       .populate('customer', 'name customerId')
@@ -257,6 +275,22 @@ router.put('/:id/process', async (req, res) => {
     })
 
     await payment.save()
+
+    // Auto-post to General Ledger
+    try {
+      const LedgerActivityMapping = (await import('../models/LedgerActivityMapping.js')).default
+      const triggerEvent = payment.paymentType === 'incoming'
+        ? 'payment_incoming_completed'
+        : 'payment_outgoing_completed'
+      await LedgerActivityMapping.executeMapping(
+        payment.company,
+        triggerEvent,
+        { amount: payment.amount, method: payment.paymentMethod, reference: payment.paymentNumber, vendor: payment.vendor, customer: payment.customer, project: payment.project },
+        req.user._id
+      )
+    } catch (glErr) {
+      console.error('GL auto-posting error (non-blocking):', glErr.message)
+    }
 
     res.json({ success: true, data: payment })
   } catch (error) {

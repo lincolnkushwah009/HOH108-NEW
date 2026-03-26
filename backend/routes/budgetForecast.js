@@ -4,6 +4,7 @@ import {
   protect,
   setCompanyContext,
   requirePermission,
+  requireModulePermission,
   companyScopedQuery,
   PERMISSIONS
 } from '../middleware/rbac.js'
@@ -12,6 +13,7 @@ const router = express.Router()
 
 router.use(protect)
 router.use(setCompanyContext)
+router.use(requireModulePermission('budget_forecast', 'view'))
 
 // POST / - Create budget forecast
 router.post('/', async (req, res) => {
