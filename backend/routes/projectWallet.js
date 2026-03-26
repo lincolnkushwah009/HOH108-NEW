@@ -19,8 +19,20 @@ router.use(setCompanyContext)
 // All Projects P&L Dashboard (management view)
 // NOTE: Must be defined BEFORE /:projectId routes
 // ============================================
-router.get('/dashboard/pnl', requireModulePermission('all_projects', 'view'), async (req, res) => {
+router.get('/dashboard/pnl', async (req, res) => {
   try {
+    // Finance roles, admins, and users with all_projects:view can access P&L
+    const isAdmin = ['super_admin', 'company_admin'].includes(req.user.role)
+    const isFinance = req.user.role === 'finance' || req.user.department === 'finance' || req.user.subDepartment === 'finance'
+    if (!isAdmin && !isFinance) {
+      const user = await User.findById(req.user._id).select('modulePermissions')
+      const hasProjectAccess = user?.modulePermissions?.all_projects?.view
+      const hasFinanceAccess = user?.modulePermissions?.customer_invoices?.view || user?.modulePermissions?.payments?.view || user?.modulePermissions?.accounts_receivable?.view
+      if (!hasProjectAccess && !hasFinanceAccess) {
+        return res.status(403).json({ success: false, message: 'You do not have access to Project P&L' })
+      }
+    }
+
     const companyId = req.activeCompany?._id || req.user?.company?._id
 
     // Get all active/completed projects for this company
@@ -403,8 +415,20 @@ router.post('/:projectId/vendor-payment',
 // GET /api/project-wallet/:projectId/pnl
 // Project-level Profit & Loss Statement
 // ============================================
-router.get('/:projectId/pnl', requireModulePermission('all_projects', 'view'), async (req, res) => {
+router.get('/:projectId/pnl', async (req, res) => {
   try {
+    // Finance roles, admins, and users with relevant permissions can access
+    const isAdmin = ['super_admin', 'company_admin'].includes(req.user.role)
+    const isFinance = req.user.role === 'finance' || req.user.department === 'finance' || req.user.subDepartment === 'finance'
+    if (!isAdmin && !isFinance) {
+      const user = await User.findById(req.user._id).select('modulePermissions')
+      const hasProjectAccess = user?.modulePermissions?.all_projects?.view
+      const hasFinanceAccess = user?.modulePermissions?.customer_invoices?.view || user?.modulePermissions?.payments?.view || user?.modulePermissions?.accounts_receivable?.view
+      if (!hasProjectAccess && !hasFinanceAccess) {
+        return res.status(403).json({ success: false, message: 'You do not have access to Project P&L' })
+      }
+    }
+
     const { projectId } = req.params
 
     const project = await Project.findById(projectId)

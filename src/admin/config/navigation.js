@@ -88,6 +88,7 @@ export const navigation = [
       { id: 'crm-approvals', label: 'Approvals', path: '/admin/crm/approvals', roles: SALES_ROLES },
       { id: 'design-iterations', label: 'Design Iterations', path: '/admin/crm/design-iterations', roles: SALES_ROLES },
       { id: 'channel-partners', label: 'Channel Partners', path: '/admin/crm/channel-partners', roles: MANAGER_ROLES },
+      { id: 'data-migration', label: 'Data Migration', path: '/admin/crm/data-migration', roles: ADMIN_ROLES },
     ],
   },
   {

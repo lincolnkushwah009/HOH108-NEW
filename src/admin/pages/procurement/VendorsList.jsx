@@ -8,10 +8,12 @@ import EmptyState from '../../components/ui/EmptyState'
 import { formatDate, formatCurrency } from '../../utils/helpers'
 import { vendorsAPI } from '../../utils/api'
 import { useCompany } from '../../context/CompanyContext'
+import { useAuth } from '../../context/AuthContext'
 
 const VendorsList = () => {
   const navigate = useNavigate()
   const { isViewingAllCompanies } = useCompany()
+  const { user } = useAuth()
   const [vendors, setVendors] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -29,8 +31,8 @@ const VendorsList = () => {
     phone: '',
     email: '',
     address: { street: '', city: '', state: '', pincode: '', country: 'India' },
-    gstin: '',
-    pan: '',
+    gstNumber: '',
+    panNumber: '',
   })
   const [saving, setSaving] = useState(false)
   const [pendingFiles, setPendingFiles] = useState([])
@@ -147,8 +149,8 @@ const VendorsList = () => {
         phone: '',
         email: '',
         address: { street: '', city: '', state: '', pincode: '', country: 'India' },
-        gstin: '',
-        pan: '',
+        gstNumber: '',
+        panNumber: '',
       })
       setPendingFiles([])
       loadVendors()
@@ -221,8 +223,8 @@ const VendorsList = () => {
       phone: vendor.phone || vendor.contactPerson?.phone || '',
       email: vendor.email || vendor.contactPerson?.email || '',
       address: vendor.address || { street: '', city: '', state: '', pincode: '', country: 'India' },
-      gstin: vendor.gstNumber || vendor.gstin || '',
-      pan: vendor.panNumber || vendor.pan || '',
+      gstNumber: vendor.gstNumber || '',
+      panNumber: vendor.panNumber || '',
     })
     setShowEditModal(true)
   }
@@ -242,8 +244,8 @@ const VendorsList = () => {
         phone: '',
         email: '',
         address: { street: '', city: '', state: '', pincode: '', country: 'India' },
-        gstin: '',
-        pan: '',
+        gstNumber: '',
+        panNumber: '',
       })
       loadVendors()
     } catch (err) {
@@ -685,10 +687,14 @@ const VendorsList = () => {
                             Enable Portal Access
                           </Dropdown.Item>
                         )}
-                        <Dropdown.Divider />
-                        <Dropdown.Item icon={Trash2} danger onClick={() => handleDelete(vendor._id)}>
-                          Delete
-                        </Dropdown.Item>
+                        {user?.role === 'super_admin' && (
+                          <>
+                            <Dropdown.Divider />
+                            <Dropdown.Item icon={Trash2} danger onClick={() => handleDelete(vendor._id)}>
+                              Delete
+                            </Dropdown.Item>
+                          </>
+                        )}
                       </Dropdown>
                     </Table.Cell>
                   </Table.Row>
@@ -771,13 +777,13 @@ const VendorsList = () => {
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="GSTIN"
-              value={formData.gstin}
-              onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
+              value={formData.gstNumber}
+              onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
             />
             <Input
               label="PAN"
-              value={formData.pan}
-              onChange={(e) => setFormData({ ...formData, pan: e.target.value })}
+              value={formData.panNumber}
+              onChange={(e) => setFormData({ ...formData, panNumber: e.target.value })}
             />
           </div>
 
@@ -909,15 +915,48 @@ const VendorsList = () => {
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="GSTIN"
-              value={formData.gstin}
-              onChange={(e) => setFormData({ ...formData, gstin: e.target.value })}
+              value={formData.gstNumber}
+              onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
             />
             <Input
               label="PAN"
-              value={formData.pan}
-              onChange={(e) => setFormData({ ...formData, pan: e.target.value })}
+              value={formData.panNumber}
+              onChange={(e) => setFormData({ ...formData, panNumber: e.target.value })}
             />
           </div>
+
+          {/* Uploaded Documents */}
+          {selectedVendor?.documents && selectedVendor.documents.length > 0 && (
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8 }}>
+                Uploaded Documents
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {selectedVendor.documents.map((doc, idx) => {
+                  const backendBase = import.meta.env.PROD ? 'https://hoh108.com' : `http://${window.location.hostname}:5001`
+                  const docUrl = doc.url?.startsWith('http') ? doc.url : `${backendBase}${doc.url}`
+                  const isImage = doc.url?.match(/\.(jpg|jpeg|png|gif|webp|bmp)$/i)
+                  return (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: '#F9FAFB', borderRadius: 10, border: '1px solid #E5E7EB' }}>
+                      {isImage ? (
+                        <img src={docUrl} alt={doc.name} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #E5E7EB' }} />
+                      ) : (
+                        <div style={{ width: 48, height: 48, background: '#FEF3C7', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#D97706' }}>
+                          {doc.url?.split('.').pop()?.toUpperCase() || 'FILE'}
+                        </div>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 500, color: '#1F2937', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.name || `Document ${idx + 1}`}</p>
+                        <p style={{ fontSize: 11, color: '#9CA3AF', margin: 0 }}>{doc.docType || 'Document'}</p>
+                      </div>
+                      <a href={docUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#C59C82', fontWeight: 600, textDecoration: 'none' }}>View</a>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <Modal.Footer>
             <Button variant="secondary" onClick={() => { setShowEditModal(false); setSelectedVendor(null) }}>Cancel</Button>
             <Button type="submit" loading={saving}>Update Vendor</Button>

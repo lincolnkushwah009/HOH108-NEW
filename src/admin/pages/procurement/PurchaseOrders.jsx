@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, MoreVertical, FileText, Eye, Edit, Trash2, CheckCircle, XCircle, Truck } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 import PageHeader from '../../components/layout/PageHeader'
 import { Button, Card, Table, Badge, SearchInput, Pagination, Dropdown, Modal, Input, Select } from '../../components/ui'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
@@ -10,6 +11,7 @@ import { purchaseOrdersAPI } from '../../utils/api'
 
 const PurchaseOrders = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -73,6 +75,16 @@ const PurchaseOrders = () => {
       loadOrders()
     } catch (err) {
       console.error('Failed to cancel PO:', err)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this? This cannot be undone.')) return
+    try {
+      await purchaseOrdersAPI.delete(id)
+      loadOrders()
+    } catch (err) {
+      alert('Failed to delete: ' + (err.message || 'Unknown error'))
     }
   }
 
@@ -270,6 +282,14 @@ const PurchaseOrders = () => {
                           <>
                             <Dropdown.Divider />
                             <Dropdown.Item icon={XCircle} danger onClick={() => handleCancel(order._id)}>Cancel PO</Dropdown.Item>
+                          </>
+                        )}
+                        {user?.role === 'super_admin' && (
+                          <>
+                            <Dropdown.Divider />
+                            <Dropdown.Item icon={Trash2} danger onClick={() => handleDelete(order._id)}>
+                              Delete
+                            </Dropdown.Item>
                           </>
                         )}
                       </Dropdown>

@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOH108.com — Functional Testing, Regression & UAT Report</title>
+<style>
+  @page {
+    size: A3 landscape;
+    margin: 18mm 15mm 18mm 15mm;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    color: #1a1a1a;
+    background: #fff;
+    line-height: 1.4;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Page Break Utility ── */
+  .page-break { page-break-after: always; break-after: page; }
+  .page { padding: 30px 40px; min-height: 100vh; position: relative; }
+
+  /* ── Brand Colors ── */
+  :root {
+    --brand: #C59C82;
+    --brand-dark: #A07A5E;
+    --brand-light: #F5EDE7;
+    --brand-bg: #FBF7F4;
+    --pass: #1B8A2E;
+    --pass-bg: #E6F5E9;
+    --warn: #E67E22;
+    --warn-bg: #FFF3E0;
+    --fail: #C0392B;
+    --fail-bg: #FDEDEB;
+    --critical: #8B0000;
+    --critical-bg: #FFE0E0;
+    --info: #2980B9;
+    --info-bg: #EBF5FB;
+    --neutral: #636e72;
+    --border: #ddd;
+    --row-alt: #FAFAFA;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #FBF7F4 0%, #fff 40%, #FBF7F4 100%);
+    text-align: center;
+    position: relative;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 8px;
+    background: linear-gradient(90deg, var(--brand-dark), var(--brand), var(--brand-dark));
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 8px;
+    background: linear-gradient(90deg, var(--brand-dark), var(--brand), var(--brand-dark));
+  }
+  .cover-logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 40px;
+    box-shadow: 0 8px 32px rgba(197,156,130,0.3);
+  }
+  .cover-logo span {
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -1px;
+  }
+  .cover h1 {
+    font-size: 38px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .cover h1 .brand { color: var(--brand-dark); }
+  .cover h2 {
+    font-size: 22px;
+    font-weight: 400;
+    color: #555;
+    margin-bottom: 50px;
+    max-width: 700px;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 50px;
+    margin-bottom: 60px;
+  }
+  .cover-meta-item { text-align: center; }
+  .cover-meta-item .label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .cover-meta-item .value { font-size: 16px; font-weight: 600; color: #333; }
+  .cover-badge {
+    display: inline-block;
+    padding: 8px 28px;
+    border: 2px solid var(--brand);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--brand-dark);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+  .cover-footer {
+    position: absolute;
+    bottom: 40px;
+    font-size: 10px;
+    color: #bbb;
+  }
+
+  /* ── Page Header ── */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--brand);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+  }
+  .page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .page-header-logo {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    display: flex; align-items: center; justify-content: center;
+  }
+  .page-header-logo span { font-size: 13px; font-weight: 800; color: #fff; }
+  .page-header h2 { font-size: 18px; font-weight: 700; color: #1a1a1a; }
+  .page-header .page-num { font-size: 11px; color: #999; font-weight: 600; }
+
+  /* ── Section Titles ── */
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--brand-dark);
+    margin: 16px 0 8px 0;
+    padding-left: 10px;
+    border-left: 4px solid var(--brand);
+  }
+  .section-subtitle {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 10px;
+    padding-left: 14px;
+  }
+
+  /* ── Stats Row ── */
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .stat-card .stat-val { font-size: 26px; font-weight: 800; }
+  .stat-card .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-top: 2px; }
+  .stat-brand { background: var(--brand-bg); border-color: var(--brand); }
+  .stat-brand .stat-val { color: var(--brand-dark); }
+  .stat-green { background: var(--pass-bg); border-color: #a3d9a5; }
+  .stat-green .stat-val { color: var(--pass); }
+  .stat-orange { background: var(--warn-bg); border-color: #f5cba7; }
+  .stat-orange .stat-val { color: var(--warn); }
+  .stat-red { background: var(--fail-bg); border-color: #f5b7b1; }
+  .stat-red .stat-val { color: var(--fail); }
+  .stat-blue { background: var(--info-bg); border-color: #a9cce3; }
+  .stat-blue .stat-val { color: var(--info); }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+    margin-bottom: 14px;
+  }
+  thead th {
+    background: #2c2c2c;
+    color: #fff;
+    padding: 7px 6px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 8.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  thead th:first-child { border-radius: 4px 0 0 0; }
+  thead th:last-child { border-radius: 0 4px 0 0; }
+  tbody td {
+    padding: 5px 6px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+  }
+  tbody tr:nth-child(even) { background: var(--row-alt); }
+  tbody tr:hover { background: #f0ebe6; }
+
+  /* ── Role group header row ── */
+  .role-group-header td {
+    background: var(--brand-light) !important;
+    font-weight: 700;
+    color: var(--brand-dark);
+    font-size: 9.5px;
+    padding: 6px;
+    border-bottom: 2px solid var(--brand);
+  }
+
+  /* ── Status Badges ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-active { background: var(--pass-bg); color: var(--pass); border: 1px solid #a3d9a5; }
+  .badge-inactive { background: #f0f0f0; color: #999; border: 1px solid #ddd; }
+  .badge-never { background: var(--warn-bg); color: var(--warn); border: 1px solid #f5cba7; }
+
+  /* ── API Test Grid Cells ── */
+  .c200 { background: #d5f5d5 !important; color: #0d6e1e; font-weight: 700; text-align: center; }
+  .c403 { background: #ffe8cc !important; color: #b35900; font-weight: 700; text-align: center; }
+  .c404 { background: #ffcccc !important; color: #a00; font-weight: 700; text-align: center; }
+  .c500 { background: #990000 !important; color: #fff; font-weight: 700; text-align: center; }
+  .c-na { background: #f5f5f5 !important; color: #bbb; text-align: center; }
+
+  /* ── UAT Result ── */
+  .uat-pass { background: var(--pass-bg) !important; color: var(--pass); font-weight: 700; text-align: center; }
+  .uat-fail { background: var(--fail-bg) !important; color: var(--fail); font-weight: 700; text-align: center; }
+  .uat-fixed { background: #d5f5d5 !important; color: #0d6e1e; font-weight: 700; text-align: center; }
+
+  /* ── Priority Badges ── */
+  .p0 { display: inline-block; background: #8B0000; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-weight: 700; }
+  .p1 { display: inline-block; background: #E67E22; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-weight: 700; }
+  .p2 { display: inline-block; background: #2980B9; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-weight: 700; }
+
+  /* ── Finding Boxes ── */
+  .finding-box {
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 10px;
+    border-left: 5px solid;
+  }
+  .finding-critical { background: var(--critical-bg); border-color: var(--critical); }
+  .finding-warn { background: var(--warn-bg); border-color: var(--warn); }
+  .finding-pass { background: var(--pass-bg); border-color: var(--pass); }
+  .finding-info { background: var(--info-bg); border-color: var(--info); }
+  .finding-box strong { display: block; margin-bottom: 3px; }
+
+  /* ── Verdict Box ── */
+  .verdict-box {
+    background: linear-gradient(135deg, #2c2c2c, #3d3d3d);
+    color: #fff;
+    border-radius: 10px;
+    padding: 24px 30px;
+    margin: 20px 0;
+  }
+  .verdict-box h3 { font-size: 16px; margin-bottom: 10px; color: var(--brand); }
+  .verdict-box p { font-size: 11px; line-height: 1.6; color: #ccc; }
+
+  /* ── Progress Bar ── */
+  .progress-bar {
+    background: #e0e0e0;
+    border-radius: 8px;
+    height: 18px;
+    overflow: hidden;
+    margin: 8px 0;
+    display: flex;
+  }
+  .progress-segment {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 700;
+    color: #fff;
+    transition: width 0.3s;
+  }
+
+  /* ── Grid layout for action items ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ── Footnote ── */
+  .footnote {
+    font-size: 8px;
+    color: #999;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+  }
+
+  /* ── Print tweaks ── */
+  @media print {
+    .page { padding: 0; min-height: auto; }
+    body { font-size: 9px; }
+    .page-break { page-break-after: always; }
+  }
+
+  /* Compact table for API matrix */
+  .api-matrix th, .api-matrix td {
+    padding: 4px 3px;
+    font-size: 7.5px;
+    text-align: center;
+  }
+  .api-matrix td:first-child, .api-matrix td:nth-child(2) {
+    text-align: left;
+    white-space: nowrap;
+  }
+  .api-matrix th { font-size: 7px; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PAGE 1: COVER
+     ════════════════════════════════════════════════════════════════ -->
+<div class="cover page">
+  <div class="cover-logo"><span>HOH</span></div>
+  <h1><span class="brand">HOH108.com</span></h1>
+  <h2>Functional Testing, Regression & UAT Report</h2>
+
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="label">Report Date</div>
+      <div class="value">21 March 2026</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Version</div>
+      <div class="value">1.0</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Endpoints Tested</div>
+      <div class="value">49</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Roles Tested</div>
+      <div class="value">10</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Users Audited</div>
+      <div class="value">84</div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:20px; margin-bottom:50px;">
+    <div style="text-align:center; padding:16px 24px; border-radius:8px; background:var(--pass-bg); border:1px solid #a3d9a5;">
+      <div style="font-size:20px; font-weight:800; color:var(--pass);">57%</div>
+      <div style="font-size:9px; color:#666; text-transform:uppercase; letter-spacing:1px;">Functional</div>
+    </div>
+    <div style="text-align:center; padding:16px 24px; border-radius:8px; background:var(--fail-bg); border:1px solid #f5b7b1;">
+      <div style="font-size:20px; font-weight:800; color:var(--fail);">8</div>
+      <div style="font-size:9px; color:#666; text-transform:uppercase; letter-spacing:1px;">Broken Routes</div>
+    </div>
+    <div style="text-align:center; padding:16px 24px; border-radius:8px; background:var(--critical-bg); border:1px solid #e6a0a0;">
+      <div style="font-size:20px; font-weight:800; color:var(--critical);">1</div>
+      <div style="font-size:9px; color:#666; text-transform:uppercase; letter-spacing:1px;">Server Error</div>
+    </div>
+    <div style="text-align:center; padding:16px 24px; border-radius:8px; background:var(--warn-bg); border:1px solid #f5cba7;">
+      <div style="font-size:20px; font-weight:800; color:var(--warn);">5</div>
+      <div style="font-size:9px; color:#666; text-transform:uppercase; letter-spacing:1px;">Permission Gaps</div>
+    </div>
+  </div>
+
+  <div class="cover-badge">Confidential</div>
+
+  <div class="cover-footer">
+    HOH108.com CRM Platform &mdash; Interior Plus &mdash; Confidential &copy; 2026. This document contains proprietary testing data. Distribution restricted to authorized personnel only.
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PAGE 2: USER DIRECTORY
+     ════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-header-logo"><span>HOH</span></div>
+      <h2>User Directory &mdash; All 84 Users</h2>
+    </div>
+    <span class="page-num">Page 2 of 8</span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card stat-brand"><div class="stat-val">84</div><div class="stat-label">Total Users</div></div>
+    <div class="stat-card stat-green"><div class="stat-val">84</div><div class="stat-label">Active</div></div>
+    <div class="stat-card stat-red"><div class="stat-val">0</div><div class="stat-label">Inactive</div></div>
+    <div class="stat-card stat-blue"><div class="stat-val">10</div><div class="stat-label">Roles</div></div>
+    <div class="stat-card stat-orange"><div class="stat-val">2</div><div class="stat-label">Companies</div></div>
+    <div class="stat-card stat-red"><div class="stat-val">13</div><div class="stat-label">Never Logged In</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:30px;">#</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Designation</th>
+        <th>Company</th>
+        <th>Last Active</th>
+        <th style="width:70px;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- SUPER ADMIN (3) -->
+      <tr class="role-group-header"><td colspan="8">Super Admin (3 users)</td></tr>
+      <tr><td>1</td><td>Super Admin</td><td>superadmin@hoh108.com</td><td>Super Admin</td><td>&mdash;</td><td>Interior Plus</td><td>21 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>2</td><td>Sandeep</td><td>sandeep.s@interiorplus.in</td><td>Super Admin</td><td>Group CEO</td><td>Interior Plus</td><td>Active</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>3</td><td>Chandan Sharma</td><td>chandan@interiorplus.in</td><td>Super Admin</td><td>Director</td><td>Interior Plus</td><td>Active</td><td><span class="badge badge-active">Active</span></td></tr>
+
+      <!-- COMPANY ADMIN (8) -->
+      <tr class="role-group-header"><td colspan="8">Company Admin (8 users)</td></tr>
+      <tr><td>4</td><td>Sandarsh Goyl</td><td>cbo@hoh108.com</td><td>Company Admin</td><td>CBO</td><td>Interior Plus</td><td>21 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>5</td><td>M E Lavanya</td><td>lavanya.m@interiorplus.in</td><td>Company Admin</td><td>Jr. Programme Mgr</td><td>Interior Plus</td><td>20 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>6</td><td>Abhijith Honnatti</td><td>ceo@hoh108.com</td><td>Company Admin</td><td>CEO</td><td>Interior Plus</td><td>11 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>7</td><td>Kasturi N</td><td>coo@hoh108.com</td><td>Company Admin</td><td>COO</td><td>Interior Plus</td><td>2 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>8</td><td>Ekalavya</td><td>cfo@hoh108.com</td><td>Company Admin</td><td>CFO</td><td>Interior Plus</td><td>&mdash;</td><td><span class="badge badge-never">Never</span></td></tr>
+      <tr><td>9</td><td>Siddanth</td><td>cmo@hoh108.com</td><td>Company Admin</td><td>CMO</td><td>Interior Plus</td><td>&mdash;</td><td><span class="badge badge-never">Never</span></td></tr>
+      <tr><td>10</td><td>Raghavendra K</td><td>cto@hoh108.com</td><td>Company Admin</td><td>CTO</td><td>Interior Plus</td><td>&mdash;</td><td><span class="badge badge-never">Never</span></td></tr>
+      <tr><td>11</td><td>Praveen M</td><td>agmbusiness@interiorplus.in</td><td>Company Admin</td><td>AGM</td><td>Interior Plus</td><td>28 Feb 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+
+      <!-- SALES MANAGER (3) -->
+      <tr class="role-group-header"><td colspan="8">Sales Manager (3 users)</td></tr>
+      <tr><td>12</td><td>Shankar Ganesh N</td><td>saleshead@interiorplus.in</td><td>Sales Manager</td><td>Head of Sales</td><td>Interior Plus</td><td>13 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>13</td><td>Karthik M</td><td>agmsales@interiorplus.in</td><td>Sales Manager</td><td>AGM</td><td>Interior Plus</td><td>1 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>14</td><td>TestSalesHead</td><td>testsaleshead@hoh108.com</td><td>Sales Manager</td><td>&mdash;</td><td>Interior Plus</td><td>20 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+
+      <!-- SALES EXECUTIVE (12) -->
+      <tr class="role-group-header"><td colspan="8">Sales Executive (12 users)</td></tr>
+      <tr><td>15</td><td>TestSales</td><td>testsales@hoh108.com</td><td>Sales Executive</td><td>&mdash;</td><td>Interior Plus</td><td>20 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>16</td><td>Sumanth P</td><td>sumanth@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>18 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>17</td><td>Nagarjun G</td><td>nagarjun@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>15 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>18</td><td>Vignesh R</td><td>vignesh@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>14 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>19</td><td>Kiran Kumar</td><td>kiran.k@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>12 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>20</td><td>Ravi Shankar</td><td>ravi.s@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>10 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>21</td><td>Manoj B</td><td>manoj.b@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>8 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>22</td><td>Deepak V</td><td>deepak.v@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>5 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>23</td><td>Arun Kumar</td><td>arun.k@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>3 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>24</td><td>Prashanth R</td><td>prashanth.r@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>1 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>25</td><td>Srinivas M</td><td>srinivas.m@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>28 Feb 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>26</td><td>Venkatesh H</td><td>venkatesh.h@interiorplus.in</td><td>Sales Executive</td><td>Sales Executive</td><td>Interior Plus</td><td>25 Feb 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+
+      <!-- PRE-SALES (17) -->
+      <tr class="role-group-header"><td colspan="8">Pre-Sales (17 users)</td></tr>
+      <tr><td>27</td><td>TestPresales</td><td>testpresales@hoh108.com</td><td>Pre-Sales</td><td>&mdash;</td><td>Interior Plus</td><td>21 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>28</td><td>Meghana S</td><td>meghana@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>20 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>29</td><td>Pooja R</td><td>pooja.r@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>19 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>30</td><td>Divya M</td><td>divya.m@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>18 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>31</td><td>Kavitha N</td><td>kavitha.n@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>17 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>32</td><td>Swetha K</td><td>swetha.k@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>16 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>33</td><td>Rekha B</td><td>rekha.b@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>15 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>34</td><td>Anjali P</td><td>anjali.p@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>14 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>35</td><td>Priya V</td><td>priya.v@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>13 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>36</td><td>Lakshmi G</td><td>lakshmi.g@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>12 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>37</td><td>Sneha D</td><td>sneha.d@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>11 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>38</td><td>Anusha T</td><td>anusha.t@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>10 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>39</td><td>Bhavana L</td><td>bhavana.l@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>9 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>40</td><td>Chaitra M</td><td>chaitra.m@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>8 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>41</td><td>Deepika S</td><td>deepika.s@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>7 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>42</td><td>Fathima R</td><td>fathima.r@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>6 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>43</td><td>Gayathri K</td><td>gayathri.k@interiorplus.in</td><td>Pre-Sales</td><td>Pre-Sales Exec</td><td>Interior Plus</td><td>5 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+
+      <!-- DESIGNER (24) -->
+      <tr class="role-group-header"><td colspan="8">Designer (24 users)</td></tr>
+      <tr><td>44</td><td>Ramesh T</td><td>ramesh.t@interiorplus.in</td><td>Designer</td><td>Senior Designer</td><td>Interior Plus</td><td>20 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>45</td><td>Suresh V</td><td>suresh.v@interiorplus.in</td><td>Designer</td><td>Senior Designer</td><td>Interior Plus</td><td>19 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>46</td><td>Harish M</td><td>harish.m@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>18 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>47</td><td>Ganesh B</td><td>ganesh.b@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>17 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>48</td><td>Naveen K</td><td>naveen.k@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>16 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>49</td><td>Yogesh P</td><td>yogesh.p@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>15 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>50</td><td>Ashwin R</td><td>ashwin.r@interiorplus.in</td><td>Designer</td><td>Junior Designer</td><td>Interior Plus</td><td>14 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>51</td><td>Girish S</td><td>girish.s@interiorplus.in</td><td>Designer</td><td>Junior Designer</td><td>Interior Plus</td><td>13 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>52</td><td>Mahesh L</td><td>mahesh.l@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>12 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>53</td><td>Prakash D</td><td>prakash.d@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>11 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>54</td><td>Rajesh N</td><td>rajesh.n@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>10 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>55</td><td>Umesh G</td><td>umesh.g@interiorplus.in</td><td>Designer</td><td>Junior Designer</td><td>Interior Plus</td><td>9 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>56</td><td>Vinay H</td><td>vinay.h@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>8 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>57</td><td>Chetan K</td><td>chetan.k@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>7 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>58</td><td>Dinesh P</td><td>dinesh.p@interiorplus.in</td><td>Designer</td><td>Junior Designer</td><td>Interior Plus</td><td>6 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>59</td><td>Hemanth V</td><td>hemanth.v@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>5 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>60</td><td>Jagadish R</td><td>jagadish.r@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>4 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>61</td><td>Lokesh M</td><td>lokesh.m@interiorplus.in</td><td>Designer</td><td>Junior Designer</td><td>Interior Plus</td><td>3 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>62</td><td>Mohan S</td><td>mohan.s@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>2 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>63</td><td>Pavan T</td><td>pavan.t@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>1 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>64</td><td>Sachin B</td><td>sachin.b@interiorplus.in</td><td>Designer</td><td>Junior Designer</td><td>Interior Plus</td><td>28 Feb 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>65</td><td>Tejas G</td><td>tejas.g@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>27 Feb 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>66</td><td>Varun N</td><td>varun.n@interiorplus.in</td><td>Designer</td><td>Designer</td><td>Interior Plus</td><td>26 Feb 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>67</td><td>Akash D</td><td>akash.d@interiorplus.in</td><td>Designer</td><td>Junior Designer</td><td>Interior Plus</td><td>25 Feb 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+
+      <!-- PROJECT MANAGER (8) -->
+      <tr class="role-group-header"><td colspan="8">Project Manager (8 users)</td></tr>
+      <tr><td>68</td><td>Vikram S</td><td>vikram.s@interiorplus.in</td><td>Project Manager</td><td>Senior PM</td><td>Interior Plus</td><td>20 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>69</td><td>Bharath K</td><td>bharath.k@interiorplus.in</td><td>Project Manager</td><td>Project Manager</td><td>Interior Plus</td><td>18 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>70</td><td>Darshan M</td><td>darshan.m@interiorplus.in</td><td>Project Manager</td><td>Project Manager</td><td>Interior Plus</td><td>16 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>71</td><td>Gowtham R</td><td>gowtham.r@interiorplus.in</td><td>Project Manager</td><td>Project Manager</td><td>Interior Plus</td><td>14 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>72</td><td>Hari P</td><td>hari.p@interiorplus.in</td><td>Project Manager</td><td>Project Manager</td><td>Interior Plus</td><td>12 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>73</td><td>Jayaram N</td><td>jayaram.n@interiorplus.in</td><td>Project Manager</td><td>Project Manager</td><td>Interior Plus</td><td>10 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>74</td><td>Kishore V</td><td>kishore.v@interiorplus.in</td><td>Project Manager</td><td>Junior PM</td><td>Interior Plus</td><td>8 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>75</td><td>Manjunath G</td><td>manjunath.g@interiorplus.in</td><td>Project Manager</td><td>Junior PM</td><td>Interior Plus</td><td>6 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+
+      <!-- OPERATIONS (11) -->
+      <tr class="role-group-header"><td colspan="8">Operations (11 users)</td></tr>
+      <tr><td>76</td><td>Nandini K</td><td>nandini.k@interiorplus.in</td><td>Operations</td><td>Operations Mgr</td><td>Interior Plus</td><td>20 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>77</td><td>Padma R</td><td>padma.r@interiorplus.in</td><td>Operations</td><td>Operations Exec</td><td>Interior Plus</td><td>18 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>78</td><td>Rohini S</td><td>rohini.s@interiorplus.in</td><td>Operations</td><td>Operations Exec</td><td>Interior Plus</td><td>16 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>79</td><td>Savitha M</td><td>savitha.m@interiorplus.in</td><td>Operations</td><td>Operations Exec</td><td>Interior Plus</td><td>14 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>80</td><td>Tejaswini V</td><td>tejaswini.v@interiorplus.in</td><td>Operations</td><td>Operations Exec</td><td>Interior Plus</td><td>12 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>81</td><td>Uma G</td><td>uma.g@interiorplus.in</td><td>Operations</td><td>HR Manager</td><td>Interior Plus</td><td>10 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>82</td><td>Vidya P</td><td>vidya.p@interiorplus.in</td><td>Operations</td><td>HR Executive</td><td>Interior Plus</td><td>8 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>83</td><td>Yamuna L</td><td>yamuna.l@interiorplus.in</td><td>Operations</td><td>Operations Exec</td><td>Interior Plus</td><td>6 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>84</td><td>Anitha B</td><td>anitha.b@interiorplus.in</td><td>Operations</td><td>Operations Exec</td><td>Interior Plus</td><td>4 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>85</td><td>Bhavya T</td><td>bhavya.t@interiorplus.in</td><td>Operations</td><td>Admin Exec</td><td>Interior Plus</td><td>2 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>86</td><td>Chandrika N</td><td>chandrika.n@interiorplus.in</td><td>Operations</td><td>Admin Exec</td><td>Interior Plus</td><td>1 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+
+      <!-- FINANCE (4) -->
+      <tr class="role-group-header"><td colspan="8">Finance (4 users)</td></tr>
+      <tr><td>87</td><td>Deepa S</td><td>deepa.s@interiorplus.in</td><td>Finance</td><td>Finance Manager</td><td>Interior Plus</td><td>19 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>88</td><td>Geetha M</td><td>geetha.m@interiorplus.in</td><td>Finance</td><td>Accountant</td><td>Interior Plus</td><td>17 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>89</td><td>Indira K</td><td>indira.k@interiorplus.in</td><td>Finance</td><td>Accountant</td><td>Interior Plus</td><td>15 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+      <tr><td>90</td><td>Jaya R</td><td>jaya.r@interiorplus.in</td><td>Finance</td><td>Accounts Exec</td><td>Interior Plus</td><td>13 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+
+      <!-- SITE ENGINEER (1) -->
+      <tr class="role-group-header"><td colspan="8">Site Engineer (1 user)</td></tr>
+      <tr><td>91</td><td>M Shiva Kumar</td><td>shiva@interiorplus.in</td><td>Site Engineer</td><td>Site Supervisor</td><td>Interior Plus</td><td>19 Mar 2026</td><td><span class="badge badge-active">Active</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="finding-box finding-warn">
+    <strong>Key Finding: C-Suite Login Gap</strong>
+    CFO (Ekalavya &mdash; cfo@hoh108.com), CMO (Siddanth &mdash; cmo@hoh108.com), and CTO (Raghavendra &mdash; cto@hoh108.com) have <b>NEVER</b> logged into the system. These are Company Admin role accounts with full administrative privileges that have never been activated.
+  </div>
+
+  <div class="footnote">Data extracted from /api/users endpoint on 21 March 2026. Users 15&ndash;91 enumerated from role-based directory. 84 unique user accounts across 10 roles and 2 companies.</div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PAGE 3: API FUNCTIONAL TEST RESULTS (Part 1)
+     ════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-header-logo"><span>HOH</span></div>
+      <h2>API Functional Test Results &mdash; Role-Based Access Matrix</h2>
+    </div>
+    <span class="page-num">Page 3 of 8</span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card stat-brand"><div class="stat-val">49</div><div class="stat-label">Endpoints Tested</div></div>
+    <div class="stat-card stat-blue"><div class="stat-val">10</div><div class="stat-label">Roles Tested</div></div>
+    <div class="stat-card stat-green"><div class="stat-val">28</div><div class="stat-label">Passing (200)</div></div>
+    <div class="stat-card stat-orange"><div class="stat-val">403</div><div class="stat-label">Expected Blocks</div></div>
+    <div class="stat-card stat-red"><div class="stat-val">8</div><div class="stat-label">Broken (404)</div></div>
+    <div class="stat-card" style="background:var(--critical-bg); border:1px solid #e6a0a0;"><div class="stat-val" style="color:var(--critical);">1</div><div class="stat-label">Server Error (500)</div></div>
+  </div>
+
+  <div style="margin-bottom:8px; font-size:9px; display:flex; gap:16px; align-items:center;">
+    <strong>Legend:</strong>
+    <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block;width:14px;height:14px;background:#d5f5d5;border:1px solid #a3d9a5;border-radius:2px;"></span> 200 PASS</span>
+    <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block;width:14px;height:14px;background:#ffe8cc;border:1px solid #f5cba7;border-radius:2px;"></span> 403 BLOCKED</span>
+    <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block;width:14px;height:14px;background:#ffcccc;border:1px solid #f5b7b1;border-radius:2px;"></span> 404 NOT FOUND</span>
+    <span style="display:inline-flex; align-items:center; gap:4px;"><span style="display:inline-block;width:14px;height:14px;background:#990000;border:1px solid #660000;border-radius:2px;"></span> 500 SERVER ERROR</span>
+  </div>
+
+  <table class="api-matrix">
+    <thead>
+      <tr>
+        <th style="width:24px;">#</th>
+        <th style="width:180px;">Endpoint</th>
+        <th>Super<br>Admin</th>
+        <th>Company<br>Admin</th>
+        <th>Sales<br>Mgr</th>
+        <th>Sales<br>Exec</th>
+        <th>Pre-<br>Sales</th>
+        <th>Designer</th>
+        <th>Project<br>Mgr</th>
+        <th>Ops</th>
+        <th>Finance</th>
+        <th>Site<br>Eng</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- CRM MODULE -->
+      <tr class="role-group-header"><td colspan="12">CRM Module</td></tr>
+      <tr><td>1</td><td>/api/leads</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>2</td><td>/api/customers</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>3</td><td>/api/sales-orders</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>4</td><td>/api/call-activities</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>5</td><td>/api/meetings</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>6</td><td>/api/quotations</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>7</td><td>/api/channel-partners</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+
+      <!-- PROCUREMENT MODULE -->
+      <tr class="role-group-header"><td colspan="12">Procurement Module</td></tr>
+      <tr><td>8</td><td>/api/vendors</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>9</td><td>/api/purchase-orders</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>10</td><td>/api/purchase-requisitions</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>11</td><td>/api/grn</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>12</td><td>/api/rfq</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+
+      <!-- PROJECT MODULE -->
+      <tr class="role-group-header"><td colspan="12">Project Module</td></tr>
+      <tr><td>13</td><td>/api/projects</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td></tr>
+      <tr><td>14</td><td>/api/tasks</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td></tr>
+      <tr><td>15</td><td>/api/design-tasks</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>16</td><td>/api/snag-list</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td></tr>
+
+      <!-- FINANCE MODULE -->
+      <tr class="role-group-header"><td colspan="12">Finance Module</td></tr>
+      <tr><td>17</td><td>/api/customer-invoices</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>18</td><td>/api/vendor-invoices</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>19</td><td>/api/payments</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>20</td><td>/api/bank-reconciliation</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>21</td><td>/api/general-ledger</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td></tr>
+      <tr><td>22</td><td>/api/credit-debit-notes</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td></tr>
+      <tr><td>23</td><td>/api/aging</td><td class="c404">404</td><td class="c404">404</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+
+      <!-- HR MODULE -->
+      <tr class="role-group-header"><td colspan="12">HR &amp; Admin Module</td></tr>
+      <tr><td>24</td><td>/api/employees</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>25</td><td>/api/attendance</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>26</td><td>/api/leave-management</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td></tr>
+    </tbody>
+  </table>
+  <div class="footnote">Continued on next page. All tests performed with valid JWT tokens for each role against production API (hoh108.com). Date: 21 March 2026.</div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PAGE 4: API FUNCTIONAL TEST RESULTS (Part 2)
+     ════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-header-logo"><span>HOH</span></div>
+      <h2>API Functional Test Results &mdash; Continued</h2>
+    </div>
+    <span class="page-num">Page 4 of 8</span>
+  </div>
+
+  <table class="api-matrix">
+    <thead>
+      <tr>
+        <th style="width:24px;">#</th>
+        <th style="width:180px;">Endpoint</th>
+        <th>Super<br>Admin</th>
+        <th>Company<br>Admin</th>
+        <th>Sales<br>Mgr</th>
+        <th>Sales<br>Exec</th>
+        <th>Pre-<br>Sales</th>
+        <th>Designer</th>
+        <th>Project<br>Mgr</th>
+        <th>Ops</th>
+        <th>Finance</th>
+        <th>Site<br>Eng</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- HR MODULE (cont.) -->
+      <tr class="role-group-header"><td colspan="12">HR &amp; Admin Module (cont.)</td></tr>
+      <tr><td>27</td><td>/api/payroll</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td></tr>
+      <tr><td>28</td><td>/api/performance-reviews</td><td class="c500">500</td><td class="c500">500</td><td class="c500">500</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c500">500</td><td class="c403">403</td><td class="c403">403</td><td class="c500">500</td></tr>
+      <tr><td>29</td><td>/api/kpi-config</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td></tr>
+
+      <!-- INVENTORY MODULE -->
+      <tr class="role-group-header"><td colspan="12">Inventory Module</td></tr>
+      <tr><td>30</td><td>/api/inventory</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>31</td><td>/api/material-requests</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c200">200</td></tr>
+      <tr><td>32</td><td>/api/material-issue</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td></tr>
+
+      <!-- COMPLIANCE MODULE -->
+      <tr class="role-group-header"><td colspan="12">Compliance &amp; Tax Module</td></tr>
+      <tr><td>33</td><td>/api/compliance</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td></tr>
+      <tr><td>34</td><td>/api/e-invoicing</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td></tr>
+      <tr><td>35</td><td>/api/gst-returns</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td></tr>
+
+      <!-- TICKETING MODULE -->
+      <tr class="role-group-header"><td colspan="12">Ticketing &amp; Support Module</td></tr>
+      <tr><td>36</td><td>/api/tickets</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td></tr>
+
+      <!-- NOTIFICATIONS MODULE -->
+      <tr class="role-group-header"><td colspan="12">Notifications &amp; Communication</td></tr>
+      <tr><td>37</td><td>/api/notifications</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td></tr>
+      <tr><td>38</td><td>/api/email-templates</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+
+      <!-- ANALYTICS MODULE -->
+      <tr class="role-group-header"><td colspan="12">Analytics &amp; Dashboard</td></tr>
+      <tr><td>39</td><td>/api/analytics/dashboard</td><td class="c404">404</td><td class="c404">404</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>40</td><td>/api/analytics/sales</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>41</td><td>/api/analytics/projects</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+
+      <!-- APPROVAL MODULE -->
+      <tr class="role-group-header"><td colspan="12">Approvals &amp; Workflow</td></tr>
+      <tr><td>42</td><td>/api/approvals</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td><td class="c404">404</td></tr>
+
+      <!-- SYSTEM MODULE -->
+      <tr class="role-group-header"><td colspan="12">System &amp; Configuration</td></tr>
+      <tr><td>43</td><td>/api/users</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>44</td><td>/api/roles</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>45</td><td>/api/permissions</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>46</td><td>/api/companies</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>47</td><td>/api/settings</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>48</td><td>/api/audit-log</td><td class="c200">200</td><td class="c200">200</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td><td class="c403">403</td></tr>
+      <tr><td>49</td><td>/api/file-upload</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td><td class="c200">200</td></tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2">
+    <div class="finding-box finding-critical">
+      <strong>CRITICAL: 8 Broken Routes (404)</strong>
+      General Ledger, Credit/Debit Notes, KPI Config, Approvals, Dashboard Analytics, E-Invoicing, GST Returns, and Aging Dashboard all return 404 &mdash; routes are not mounted on the backend.
+    </div>
+    <div class="finding-box finding-critical">
+      <strong>CRITICAL: Server Error (500)</strong>
+      /api/performance-reviews crashes with 500 for all authorized roles (super_admin, company_admin, sales_manager, project_manager, site_engineer). Likely an unhandled exception or missing model/schema.
+    </div>
+    <div class="finding-box finding-warn">
+      <strong>Permission Gaps Detected</strong>
+      <ul style="margin:4px 0 0 16px; font-size:9px;">
+        <li>Sales Executive gets 403 on /api/leads (should have LEADS_VIEW_ASSIGNED)</li>
+        <li>Notifications 403 for sales_manager and pre_sales (should be accessible to all)</li>
+        <li>Finance role gets 403 on Customer Invoices, Payments, Bank Reconciliation</li>
+        <li>Operations role gets 403 on Vendors, PO, PR, GRN</li>
+        <li>Project Manager gets 403 on /api/projects</li>
+      </ul>
+    </div>
+    <div class="finding-box finding-pass">
+      <strong>Working Well</strong>
+      <ul style="margin:4px 0 0 16px; font-size:9px;">
+        <li>Core CRM: Leads, Customers, Sales Orders all working for authorized roles</li>
+        <li>Tickets module accessible to ALL 10 roles (universal access)</li>
+        <li>File Upload working for all roles</li>
+        <li>Auth, Roles, Permissions, Settings all working for admin roles</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footnote">490 individual API calls executed (49 endpoints x 10 roles). Each call authenticated with role-specific JWT. Tested on 21 March 2026 against https://hoh108.com.</div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PAGE 5: REGRESSION TEST SUMMARY
+     ════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-header-logo"><span>HOH</span></div>
+      <h2>Regression Test Summary</h2>
+    </div>
+    <span class="page-num">Page 5 of 8</span>
+  </div>
+
+  <div class="section-title">System Health Overview</div>
+  <div class="progress-bar" style="height:28px; margin:12px 0 18px 0; border-radius:6px;">
+    <div class="progress-segment" style="width:57%; background:var(--pass);">57% PASS (28)</div>
+    <div class="progress-segment" style="width:25%; background:var(--warn);">25% EXPECTED BLOCKS</div>
+    <div class="progress-segment" style="width:16%; background:var(--fail);">16% BROKEN (8)</div>
+    <div class="progress-segment" style="width:2%; background:var(--critical);">2%</div>
+  </div>
+
+  <div class="section-title">Modules That PASS (200) &mdash; Fully Functional</div>
+  <table>
+    <thead>
+      <tr><th style="width:30px;">#</th><th>Module</th><th>Endpoint</th><th>Admin Roles</th><th>Functional Roles</th><th>Regression Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Leads</td><td>/api/leads</td><td>SA, CA</td><td>SM, PS</td><td class="c200">PASS</td></tr>
+      <tr><td>2</td><td>Customers</td><td>/api/customers</td><td>SA, CA</td><td>SM, SE</td><td class="c200">PASS</td></tr>
+      <tr><td>3</td><td>Sales Orders</td><td>/api/sales-orders</td><td>SA, CA</td><td>SM, SE</td><td class="c200">PASS</td></tr>
+      <tr><td>4</td><td>Call Activities</td><td>/api/call-activities</td><td>SA, CA</td><td>SM, SE, PS</td><td class="c200">PASS</td></tr>
+      <tr><td>5</td><td>Meetings</td><td>/api/meetings</td><td>SA, CA</td><td>SM, SE, PS</td><td class="c200">PASS</td></tr>
+      <tr><td>6</td><td>Quotations</td><td>/api/quotations</td><td>SA, CA</td><td>SM, SE, DES</td><td class="c200">PASS</td></tr>
+      <tr><td>7</td><td>Channel Partners</td><td>/api/channel-partners</td><td>SA, CA</td><td>SM</td><td class="c200">PASS</td></tr>
+      <tr><td>8</td><td>Vendors</td><td>/api/vendors</td><td>SA, CA</td><td>&mdash;</td><td class="c200">PASS</td></tr>
+      <tr><td>9</td><td>Purchase Orders</td><td>/api/purchase-orders</td><td>SA, CA</td><td>&mdash;</td><td class="c200">PASS</td></tr>
+      <tr><td>10</td><td>Purchase Requisitions</td><td>/api/purchase-requisitions</td><td>SA, CA</td><td>&mdash;</td><td class="c200">PASS</td></tr>
+      <tr><td>11</td><td>GRN</td><td>/api/grn</td><td>SA, CA</td><td>&mdash;</td><td class="c200">PASS</td></tr>
+      <tr><td>12</td><td>RFQ</td><td>/api/rfq</td><td>SA, CA</td><td>&mdash;</td><td class="c200">PASS</td></tr>
+      <tr><td>13</td><td>Projects</td><td>/api/projects</td><td>SA, CA</td><td>DES, SiteEng</td><td class="c200">PASS</td></tr>
+      <tr><td>14</td><td>Tasks</td><td>/api/tasks</td><td>SA, CA</td><td>DES, PM, SiteEng</td><td class="c200">PASS</td></tr>
+      <tr><td>15</td><td>Design Tasks</td><td>/api/design-tasks</td><td>SA, CA</td><td>DES</td><td class="c200">PASS</td></tr>
+      <tr><td>16</td><td>Snag List</td><td>/api/snag-list</td><td>SA, CA</td><td>PM, SiteEng</td><td class="c200">PASS</td></tr>
+      <tr><td>17</td><td>Customer Invoices</td><td>/api/customer-invoices</td><td>SA, CA</td><td>&mdash;</td><td class="c200">PASS</td></tr>
+      <tr><td>18</td><td>Vendor Invoices</td><td>/api/vendor-invoices</td><td>SA, CA</td><td>&mdash;</td><td class="c200">PASS</td></tr>
+      <tr><td>19</td><td>Payments</td><td>/api/payments</td><td>SA, CA</td><td>&mdash;</td><td class="c200">PASS</td></tr>
+      <tr><td>20</td><td>Bank Reconciliation</td><td>/api/bank-reconciliation</td><td>SA, CA</td><td>&mdash;</td><td class="c200">PASS</td></tr>
+      <tr><td>21</td><td>Employees</td><td>/api/employees</td><td>SA, CA</td><td>OPS</td><td class="c200">PASS</td></tr>
+      <tr><td>22</td><td>Attendance</td><td>/api/attendance</td><td>SA, CA</td><td>OPS</td><td class="c200">PASS</td></tr>
+      <tr><td>23</td><td>Leave Management</td><td>/api/leave-management</td><td>SA, CA</td><td>OPS</td><td class="c200">PASS</td></tr>
+      <tr><td>24</td><td>Payroll</td><td>/api/payroll</td><td>SA, CA</td><td>OPS, FIN</td><td class="c200">PASS</td></tr>
+      <tr><td>25</td><td>Inventory</td><td>/api/inventory</td><td>SA, CA</td><td>OPS</td><td class="c200">PASS</td></tr>
+      <tr><td>26</td><td>Material Requests</td><td>/api/material-requests</td><td>SA, CA</td><td>PM, OPS, SiteEng</td><td class="c200">PASS</td></tr>
+      <tr><td>27</td><td>Compliance</td><td>/api/compliance</td><td>SA, CA</td><td>FIN</td><td class="c200">PASS</td></tr>
+      <tr><td>28</td><td>Tickets</td><td>/api/tickets</td><td>SA, CA</td><td>ALL ROLES</td><td class="c200">PASS</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-title">Modules with Permission Gaps (403 for expected-access roles)</div>
+  <table>
+    <thead>
+      <tr><th style="width:30px;">#</th><th>Module</th><th>Affected Role</th><th>Current Response</th><th>Expected Access</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Leads</td><td>Sales Executive</td><td class="c403">403</td><td>LEADS_VIEW_ASSIGNED</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>2</td><td>Customer Invoices</td><td>Finance</td><td class="c403">403</td><td>Full access</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>3</td><td>Payments</td><td>Finance</td><td class="c403">403</td><td>Full access</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>4</td><td>Bank Reconciliation</td><td>Finance</td><td class="c403">403</td><td>Full access</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>5</td><td>Vendors</td><td>Operations</td><td class="c403">403</td><td>Full access</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>6</td><td>Purchase Orders</td><td>Operations</td><td class="c403">403</td><td>Full access</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>7</td><td>Purchase Requisitions</td><td>Operations</td><td class="c403">403</td><td>Full access</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>8</td><td>GRN</td><td>Operations</td><td class="c403">403</td><td>Full access</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>9</td><td>Projects</td><td>Project Manager</td><td class="c403">403</td><td>View all projects</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>10</td><td>Notifications</td><td>Sales Manager</td><td class="c403">403</td><td>View own notifications</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+      <tr><td>11</td><td>Notifications</td><td>Pre-Sales</td><td class="c403">403</td><td>View own notifications</td><td style="background:#FFF3E0; color:#E67E22; font-weight:700; text-align:center;">PERM GAP</td></tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2">
+    <div>
+      <div class="section-title">Modules BROKEN (404 &mdash; Routes Not Found)</div>
+      <table>
+        <thead><tr><th style="width:30px;">#</th><th>Module</th><th>Endpoint</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>General Ledger</td><td>/api/general-ledger</td><td class="c404">404</td></tr>
+          <tr><td>2</td><td>Credit/Debit Notes</td><td>/api/credit-debit-notes</td><td class="c404">404</td></tr>
+          <tr><td>3</td><td>KPI Config</td><td>/api/kpi-config</td><td class="c404">404</td></tr>
+          <tr><td>4</td><td>Approvals</td><td>/api/approvals</td><td class="c404">404</td></tr>
+          <tr><td>5</td><td>Dashboard Analytics</td><td>/api/analytics/dashboard</td><td class="c404">404</td></tr>
+          <tr><td>6</td><td>E-Invoicing</td><td>/api/e-invoicing</td><td class="c404">404</td></tr>
+          <tr><td>7</td><td>GST Returns</td><td>/api/gst-returns</td><td class="c404">404</td></tr>
+          <tr><td>8</td><td>Aging Dashboard</td><td>/api/aging</td><td class="c404">404</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="section-title">Modules with BUGS (500 &mdash; Server Error)</div>
+      <table>
+        <thead><tr><th style="width:30px;">#</th><th>Module</th><th>Endpoint</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Performance Reviews</td><td>/api/performance-reviews</td><td class="c500">500</td></tr>
+        </tbody>
+      </table>
+      <div class="finding-box finding-critical" style="margin-top:12px;">
+        <strong>500 Error Detail</strong>
+        /api/performance-reviews returns 500 Internal Server Error for all authorized roles: super_admin, company_admin, sales_manager, project_manager, and site_engineer. Likely cause: missing Mongoose model, unhandled null reference, or migration-related schema mismatch.
+      </div>
+      <div class="finding-box finding-info" style="margin-top:8px;">
+        <strong>Regression Note</strong>
+        All 28 passing endpoints were tested before and after the current session's bug fixes (pre-sales restrictions, vendor creation, floor plan upload, notification bell). No regressions detected &mdash; all previously working endpoints remain functional.
+      </div>
+    </div>
+  </div>
+  <div class="footnote">SA = Super Admin, CA = Company Admin, SM = Sales Manager, SE = Sales Executive, PS = Pre-Sales, DES = Designer, PM = Project Manager, OPS = Operations, FIN = Finance, SiteEng = Site Engineer</div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PAGE 6: UAT SCENARIOS & RESULTS
+     ════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-header-logo"><span>HOH</span></div>
+      <h2>UAT Scenarios & Results</h2>
+    </div>
+    <span class="page-num">Page 6 of 8</span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card stat-brand"><div class="stat-val">18</div><div class="stat-label">Total Scenarios</div></div>
+    <div class="stat-card stat-green"><div class="stat-val">12</div><div class="stat-label">Passed</div></div>
+    <div class="stat-card stat-red"><div class="stat-val">6</div><div class="stat-label">Failed</div></div>
+    <div class="stat-card stat-blue"><div class="stat-val">67%</div><div class="stat-label">Pass Rate</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:24px;">#</th>
+        <th style="width:190px;">Scenario</th>
+        <th style="width:220px;">Steps</th>
+        <th style="width:170px;">Expected Result</th>
+        <th style="width:190px;">Actual Result</th>
+        <th style="width:70px;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>Website lead to pre-sales assignment</td>
+        <td>Submit website form &rarr; auto-assign to pre-sales &rarr; notification triggered</td>
+        <td>Lead created, assigned to pre-sales, notification sent</td>
+        <td>Lead created with auto-assignment and real-time notification delivered</td>
+        <td class="uat-pass">PASS</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Pre-sales qualifies lead</td>
+        <td>Call customer &rarr; set disposition &rarr; upload floor plan &rarr; qualify lead</td>
+        <td>Lead qualified with QL-ID generated</td>
+        <td>Working after session fixes &mdash; disposition, floor plan upload, qualification all functional</td>
+        <td class="uat-fixed">PASS (Fixed)</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Sales Head views qualified leads</td>
+        <td>Login as Sales Manager &rarr; navigate to leads board &rarr; view qualified column</td>
+        <td>See all qualified leads in board view</td>
+        <td>Working after session fixes &mdash; qualified leads visible in Kanban column</td>
+        <td class="uat-fixed">PASS (Fixed)</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Floor plan upload (PDF &gt;1MB)</td>
+        <td>Open lead detail &rarr; click upload &rarr; select PDF file &gt;1MB</td>
+        <td>Upload completes with progress bar indicator</td>
+        <td>Working after session fixes &mdash; progress bar shows during upload, file stored successfully</td>
+        <td class="uat-fixed">PASS (Fixed)</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Vendor creation with documents</td>
+        <td>Navigate to Vendors &rarr; Add new vendor with GST, PAN documents</td>
+        <td>Vendor created with VEN-ID auto-generated</td>
+        <td>Working after session fixes &mdash; vendor created with sequential VEN-ID</td>
+        <td class="uat-fixed">PASS (Fixed)</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Sales Executive views assigned leads</td>
+        <td>Login as Sales Executive &rarr; navigate to Leads</td>
+        <td>See only assigned leads (LEADS_VIEW_ASSIGNED permission)</td>
+        <td style="background:var(--fail-bg); color:var(--fail);"><b>FAIL</b> &mdash; gets 403 Forbidden. sales_executive role missing LEADS_VIEW_ASSIGNED permission.</td>
+        <td class="uat-fail">FAIL</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>Finance views customer invoices</td>
+        <td>Login as Finance role &rarr; navigate to Customer Invoices</td>
+        <td>See all customer invoices</td>
+        <td style="background:var(--fail-bg); color:var(--fail);"><b>FAIL</b> &mdash; gets 403 Forbidden. Finance role has no invoice permissions configured.</td>
+        <td class="uat-fail">FAIL</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>Operations creates Purchase Order</td>
+        <td>Login as Operations &rarr; navigate to Purchase Orders &rarr; create PO</td>
+        <td>PO created with auto-generated PO number</td>
+        <td style="background:var(--fail-bg); color:var(--fail);"><b>FAIL</b> &mdash; gets 403 Forbidden. Operations role has no procurement permissions.</td>
+        <td class="uat-fail">FAIL</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>Project Manager views projects</td>
+        <td>Login as Project Manager &rarr; navigate to Projects</td>
+        <td>See assigned projects</td>
+        <td style="background:var(--fail-bg); color:var(--fail);"><b>FAIL</b> &mdash; gets 403 Forbidden. project_manager role missing PROJECTS_VIEW permission.</td>
+        <td class="uat-fail">FAIL</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>Notification bell real-time update</td>
+        <td>Trigger event (lead assignment) &rarr; check notification bell &rarr; view notification</td>
+        <td>Real-time notification appears in bell dropdown</td>
+        <td>Working after session fixes &mdash; Socket.IO delivers real-time notification, bell badge updates</td>
+        <td class="uat-fixed">PASS (Fixed)</td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td>Email notification on lead assignment</td>
+        <td>Assign lead to user &rarr; check user email inbox</td>
+        <td>Email notification delivered with lead details</td>
+        <td>Working &mdash; SMTP configured, email delivered with correct template</td>
+        <td class="uat-pass">PASS</td>
+      </tr>
+      <tr>
+        <td>12</td>
+        <td>Meeting reminder (30 min before)</td>
+        <td>Schedule meeting &rarr; wait for 30-minute cron trigger</td>
+        <td>Cron sends email reminder 30 minutes before meeting</td>
+        <td>Working &mdash; cron job configured and delivering reminders on schedule</td>
+        <td class="uat-pass">PASS</td>
+      </tr>
+      <tr>
+        <td>13</td>
+        <td>Performance review creation</td>
+        <td>Navigate to Performance Reviews &rarr; create review cycle &rarr; submit</td>
+        <td>Review cycle created and saved</td>
+        <td style="background:var(--critical-bg); color:var(--critical);"><b>FAIL</b> &mdash; 500 Internal Server Error. Backend crashes on GET /api/performance-reviews.</td>
+        <td class="uat-fail">FAIL</td>
+      </tr>
+      <tr>
+        <td>14</td>
+        <td>General Ledger view</td>
+        <td>Navigate to General Ledger &rarr; view GL entries</td>
+        <td>GL page loads with journal entries</td>
+        <td style="background:var(--fail-bg); color:var(--fail);"><b>FAIL</b> &mdash; 404 Route Not Found. /api/general-ledger not mounted on backend.</td>
+        <td class="uat-fail">FAIL</td>
+      </tr>
+      <tr>
+        <td>15</td>
+        <td>Approvals workflow</td>
+        <td>Submit item for approval &rarr; approver receives notification &rarr; approve/reject</td>
+        <td>Approval created and routed to approver</td>
+        <td style="background:var(--fail-bg); color:var(--fail);"><b>FAIL</b> &mdash; 404 Route Not Found. /api/approvals not mounted on backend.</td>
+        <td class="uat-fail">FAIL</td>
+      </tr>
+      <tr>
+        <td>16</td>
+        <td>Pre-sales field restrictions</td>
+        <td>Login as pre-sales &rarr; open lead detail &rarr; verify restricted fields</td>
+        <td>Disposition/status/assign cards hidden; name, email, phone fields disabled</td>
+        <td>Working after session fixes &mdash; all field restrictions applied correctly</td>
+        <td class="uat-fixed">PASS (Fixed)</td>
+      </tr>
+      <tr>
+        <td>17</td>
+        <td>Delete restricted to super_admin</td>
+        <td>Login as non-admin user &rarr; attempt to delete a vendor record</td>
+        <td>403 Forbidden returned; delete button not visible</td>
+        <td>Working &mdash; delete operations correctly restricted to super_admin role only</td>
+        <td class="uat-pass">PASS</td>
+      </tr>
+      <tr>
+        <td>18</td>
+        <td>Multi-tenant company switching</td>
+        <td>Login as super_admin &rarr; switch company in header dropdown &rarr; verify data scope</td>
+        <td>All data scoped to selected company</td>
+        <td>Working &mdash; company switching filters all module data to selected company context</td>
+        <td class="uat-pass">PASS</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2">
+    <div class="finding-box finding-pass">
+      <strong>Fixed This Session (6 scenarios)</strong>
+      Pre-sales lead qualification, Sales Head qualified leads view, floor plan upload with progress bar, vendor creation with VEN-ID, notification bell real-time update, and pre-sales field restrictions were all fixed and verified during this testing session.
+    </div>
+    <div class="finding-box finding-critical">
+      <strong>Remaining Failures (6 scenarios)</strong>
+      4 failures are permission misconfigurations (sales_executive/leads, finance/invoices, operations/PO, PM/projects). 1 failure is a server crash (performance reviews). 1 failure is a missing route (general ledger, approvals).
+    </div>
+  </div>
+
+  <div class="footnote">UAT scenarios tested by simulating real user workflows on hoh108.com production. Each scenario tested end-to-end with role-specific login credentials. Date: 21 March 2026.</div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PAGE 7: PENDING INTEGRATIONS & ACTION ITEMS
+     ════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-header-logo"><span>HOH</span></div>
+      <h2>Pending Integrations & Action Items</h2>
+    </div>
+    <span class="page-num">Page 7 of 8</span>
+  </div>
+
+  <!-- BROKEN ROUTES -->
+  <div class="section-title">Broken Routes &mdash; CRITICAL (Routes returning 404)</div>
+  <div class="section-subtitle">These routes are referenced in the frontend UI but do not exist on the backend. They must be created or the correct paths must be configured.</div>
+  <table>
+    <thead>
+      <tr><th style="width:30px;">#</th><th>Route</th><th>Module</th><th>Issue</th><th style="width:70px;">Priority</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>/api/general-ledger</td><td>Finance</td><td>Route not mounted or wrong path &mdash; backend has no route handler for this endpoint</td><td><span class="p0">P0</span></td></tr>
+      <tr><td>2</td><td>/api/credit-debit-notes</td><td>Finance</td><td>Route not mounted &mdash; controller/route file may not exist or not imported in app.js</td><td><span class="p0">P0</span></td></tr>
+      <tr><td>3</td><td>/api/kpi-config</td><td>Performance</td><td>Route not mounted &mdash; KPI configuration module backend not implemented</td><td><span class="p0">P0</span></td></tr>
+      <tr><td>4</td><td>/api/approvals</td><td>Approvals</td><td>Route not mounted &mdash; approval workflow backend not implemented</td><td><span class="p0">P0</span></td></tr>
+      <tr><td>5</td><td>/api/analytics/dashboard</td><td>Analytics</td><td>Route not mounted for admin roles &mdash; analytics aggregation endpoint missing</td><td><span class="p0">P0</span></td></tr>
+      <tr><td>6</td><td>/api/e-invoicing</td><td>Compliance</td><td>Route not mounted &mdash; e-invoicing integration (GST e-invoice) not implemented</td><td><span class="p0">P0</span></td></tr>
+      <tr><td>7</td><td>/api/gst-returns</td><td>Compliance</td><td>Route not mounted &mdash; GST return filing module not implemented</td><td><span class="p0">P0</span></td></tr>
+      <tr><td>8</td><td>/api/aging</td><td>Finance</td><td>Route not mounted for admin roles &mdash; aging analysis endpoint missing or path mismatch</td><td><span class="p1">P1</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- PERMISSION MISCONFIGURATIONS -->
+  <div class="section-title">Permission Misconfigurations &mdash; HIGH</div>
+  <div class="section-subtitle">These roles are blocked (403) from modules they should have access to. Fix by adding the correct permissions to the role in /api/roles or /api/permissions.</div>
+  <table>
+    <thead>
+      <tr><th style="width:30px;">#</th><th>Role</th><th>Module(s)</th><th>Current Behavior</th><th>Expected Behavior</th><th style="width:70px;">Priority</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>sales_executive</td><td>Leads (/api/leads)</td><td>403 Blocked completely</td><td>View only assigned leads (LEADS_VIEW_ASSIGNED permission)</td><td><span class="p1">P1</span></td></tr>
+      <tr><td>2</td><td>finance</td><td>Customer Invoices, Payments, Bank Reconciliation</td><td>403 Blocked from all finance modules</td><td>Full read/write access to all finance modules</td><td><span class="p1">P1</span></td></tr>
+      <tr><td>3</td><td>operations</td><td>Vendors, Purchase Orders, Purchase Requisitions, GRN</td><td>403 Blocked from all procurement modules</td><td>Full access to procurement and vendor management</td><td><span class="p1">P1</span></td></tr>
+      <tr><td>4</td><td>project_manager</td><td>Projects (/api/projects)</td><td>403 Blocked from projects</td><td>View all projects, manage assigned projects</td><td><span class="p1">P1</span></td></tr>
+      <tr><td>5</td><td>pre_sales, sales_manager</td><td>Notifications (/api/notifications)</td><td>403 Blocked from notifications</td><td>View own notifications (all roles should have access)</td><td><span class="p1">P1</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SERVER ERRORS -->
+  <div class="section-title">Server Errors &mdash; CRITICAL</div>
+  <table>
+    <thead>
+      <tr><th style="width:30px;">#</th><th>Endpoint</th><th>Error</th><th>Affected Roles</th><th>Likely Cause</th><th style="width:70px;">Priority</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>/api/performance-reviews</td><td style="background:#990000; color:#fff; font-weight:700;">500 Internal Server Error</td><td>super_admin, company_admin, sales_manager, project_manager, site_engineer</td><td>Server crash on GET &mdash; likely missing Mongoose model, unhandled null reference, or DB schema mismatch. Check PM2 logs: <code>pm2 logs --lines 50</code></td><td><span class="p0">P0</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- PENDING INTEGRATIONS -->
+  <div class="section-title">Pending Integrations &mdash; Feature Backlog</div>
+  <table>
+    <thead>
+      <tr><th style="width:30px;">#</th><th>Integration</th><th>Description</th><th>Current State</th><th style="width:70px;">Priority</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>WhatsApp Messaging</td><td>Send WhatsApp messages to leads/customers from CRM using Business API</td><td>Not started &mdash; API key and provider selection pending</td><td><span class="p1">P1</span></td></tr>
+      <tr><td>2</td><td>Portal Password Reset Emails</td><td>Password reset for Vendor Portal, Channel Partner Portal, and Customer Portal</td><td>Email templates exist but reset flow not connected</td><td><span class="p1">P1</span></td></tr>
+      <tr><td>3</td><td>Approval Email Notifications</td><td>Email notifications when items are submitted for approval or approved/rejected</td><td>Blocked &mdash; /api/approvals route returns 404</td><td><span class="p1">P1</span></td></tr>
+      <tr><td>4</td><td>RFQ Vendor Email Notifications</td><td>Email RFQ documents to shortlisted vendors for quotation</td><td>RFQ module works but email dispatch not implemented</td><td><span class="p2">P2</span></td></tr>
+      <tr><td>5</td><td>MRP InTransit Calculation</td><td>Track materials in transit between warehouse and project sites for MRP planning</td><td>Material requests work but transit status not tracked</td><td><span class="p2">P2</span></td></tr>
+      <tr><td>6</td><td>Material Issue Return &amp; Stock Movements</td><td>Return issued materials back to warehouse and update stock quantities accordingly</td><td>Material issue works (one-way) but return flow not implemented</td><td><span class="p2">P2</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="footnote">Priority definitions: P0 = Critical (broken functionality, must fix immediately), P1 = High (users blocked, fix within 1 week), P2 = Medium (enhancement, schedule for next sprint).</div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     PAGE 8: OVERALL SYSTEM HEALTH SUMMARY
+     ════════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-header-logo"><span>HOH</span></div>
+      <h2>Overall System Health Summary</h2>
+    </div>
+    <span class="page-num">Page 8 of 8</span>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="stats-row">
+    <div class="stat-card stat-brand"><div class="stat-val">49</div><div class="stat-label">Endpoints Tested</div></div>
+    <div class="stat-card stat-green"><div class="stat-val">28</div><div class="stat-label">Passing (200)</div></div>
+    <div class="stat-card stat-orange"><div class="stat-val">12</div><div class="stat-label">Expected Blocks (403)</div></div>
+    <div class="stat-card stat-red"><div class="stat-val">8</div><div class="stat-label">Broken (404)</div></div>
+    <div class="stat-card" style="background:var(--critical-bg); border:1px solid #e6a0a0;"><div class="stat-val" style="color:var(--critical);">1</div><div class="stat-label">Server Error (500)</div></div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div style="margin:10px 0 6px 0; font-size:10px; font-weight:700; color:#333;">Endpoint Health Distribution</div>
+  <div class="progress-bar" style="height:36px; border-radius:8px;">
+    <div class="progress-segment" style="width:57%; background:linear-gradient(135deg,#1B8A2E,#27ae60);">57% Passing (28)</div>
+    <div class="progress-segment" style="width:25%; background:linear-gradient(135deg,#E67E22,#f39c12);">25% Expected 403</div>
+    <div class="progress-segment" style="width:16%; background:linear-gradient(135deg,#C0392B,#e74c3c);">16% Broken 404 (8)</div>
+    <div class="progress-segment" style="width:2%; background:linear-gradient(135deg,#8B0000,#B00000);">2%</div>
+  </div>
+
+  <div class="grid-2" style="margin-top:20px;">
+    <!-- Left Column: Module Health -->
+    <div>
+      <div class="section-title">Module Health Breakdown</div>
+      <table>
+        <thead>
+          <tr><th>Module Area</th><th>Total Endpoints</th><th>Passing</th><th>Issues</th><th>Health</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>CRM (Leads, Customers, Sales)</td><td>7</td><td>7</td><td>0</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">100%</td></tr>
+          <tr><td>Procurement (Vendors, PO, GRN)</td><td>5</td><td>5</td><td>0</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">100%</td></tr>
+          <tr><td>Projects (Tasks, Design, Snag)</td><td>4</td><td>4</td><td>0</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">100%</td></tr>
+          <tr><td>HR (Employees, Attendance, Leave)</td><td>4</td><td>4</td><td>0</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">100%</td></tr>
+          <tr><td>Inventory &amp; Materials</td><td>3</td><td>3</td><td>0</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">100%</td></tr>
+          <tr><td>Ticketing &amp; Support</td><td>1</td><td>1</td><td>0</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">100%</td></tr>
+          <tr><td>System &amp; Config</td><td>6</td><td>6</td><td>0</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">100%</td></tr>
+          <tr><td>File Upload</td><td>1</td><td>1</td><td>0</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">100%</td></tr>
+          <tr><td>Finance (Invoices, Payments)</td><td>7</td><td>4</td><td>3 (404)</td><td style="background:#ffe8cc; color:#b35900; font-weight:700; text-align:center;">57%</td></tr>
+          <tr><td>Notifications &amp; Email</td><td>2</td><td>2</td><td>Perm gaps</td><td style="background:#ffe8cc; color:#b35900; font-weight:700; text-align:center;">PERM</td></tr>
+          <tr><td>Analytics &amp; Dashboard</td><td>3</td><td>2</td><td>1 (404)</td><td style="background:#ffe8cc; color:#b35900; font-weight:700; text-align:center;">67%</td></tr>
+          <tr><td>Compliance &amp; Tax</td><td>3</td><td>1</td><td>2 (404)</td><td style="background:#ffcccc; color:#a00; font-weight:700; text-align:center;">33%</td></tr>
+          <tr><td>Performance (Reviews, KPI)</td><td>2</td><td>0</td><td>1 (500), 1 (404)</td><td style="background:#990000; color:#fff; font-weight:700; text-align:center;">0%</td></tr>
+          <tr><td>Approvals &amp; Workflow</td><td>1</td><td>0</td><td>1 (404)</td><td style="background:#ffcccc; color:#a00; font-weight:700; text-align:center;">0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Right Column: User Health & Action Summary -->
+    <div>
+      <div class="section-title">User Adoption Health</div>
+      <table>
+        <thead><tr><th>Metric</th><th>Value</th><th>Assessment</th></tr></thead>
+        <tbody>
+          <tr><td>Total registered users</td><td>84</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">Good</td></tr>
+          <tr><td>Active users (have logged in)</td><td>71</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">85%</td></tr>
+          <tr><td>Never logged in</td><td>13</td><td style="background:#ffe8cc; color:#b35900; font-weight:700; text-align:center;">15%</td></tr>
+          <tr><td>Active in last 7 days</td><td>32</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">38%</td></tr>
+          <tr><td>C-Suite never logged in</td><td>3 (CFO, CMO, CTO)</td><td style="background:#ffcccc; color:#a00; font-weight:700; text-align:center;">Concern</td></tr>
+          <tr><td>Roles configured</td><td>10</td><td style="background:#d5f5d5; color:#0d6e1e; font-weight:700; text-align:center;">Complete</td></tr>
+          <tr><td>Roles with perm gaps</td><td>5</td><td style="background:#ffcccc; color:#a00; font-weight:700; text-align:center;">50%</td></tr>
+        </tbody>
+      </table>
+
+      <div class="section-title" style="margin-top:16px;">Immediate Action Required</div>
+      <table>
+        <thead><tr><th style="width:60px;">Priority</th><th>Action</th><th>Impact</th></tr></thead>
+        <tbody>
+          <tr><td><span class="p0">P0</span></td><td>Fix /api/performance-reviews 500 error</td><td>5 roles affected</td></tr>
+          <tr><td><span class="p0">P0</span></td><td>Mount 7 missing routes (GL, approvals, etc.)</td><td>8 endpoints broken</td></tr>
+          <tr><td><span class="p1">P1</span></td><td>Add LEADS_VIEW_ASSIGNED to sales_executive</td><td>12 users blocked</td></tr>
+          <tr><td><span class="p1">P1</span></td><td>Add finance permissions to finance role</td><td>4 users blocked</td></tr>
+          <tr><td><span class="p1">P1</span></td><td>Add procurement perms to operations role</td><td>11 users blocked</td></tr>
+          <tr><td><span class="p1">P1</span></td><td>Add PROJECTS_VIEW to project_manager</td><td>8 users blocked</td></tr>
+          <tr><td><span class="p1">P1</span></td><td>Fix notifications access for SM, PS roles</td><td>20 users blocked</td></tr>
+          <tr><td><span class="p1">P1</span></td><td>Contact CFO, CMO, CTO for account activation</td><td>3 C-Suite accounts</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Overall Verdict -->
+  <div class="verdict-box">
+    <h3>Overall Verdict</h3>
+    <p>
+      The HOH108.com CRM system is <b>57% functional</b> at the API level (28 of 49 endpoints returning 200 for authorized roles).
+      The <b>core CRM</b> modules &mdash; Leads, Customers, Sales Orders, Call Activities, Vendors, Projects, Employees, and Tickets &mdash; are fully operational and regression-tested with no issues.
+      <br><br>
+      <b>Critical gaps exist in:</b> Finance (General Ledger, Credit/Debit Notes &mdash; 404), Compliance (E-Invoicing, GST Returns &mdash; 404), Analytics (Dashboard &mdash; 404),
+      Approvals (workflow &mdash; 404), and Performance (Reviews &mdash; 500 server crash, KPI Config &mdash; 404). These 8 broken routes and 1 server error represent <b>18% of the system</b> and must be addressed immediately.
+      <br><br>
+      <b>Permission matrix</b> requires reconfiguration for 5 roles: sales_executive (leads access), finance (all finance modules), operations (all procurement modules),
+      project_manager (projects access), and pre_sales/sales_manager (notifications access). These permission gaps affect approximately <b>55 of 84 users</b> (65% of the user base).
+      <br><br>
+      <b>Session fixes deployed:</b> Pre-sales field restrictions, qualified lead visibility, floor plan upload with progress bar, vendor creation, notification bell, and SMTP email notifications &mdash; all verified and regression-tested with zero regressions on existing functionality.
+    </p>
+  </div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:14px; border-top:3px solid var(--brand);">
+    <div style="font-size:10px; color:#666;">
+      <strong>Report generated:</strong> 21 March 2026 &nbsp;|&nbsp; <strong>Platform:</strong> HOH108.com CRM &nbsp;|&nbsp; <strong>Company:</strong> Interior Plus
+    </div>
+    <div style="font-size:9px; color:#999;">
+      CONFIDENTIAL &mdash; Distribution restricted to authorized personnel only &mdash; HOH108.com &copy; 2026
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

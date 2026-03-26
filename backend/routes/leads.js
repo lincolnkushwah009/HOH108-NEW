@@ -701,6 +701,17 @@ router.put('/:id',
       // Apply updates
       Object.keys(req.body).forEach(key => {
         if (key !== 'activities' && key !== 'teamMembers' && key !== 'company' && key !== 'leadId') {
+          // Protect budget field — must be an object, not empty string
+          if (key === 'budget') {
+            const val = req.body[key]
+            if (val && typeof val === 'object') {
+              // Merge with existing budget to preserve currency default
+              lead.budget = { ...lead.budget?.toObject?.() || {}, ...val }
+              if (!lead.budget.currency) lead.budget.currency = 'INR'
+            }
+            // Skip if budget is empty string, null, or undefined
+            return
+          }
           lead[key] = req.body[key]
         }
       })
@@ -1626,6 +1637,11 @@ router.post('/:id/assign-department',
         })
         lead.lastActivityAt = new Date()
 
+        // Fix corrupted budget field before saving (budget may be empty string from bad data)
+        if (lead.budget !== undefined && typeof lead.budget !== 'object') {
+          lead.budget = { currency: 'INR' }
+        }
+
         await lead.save()
 
         return res.json({
@@ -1743,7 +1759,7 @@ router.put('/:id/qualify',
             entityType: 'lead',
             entityId: lead._id,
             title: 'New Qualified Lead',
-            message: `Lead "${lead.name}" (${lead.qualifiedLeadId || lead.leadId}) has been qualified by Pre-Sales and is ready for assignment. Please assign a Sales Executive and ACM.`,
+            message: `Lead "${lead.name}" (${lead.qualifiedLeadId || lead.leadId}) has been qualified by Pre-Sales and is ready for assignment. Please assign a SM/ASM.`,
             recipientUserIds: salesHeads.map(u => u._id),
             performedBy: req.user._id,
             metadata: { leadId: lead.leadId, qualifiedLeadId: lead.qualifiedLeadId, city: lead.location?.city }
@@ -2496,27 +2512,27 @@ router.post('/:id/transfer-to-sales',
 )
 
 /**
- * @desc    Sales Manager assigns qualified lead to a sales executive
+ * @desc    Sales Head assigns SM/ASM to a qualified lead
  * @route   POST /api/leads/:id/assign-sales-executive
- * @access  Private (sales_manager+ only)
+ * @access  Private (sales_manager / admin only)
  */
 router.post('/:id/assign-sales-executive',
   requireModulePermission('leads', 'edit'),
   requirePermission(PERMISSIONS.LEADS_ASSIGN),
   async (req, res) => {
     try {
-      const { executiveId, acmId } = req.body
+      const { executiveId } = req.body
 
-      // Only sales_manager or higher can do this
+      // Only Sales Head (sales_manager) or admin can do this
       if (!['super_admin', 'company_admin', 'sales_manager'].includes(req.user.role)) {
         return res.status(403).json({
           success: false,
-          message: 'Only Sales Head can assign sales executives'
+          message: 'Only Sales Head can assign SM/ASM'
         })
       }
 
       if (!executiveId) {
-        return res.status(400).json({ success: false, message: 'Sales Executive is required' })
+        return res.status(400).json({ success: false, message: 'SM/ASM is required' })
       }
 
       const lead = await Lead.findById(req.params.id)
@@ -2527,108 +2543,171 @@ router.post('/:id/assign-sales-executive',
       if (!['qualified', 'meeting_status', 'cold', 'warm', 'hot'].includes(lead.primaryStatus)) {
         return res.status(400).json({
           success: false,
-          message: 'Only leads in the sales pipeline can be assigned to sales executives'
+          message: 'Only qualified leads can be assigned to SM/ASM'
         })
       }
 
-      const executive = await User.findById(executiveId)
-      if (!executive) {
-        return res.status(400).json({ success: false, message: 'Sales executive not found' })
-      }
-
-      // Look up ACM if provided
-      let acm = null
-      if (acmId) {
-        acm = await User.findById(acmId)
-        if (!acm) {
-          return res.status(400).json({ success: false, message: 'ACM not found' })
-        }
+      const smAsm = await User.findById(executiveId)
+      if (!smAsm) {
+        return res.status(400).json({ success: false, message: 'SM/ASM not found' })
       }
 
       const previousAssignee = lead.assignedTo
 
-      // Update the sales assignment to the executive
+      // Assign SM/ASM to sales department
       lead.departmentAssignments.sales = {
-        employee: executive._id,
-        employeeName: executive.name,
+        employee: smAsm._id,
+        employeeName: smAsm.name,
         assignedAt: new Date(),
         assignedBy: req.user._id,
         assignedByName: req.user.name,
         isActive: true,
         isExclusive: true
       }
-      lead.assignedTo = executive._id
+      lead.assignedTo = smAsm._id
 
-      // Assign ACM (from design team)
-      if (acm) {
-        lead.departmentAssignments.acm = {
-          employee: acm._id,
-          employeeName: acm.name,
-          assignedAt: new Date(),
-          assignedBy: req.user._id,
-          assignedByName: req.user.name,
-          isActive: true
-        }
-        // Add ACM to team members
-        const isAcmMember = lead.teamMembers.some(tm => tm.user?.toString() === acm._id.toString())
-        if (!isAcmMember) {
-          lead.teamMembers.push({ user: acm._id, role: 'collaborator', assignedBy: req.user._id })
-        }
-      }
-
-      const isMember = lead.teamMembers.some(tm => tm.user?.toString() === executive._id.toString())
+      const isMember = lead.teamMembers.some(tm => tm.user?.toString() === smAsm._id.toString())
       if (!isMember) {
-        lead.teamMembers.push({ user: executive._id, role: 'owner', assignedBy: req.user._id })
+        lead.teamMembers.push({ user: smAsm._id, role: 'owner', assignedBy: req.user._id })
       }
 
       lead.activities.push({
         action: 'assigned',
-        description: `Sales Head ${req.user.name} assigned lead to Sales Executive: ${executive.name}${acm ? `, ACM: ${acm.name}` : ''}`,
+        description: `Sales Head ${req.user.name} assigned lead to ${smAsm.role === 'agm_sales' ? 'ASM' : 'SM'}: ${smAsm.name}`,
         performedBy: req.user._id,
         performedByName: req.user.name,
         newValue: {
           department: 'sales',
-          employee: executive._id,
-          employeeName: executive.name,
-          ...(acm ? { acm: acm._id, acmName: acm.name } : {})
+          employee: smAsm._id,
+          employeeName: smAsm.name
         }
       })
       lead.lastActivityAt = new Date()
 
       await lead.save()
 
-      // Notify sales executive
+      // Notify SM/ASM
       notifyLeadEvent({
         companyId: lead.company,
         lead,
         event: 'lead_assigned',
-        title: 'Lead Assigned to You',
-        message: `Sales Head ${req.user.name} assigned lead "${lead.name}" to you.${acm ? ` ACM: ${acm.name}` : ''}`,
-        assignedOwner: executive._id,
+        title: 'Qualified Lead Assigned to You',
+        message: `Sales Head ${req.user.name} assigned qualified lead "${lead.name}" to you. Please assign a Community Manager.`,
+        assignedOwner: smAsm._id,
         previousOwner: previousAssignee,
         performedBy: req.user._id
       })
 
-      // Notify ACM
-      if (acm) {
-        const { notifyEvent } = await import('../utils/notificationService.js')
-        notifyEvent({
-          companyId: lead.company,
-          event: 'acm_assigned',
-          entityType: 'lead',
-          entityId: lead._id,
-          title: 'Assigned as ACM',
-          message: `You have been assigned as ACM for lead "${lead.name}". Sales Executive: ${executive.name}. Please assign a designer.`,
-          recipientUserIds: [acm._id],
-          performedBy: req.user._id,
-          metadata: { leadId: lead.leadId, salesExecutive: executive.name }
+      res.json({
+        success: true,
+        data: lead,
+        message: `Lead assigned to ${smAsm.name}`
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message })
+    }
+  }
+)
+
+/**
+ * @desc    SM/ASM assigns Community Manager (CM/ACM) to a lead
+ * @route   POST /api/leads/:id/assign-community-manager
+ * @access  Private (SM/ASM assigned to this lead, or admin)
+ */
+router.post('/:id/assign-community-manager',
+  requireModulePermission('leads', 'edit'),
+  requirePermission(PERMISSIONS.LEADS_ASSIGN),
+  async (req, res) => {
+    try {
+      const { communityManagerId } = req.body
+
+      const allowedRoles = ['super_admin', 'company_admin', 'sales_manager', 'agm_sales']
+      if (!allowedRoles.includes(req.user.role)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Only SM/ASM can assign Community Managers'
         })
       }
+
+      if (!communityManagerId) {
+        return res.status(400).json({ success: false, message: 'Community Manager is required' })
+      }
+
+      const lead = await Lead.findById(req.params.id)
+      if (!lead) {
+        return res.status(404).json({ success: false, message: 'Lead not found' })
+      }
+
+      // Verify SM/ASM is assigned to this lead (or is admin/sales_manager)
+      const isAdmin = ['super_admin', 'company_admin', 'sales_manager'].includes(req.user.role)
+      const isAssignedSmAsm = lead.departmentAssignments?.sales?.employee?.toString() === req.user._id.toString()
+      if (!isAdmin && !isAssignedSmAsm) {
+        return res.status(403).json({
+          success: false,
+          message: 'Only the assigned SM/ASM can assign a Community Manager to this lead'
+        })
+      }
+
+      if (!['qualified', 'meeting_status', 'cold', 'warm', 'hot'].includes(lead.primaryStatus)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Only qualified leads can be assigned a Community Manager'
+        })
+      }
+
+      const cm = await User.findById(communityManagerId)
+      if (!cm) {
+        return res.status(400).json({ success: false, message: 'Community Manager not found' })
+      }
+
+      // Assign CM/ACM
+      lead.departmentAssignments.communityManager = {
+        employee: cm._id,
+        employeeName: cm.name,
+        assignedAt: new Date(),
+        assignedBy: req.user._id,
+        assignedByName: req.user.name,
+        isActive: true
+      }
+
+      const isCmMember = lead.teamMembers.some(tm => tm.user?.toString() === cm._id.toString())
+      if (!isCmMember) {
+        lead.teamMembers.push({ user: cm._id, role: 'collaborator', assignedBy: req.user._id })
+      }
+
+      lead.activities.push({
+        action: 'assigned',
+        description: `${req.user.name} assigned Community Manager: ${cm.name}`,
+        performedBy: req.user._id,
+        performedByName: req.user.name,
+        newValue: {
+          department: 'communityManager',
+          employee: cm._id,
+          employeeName: cm.name
+        }
+      })
+      lead.lastActivityAt = new Date()
+
+      await lead.save()
+
+      // Notify Community Manager
+      const { notifyEvent } = await import('../utils/notificationService.js')
+      notifyEvent({
+        companyId: lead.company,
+        event: 'community_manager_assigned',
+        entityType: 'lead',
+        entityId: lead._id,
+        title: 'Assigned as Community Manager',
+        message: `${req.user.name} assigned you as Community Manager for lead "${lead.name}". Please assign a designer.`,
+        recipientUserIds: [cm._id],
+        performedBy: req.user._id,
+        metadata: { leadId: lead.leadId }
+      })
 
       res.json({
         success: true,
         data: lead,
-        message: `Lead assigned to ${executive.name}${acm ? ` with ACM ${acm.name}` : ''}`
+        message: `Community Manager ${cm.name} assigned to lead`
       })
     } catch (error) {
       res.status(500).json({ success: false, message: error.message })
@@ -2901,9 +2980,9 @@ router.put('/:id/requirement-meeting/status',
 // ==========================================
 
 /**
- * @desc    Assign designer to a lead (ACM, Design Head, or admin)
+ * @desc    Assign designer to a lead (Community Manager, Design Head, or admin)
  * @route   POST /api/leads/:id/assign-designer
- * @access  Private (ACM assigned to this lead, design_head, admin)
+ * @access  Private (Community Manager assigned to this lead, design_head, admin)
  */
 router.post('/:id/assign-designer',
   requireModulePermission('leads', 'edit'),
@@ -2920,15 +2999,16 @@ router.post('/:id/assign-designer',
         return res.status(404).json({ success: false, message: 'Lead not found' })
       }
 
-      // ACM assigned to this lead, Design Head, or admin can assign
+      // Community Manager assigned to this lead, Design Head, or admin can assign
       const isDesignHead = req.user.approvalAuthority?.approverRole === 'design_head'
       const isAdmin = ['super_admin', 'company_admin'].includes(req.user.role)
-      const isACM = lead.departmentAssignments?.acm?.employee?.toString() === req.user._id.toString()
+      const isCommunityManager = lead.departmentAssignments?.communityManager?.employee?.toString() === req.user._id.toString()
+        || lead.departmentAssignments?.acm?.employee?.toString() === req.user._id.toString() // backward compat
 
-      if (!isDesignHead && !isAdmin && !isACM) {
+      if (!isDesignHead && !isAdmin && !isCommunityManager) {
         return res.status(403).json({
           success: false,
-          message: 'Only ACM or Design Head can assign designers'
+          message: 'Only Community Manager or Design Head can assign designers'
         })
       }
 

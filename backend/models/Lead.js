@@ -327,8 +327,8 @@ const leadSchema = new mongoose.Schema({
         default: false
       } // True after qualification - only Sales can edit
     },
-    // ACM - Assistant Client Manager (from Design team, assigned by Sales Head)
-    acm: {
+    // Community Manager (from Design team, assigned by Sales Head)
+    communityManager: {
       employee: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -345,7 +345,7 @@ const leadSchema = new mongoose.Schema({
         default: true
       }
     },
-    // Design Department (assigned by ACM)
+    // Design Department (assigned by Community Manager)
     design: {
       employee: {
         type: mongoose.Schema.Types.ObjectId,
@@ -1360,6 +1360,16 @@ leadSchema.pre('save', function(next) {
     if (!this.dateTracking) this.dateTracking = {}
     this.dateTracking.leadGeneratedDate = this.createdAt || new Date()
   }
+
+  // Sanitize budget field — fix corrupted data where budget is empty string instead of object
+  if (this.budget !== undefined && this.budget !== null && typeof this.budget !== 'object') {
+    this.budget = { currency: 'INR' }
+  }
+  // Ensure budget.currency exists if budget is an object
+  if (this.budget && typeof this.budget === 'object' && !this.budget.currency) {
+    this.budget.currency = 'INR'
+  }
+
   next()
 })
 

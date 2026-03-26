@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Plus, MoreVertical, FileText, Eye, Send, Award, Trash2 } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 import PageHeader from '../../components/layout/PageHeader'
 import { Button, Card, Table, Badge, SearchInput, Pagination, Dropdown, Modal, Input, Select } from '../../components/ui'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
@@ -8,6 +9,7 @@ import { formatDate, formatCurrency } from '../../utils/helpers'
 import { rfqAPI, vendorsAPI } from '../../utils/api'
 
 const RFQManagement = () => {
+    const { user } = useAuth()
     const [rfqs, setRfqs] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -133,7 +135,14 @@ const RFQManagement = () => {
                                                 <Dropdown.Item icon={Eye}>View Details</Dropdown.Item>
                                                 {rfq.status === 'draft' && <Dropdown.Item icon={Send} onClick={() => handleSend(rfq._id)}>Send to Vendors</Dropdown.Item>}
                                                 {rfq.status === 'quoted' && <Dropdown.Item icon={Award}>Award Vendor</Dropdown.Item>}
-                                                <Dropdown.Item icon={Trash2} onClick={() => handleDelete(rfq._id)}>Delete</Dropdown.Item>
+                                                {user?.role === 'super_admin' && (
+                                                  <>
+                                                    <Dropdown.Divider />
+                                                    <Dropdown.Item icon={Trash2} danger onClick={() => handleDelete(rfq._id)}>
+                                                      Delete
+                                                    </Dropdown.Item>
+                                                  </>
+                                                )}
                                             </Dropdown>
                                         </Table.Cell>
                                     </Table.Row>

@@ -87,8 +87,9 @@ const NotificationBell = () => {
       console.error('Failed to mark notification as read:', err)
     }
 
-    if (notification.link) {
-      navigate(notification.link)
+    const link = notification.link || notification.actionUrl
+    if (link) {
+      navigate(link)
     }
     setShowPanel(false)
   }
@@ -288,13 +289,13 @@ const NotificationBell = () => {
             notifications.map((notification) => (
               <div
                 key={notification._id}
-                style={notificationItemStyle(notification.read)}
+                style={notificationItemStyle((notification.read || notification.isRead))}
                 onClick={() => handleNotificationClick(notification)}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = '#f8fafc'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = notification.read ? 'white' : '#FDF8F4'
+                  e.currentTarget.style.background = (notification.read || notification.isRead) ? 'white' : '#FDF8F4'
                 }}
               >
                 <div style={{ flexShrink: 0, marginTop: '2px' }}>
@@ -304,7 +305,7 @@ const NotificationBell = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                     <span style={{
                       fontSize: '13px',
-                      fontWeight: notification.read ? '500' : '700',
+                      fontWeight: (notification.read || notification.isRead) ? '500' : '700',
                       color: '#1e293b',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -334,7 +335,7 @@ const NotificationBell = () => {
                     {formatRelativeTime(notification.createdAt)}
                   </span>
                 </div>
-                {!notification.read && (
+                {!(notification.read || notification.isRead) && (
                   <div style={{
                     width: '8px',
                     height: '8px',

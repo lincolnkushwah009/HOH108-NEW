@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, MoreVertical, Package, Eye, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
+import { Plus, MoreVertical, Package, Eye, CheckCircle, XCircle, AlertTriangle, Trash2 } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 import PageHeader from '../../components/layout/PageHeader'
 import { Button, Card, Table, Badge, SearchInput, Pagination, Dropdown, Modal, Input, Select } from '../../components/ui'
 import { PageLoader } from '../../components/ui/LoadingSpinner'
@@ -10,6 +11,7 @@ import { goodsReceiptsAPI } from '../../utils/api'
 
 const GoodsReceipt = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [grns, setGrns] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -63,6 +65,16 @@ const GoodsReceipt = () => {
       loadGRNs()
     } catch (err) {
       console.error('Failed to accept GRN:', err)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this? This cannot be undone.')) return
+    try {
+      await goodsReceiptsAPI.delete(id)
+      loadGRNs()
+    } catch (err) {
+      alert('Failed to delete: ' + (err.message || 'Unknown error'))
     }
   }
 
@@ -250,6 +262,14 @@ const GoodsReceipt = () => {
                         </Dropdown.Item>
                         {grn.status === 'inspected' && (
                           <Dropdown.Item icon={CheckCircle} onClick={() => handleAccept(grn._id)}>Accept & Update Stock</Dropdown.Item>
+                        )}
+                        {user?.role === 'super_admin' && (
+                          <>
+                            <Dropdown.Divider />
+                            <Dropdown.Item icon={Trash2} danger onClick={() => handleDelete(grn._id)}>
+                              Delete
+                            </Dropdown.Item>
+                          </>
                         )}
                       </Dropdown>
                     </Table.Cell>

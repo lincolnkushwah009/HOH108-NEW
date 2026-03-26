@@ -234,6 +234,7 @@ const ChannelPartnerLeads = () => {
                     <th style={thStyle}>Lead ID</th>
                     <th style={thStyle}>Name</th>
                     <th style={thStyle}>Phone</th>
+                    <th style={thStyle}>Email</th>
                     <th style={thStyle}>City</th>
                     <th style={thStyle}>Status</th>
                     <th style={thStyle}>Submitted Date</th>
@@ -253,7 +254,8 @@ const ChannelPartnerLeads = () => {
                           <span style={{ fontWeight: '500', color: '#1f2937' }}>{lead.name}</span>
                         </td>
                         <td style={tdStyle}>{lead.phone}</td>
-                        <td style={tdStyle}>{lead.city || '-'}</td>
+                        <td style={tdStyle}><span style={{ fontSize: '13px', color: '#6b7280' }}>{lead.email || '-'}</span></td>
+                        <td style={tdStyle}>{lead.location?.city || '-'}</td>
                         <td style={tdStyle}>
                           <span style={{
                             padding: '4px 12px',

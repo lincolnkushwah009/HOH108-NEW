@@ -156,6 +156,7 @@ import packageRoutes from './routes/packages.js'
 import masterAgreementRoutes from './routes/masterAgreements.js'
 import tdsConfigRoutes from './routes/tdsConfig.js'
 import dataRetentionRoutes from './routes/dataRetention.js'
+import dataMigrationRoutes from './routes/dataMigration.js'
 
 // Configuration Management Master
 import processConfigRoutes from './routes/processConfiguration.js'
@@ -391,6 +392,7 @@ app.use('/api/packages', packageRoutes)
 app.use('/api/master-agreements', masterAgreementRoutes)
 app.use('/api/tds-config', tdsConfigRoutes)
 app.use('/api/data-retention', dataRetentionRoutes)
+app.use('/api/data-migration', dataMigrationRoutes)
 
 // Configuration Management Master
 app.use('/api/process-config', processConfigRoutes)

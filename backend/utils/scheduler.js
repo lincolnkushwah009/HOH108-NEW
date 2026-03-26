@@ -265,6 +265,94 @@ async function syncCallyzerCalls() {
   }
 }
 
+/**
+ * Notify sales team 30 minutes before scheduled meetings (VMs)
+ * Runs every 10 minutes, finds meetings in the next 20-40 min window to avoid duplicates
+ */
+async function notifyUpcomingMeetings() {
+  try {
+    const Lead = (await import('../models/Lead.js')).default
+    const Notification = (await import('../models/Notification.js')).default
+    const { emitToUser } = await import('./socketService.js')
+
+    const now = new Date()
+    // Get today's date range (meetings scheduled for today)
+    const todayStart = new Date(now)
+    todayStart.setHours(0, 0, 0, 0)
+    const todayEnd = new Date(now)
+    todayEnd.setHours(23, 59, 59, 999)
+
+    const leads = await Lead.find({
+      'scheduledMeeting.date': { $gte: todayStart, $lte: todayEnd },
+      'scheduledMeeting.time': { $exists: true, $ne: '' },
+      'scheduledMeeting.status': { $in: ['scheduled', 'confirmed', undefined] },
+      primaryStatus: { $in: ['qualified', 'meeting_status'] }
+    }).populate('assignedTo', '_id name')
+      .populate('scheduledMeeting.salesPerson', '_id name')
+      .populate('scheduledMeeting.designer', '_id name')
+      .populate('departmentAssignments.preSales.employee', '_id name')
+
+    for (const lead of leads) {
+      // Parse the time string (e.g. "14:30") and combine with date to get actual meeting datetime
+      const timeParts = (lead.scheduledMeeting.time || '').match(/^(\d{1,2}):(\d{2})/)
+      if (!timeParts) continue
+      const meetingDateTime = new Date(lead.scheduledMeeting.date)
+      meetingDateTime.setHours(parseInt(timeParts[1]), parseInt(timeParts[2]), 0, 0)
+
+      // Check if meeting is 20-40 minutes from now (30 min window to avoid duplicates with 10 min cron)
+      const minsUntilMeeting = (meetingDateTime - now) / (1000 * 60)
+      if (minsUntilMeeting < 20 || minsUntilMeeting > 40) continue
+
+      // Collect all people to notify: assigned person, sales person, designer, presales
+      const recipientSet = new Set()
+      if (lead.assignedTo?._id) recipientSet.add(lead.assignedTo._id.toString())
+      if (lead.scheduledMeeting?.salesPerson?._id) recipientSet.add(lead.scheduledMeeting.salesPerson._id.toString())
+      if (lead.scheduledMeeting?.designer?._id) recipientSet.add(lead.scheduledMeeting.designer._id.toString())
+      if (lead.departmentAssignments?.preSales?.employee?._id) recipientSet.add(lead.departmentAssignments.preSales.employee._id.toString())
+
+      // Also notify sales managers in the company
+      const User = (await import('../models/User.js')).default
+      const salesManagers = await User.find({
+        company: lead.company,
+        role: 'sales_manager',
+        isActive: true
+      }).select('_id').lean()
+      salesManagers.forEach(sm => recipientSet.add(sm._id.toString()))
+
+      if (recipientSet.size === 0) continue
+
+      const meetingTime = lead.scheduledMeeting.time || ''
+      const meetingDate = new Date(lead.scheduledMeeting.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+      const city = lead.location?.city || ''
+
+      // Check if we already sent a reminder for this lead today
+      const existingReminder = await Notification.findOne({
+        entityId: lead._id,
+        'metadata.event': 'meeting_reminder_30min',
+        createdAt: { $gte: new Date(now.getTime() - 60 * 60 * 1000) } // within last hour
+      })
+      if (existingReminder) continue
+
+      const recipientIds = [...recipientSet]
+      await Notification.notifyUsers(recipientIds, {
+        company: lead.company,
+        type: 'warning',
+        category: 'lead',
+        title: `Meeting in 30 min — ${lead.name}`,
+        message: `Upcoming VM with "${lead.name}" ${city ? `(${city})` : ''} at ${meetingTime} on ${meetingDate}. Lead ID: ${lead.leadId || ''}`,
+        entityType: 'lead',
+        entityId: lead._id,
+        actionUrl: `/admin/leads/${lead._id}`,
+        metadata: { event: 'meeting_reminder_30min', leadId: lead.leadId }
+      })
+
+      logger.info(`Meeting reminder sent for lead ${lead.leadId} to ${recipientIds.length} people`)
+    }
+  } catch (err) {
+    logger.error('Meeting reminder job failed', { error: err.message })
+  }
+}
+
 async function checkDelegationExpiry() {
   try {
     const ApprovalDelegation = (await import('../models/ApprovalDelegation.js')).default
@@ -296,7 +384,10 @@ export function startScheduler() {
   // Every 30 minutes — auto-sync Callyzer calls
   jobs.push(cron.schedule('*/30 * * * *', syncCallyzerCalls))
 
-  logger.info('Scheduler started with 6 cron jobs')
+  // Every 10 minutes — notify sales team about upcoming meetings
+  jobs.push(cron.schedule('*/10 * * * *', notifyUpcomingMeetings))
+
+  logger.info('Scheduler started with 7 cron jobs')
 }
 
 export function stopScheduler() {

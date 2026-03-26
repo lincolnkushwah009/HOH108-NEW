@@ -169,6 +169,7 @@ import ExitManagementPage from './pages/hr/ExitManagement'
 // Additional CRM
 import LeadScoring from './pages/crm/LeadScoring'
 import SurveysPage from './pages/crm/Surveys'
+import DataMigration from './pages/crm/DataMigration'
 
 // Additional Settings
 import DocumentManager from './pages/settings/DocumentManager'
@@ -380,6 +381,7 @@ const AdminApp = () => {
                 <Route path="crm/surveys" element={<SurveysPage />} />
                 <Route path="crm/channel-partners" element={<ChannelPartners />} />
                 <Route path="crm/cp-data" element={<CPDataManagement />} />
+                <Route path="crm/data-migration" element={<DataMigration />} />
 
                 {/* Additional Settings */}
                 <Route path="documents" element={<DocumentManager />} />

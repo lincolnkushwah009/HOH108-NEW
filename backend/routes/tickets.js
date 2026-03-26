@@ -18,7 +18,9 @@ const router = express.Router()
 // All routes require authentication
 router.use(protect)
 router.use(setCompanyContext)
-router.use(requireModulePermission('all_tickets', 'view'))
+// Note: Module-level permission checks are applied per-route, not globally.
+// All authenticated employees can view categories, create tickets, and see their own tickets.
+// Only admin/managers need 'all_tickets' view permission to see all company tickets.
 
 // Debug logger for ticket routes
 router.use((req, res, next) => {

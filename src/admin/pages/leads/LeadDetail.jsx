@@ -25,6 +25,9 @@ import {
   Timer,
   Upload,
   Users,
+  PhoneIncoming,
+  Play,
+  Zap,
 } from 'lucide-react'
 import { leadsAPI, callActivitiesAPI, leadWorkflowAPI, employeesAPI, callyzerAPI } from '../../utils/api'
 import { useAuth } from '../../context/AuthContext'
@@ -68,18 +71,23 @@ const LeadDetail = () => {
   const [assigningUser, setAssigningUser] = useState(false)
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [transferring, setTransferring] = useState(false)
+  // Step 1: Sales Head assigns SM/ASM
   const [showSalesExecModal, setShowSalesExecModal] = useState(false)
   const [salesExecUsers, setSalesExecUsers] = useState([])
-  const [acmUsers, setAcmUsers] = useState([])
   const [selectedSalesExec, setSelectedSalesExec] = useState('')
-  const [selectedACM, setSelectedACM] = useState('')
   const [assigningSalesExec, setAssigningSalesExec] = useState(false)
   const [loadingSalesExec, setLoadingSalesExec] = useState(false)
-  // ACM assigns designer
-  const [showAcmDesignerModal, setShowAcmDesignerModal] = useState(false)
-  const [acmDesignerUsers, setAcmDesignerUsers] = useState([])
-  const [selectedAcmDesigner, setSelectedAcmDesigner] = useState('')
-  const [assigningAcmDesigner, setAssigningAcmDesigner] = useState(false)
+  // Step 2: SM/ASM assigns CM/ACM
+  const [showCmModal, setShowCmModal] = useState(false)
+  const [communityManagerUsers, setCommunityManagerUsers] = useState([])
+  const [selectedCommunityManager, setSelectedCommunityManager] = useState('')
+  const [assigningCm, setAssigningCm] = useState(false)
+  const [loadingCm, setLoadingCm] = useState(false)
+  // Step 3: CM/ACM assigns Designer
+  const [showCmDesignerModal, setShowCmDesignerModal] = useState(false)
+  const [cmDesignerUsers, setCmDesignerUsers] = useState([])
+  const [selectedCmDesigner, setSelectedCmDesigner] = useState('')
+  const [assigningCmDesigner, setAssigningCmDesigner] = useState(false)
   const [showFollowUpForm, setShowFollowUpForm] = useState(false)
   const [followUpDate, setFollowUpDate] = useState('')
   const [followUpType, setFollowUpType] = useState('call')
@@ -120,6 +128,7 @@ const LeadDetail = () => {
   const [qualifyForm, setQualifyForm] = useState({ vmDate: '', vmTime: '' })
   const [qualifyFloorPlan, setQualifyFloorPlan] = useState(null)
   const [qualifying, setQualifying] = useState(false)
+  const [floorPlanUploadProgress, setFloorPlanUploadProgress] = useState(null) // null=idle, 0-100=uploading
   // Designer assignment modal
   const [showDesignerModal, setShowDesignerModal] = useState(false)
   const [availableDesigners, setAvailableDesigners] = useState([])
@@ -200,7 +209,8 @@ const LeadDetail = () => {
         setJourney(journeyRes.value.data?.timeline || [])
       }
       if (callsRes.status === 'fulfilled') {
-        setCallActivities(callsRes.value.data || [])
+        const callData = callsRes.value.data
+        setCallActivities(callData?.activities || callData || [])
       }
     } catch (err) {
       console.error('Failed to load lead:', err)
@@ -377,14 +387,10 @@ const LeadDetail = () => {
     }
     setQualifying(true)
     try {
-      // 1. Upload floor plan first
-      const formData = new FormData()
-      formData.append('floorPlan', qualifyFloorPlan)
-      await fetch(`${import.meta.env.PROD ? 'https://hoh108.com/api' : `http://${window.location.hostname}:5001/api`}/leads/${id}/floor-plan`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('hoh108_admin_token')}` },
-        body: formData
-      })
+      // 1. Upload floor plan first (with progress)
+      setFloorPlanUploadProgress(0)
+      await leadsAPI.uploadFloorPlan(id, qualifyFloorPlan, (pct) => setFloorPlanUploadProgress(pct))
+      setFloorPlanUploadProgress(null)
 
       // 2. Qualify with VM details
       await leadWorkflowAPI.qualify(id, `VM scheduled for ${qualifyForm.vmDate} at ${qualifyForm.vmTime}`)
@@ -461,23 +467,19 @@ const LeadDetail = () => {
     }
   }
 
+  // Step 1: Sales Head loads SM/ASM list
   const loadSalesExecUsers = async () => {
     setLoadingSalesExec(true)
     try {
       const res = await employeesAPI.getAll({ status: 'active', limit: 200 })
       const allUsers = res.data || []
-      // Sales executives
-      const salesUsers = allUsers.filter(emp => {
-        return emp.subDepartment === 'sales_closure' || emp.role === 'sales_executive'
+      // SM/ASM candidates
+      const smAsmUsers = allUsers.filter(emp => {
+        return emp.role === 'sales_manager' || emp.role === 'agm_sales' || emp.subDepartment === 'sales_closure'
       })
-      setSalesExecUsers(salesUsers)
-      // ACM candidates (from design team)
-      const acmCandidates = allUsers.filter(emp => {
-        return emp.subDepartment === 'design' || emp.role === 'designer'
-      })
-      setAcmUsers(acmCandidates)
+      setSalesExecUsers(smAsmUsers)
     } catch (err) {
-      console.error('Failed to load sales users:', err)
+      console.error('Failed to load SM/ASM users:', err)
     } finally {
       setLoadingSalesExec(false)
     }
@@ -485,7 +487,6 @@ const LeadDetail = () => {
 
   const handleOpenSalesExecModal = () => {
     setSelectedSalesExec('')
-    setSelectedACM('')
     setShowSalesExecModal(true)
     loadSalesExecUsers()
   }
@@ -495,48 +496,87 @@ const LeadDetail = () => {
     if (!selectedSalesExec) return
     setAssigningSalesExec(true)
     try {
-      await leadWorkflowAPI.assignSalesExecutive(id, selectedSalesExec, selectedACM || undefined)
+      await leadWorkflowAPI.assignSalesExecutive(id, selectedSalesExec)
       setShowSalesExecModal(false)
       setSelectedSalesExec('')
-      setSelectedACM('')
       loadLead()
     } catch (err) {
-      console.error('Failed to assign sales executive:', err)
-      alert(err.message || 'Failed to assign sales executive')
+      console.error('Failed to assign SM/ASM:', err)
+      alert(err.message || 'Failed to assign SM/ASM')
     } finally {
       setAssigningSalesExec(false)
     }
   }
 
-  // ACM assigns designer
-  const handleOpenAcmDesignerModal = async () => {
-    setSelectedAcmDesigner('')
-    setShowAcmDesignerModal(true)
+  // Step 2: SM/ASM assigns CM/ACM
+  const loadCmUsers = async () => {
+    setLoadingCm(true)
+    try {
+      const res = await employeesAPI.getAll({ status: 'active', limit: 200 })
+      const allUsers = res.data || []
+      const cmCandidates = allUsers.filter(emp => {
+        return emp.role === 'community_manager' || emp.role === 'assoc_community_manager'
+      })
+      setCommunityManagerUsers(cmCandidates)
+    } catch (err) {
+      console.error('Failed to load CM users:', err)
+    } finally {
+      setLoadingCm(false)
+    }
+  }
+
+  const handleOpenCmModal = () => {
+    setSelectedCommunityManager('')
+    setShowCmModal(true)
+    loadCmUsers()
+  }
+
+  const handleAssignCm = async (e) => {
+    e.preventDefault()
+    if (!selectedCommunityManager) return
+    setAssigningCm(true)
+    try {
+      await leadWorkflowAPI.assignCommunityManager(id, selectedCommunityManager)
+      setShowCmModal(false)
+      setSelectedCommunityManager('')
+      loadLead()
+    } catch (err) {
+      console.error('Failed to assign Community Manager:', err)
+      alert(err.message || 'Failed to assign Community Manager')
+    } finally {
+      setAssigningCm(false)
+    }
+  }
+
+  // Step 3: CM/ACM assigns Designer
+  const handleOpenCmDesignerModal = async () => {
+    setSelectedCmDesigner('')
+    setShowCmDesignerModal(true)
     try {
       const res = await employeesAPI.getAll({ status: 'active', limit: 200 })
       const designers = (res.data || []).filter(emp =>
         emp.subDepartment === 'design' || emp.role === 'designer'
       )
-      setAcmDesignerUsers(designers)
+      setCmDesignerUsers(designers)
     } catch (err) {
       console.error('Failed to load designers:', err)
     }
   }
 
-  const handleAssignAcmDesigner = async (e) => {
+  const handleAssignCmDesigner = async (e) => {
     e.preventDefault()
-    if (!selectedAcmDesigner) return
-    setAssigningAcmDesigner(true)
+    if (!selectedCmDesigner) return
+    setAssigningCmDesigner(true)
     try {
-      await leadWorkflowAPI.assignDesigner(id, selectedAcmDesigner)
-      setShowAcmDesignerModal(false)
-      setSelectedAcmDesigner('')
+      await leadWorkflowAPI.assignDesigner(id, selectedCmDesigner)
+      setShowCmDesignerModal(false)
+      setSelectedCmDesigner('')
       loadLead()
     } catch (err) {
       console.error('Failed to assign designer:', err)
       alert(err.message || 'Failed to assign designer')
     } finally {
-      setAssigningAcmDesigner(false)
+      setAssigningCmDesigner(false)
     }
   }
 
@@ -589,24 +629,24 @@ const LeadDetail = () => {
     }
   }
 
-  // Click-to-Call: start call timer (actual dialing handled by QuickCall extension)
-  const handleClickToCall = () => {
+  // Click-to-Call: trigger Callyzer QuickCall extension to dial via phone
+  const handleClickToCall = (e) => {
+    if (e) e.preventDefault()
     if (!lead.phone || lead._phoneMasked) return
 
-    // Try to click the Callyzer QuickCall extension overlay near the phone number
+    // Strategy 1: Find and click Callyzer QuickCall extension overlay near the phone number
     let clicked = false
     if (phoneRef.current) {
-      // QuickCall injects elements near detected phone numbers - search up to grandparent
       const searchAreas = [
         phoneRef.current,
         phoneRef.current.parentElement,
         phoneRef.current.parentElement?.parentElement,
+        phoneRef.current.closest('[class*="lead"]'),
       ].filter(Boolean)
 
       for (const area of searchAreas) {
-        // Look for extension-injected elements (images from chrome-extension://, callyzer classes, etc.)
         const extEl = area.querySelector(
-          'img[src*="chrome-extension"], img[src*="callyzer"], [class*="callyzer"], [id*="callyzer"], [data-callyzer]'
+          'img[src*="chrome-extension"], img[src*="callyzer"], [class*="callyzer"], [id*="callyzer"], [data-callyzer], [class*="quickcall"], [class*="quick-call"]'
         )
         if (extEl) {
           extEl.click()
@@ -616,9 +656,35 @@ const LeadDetail = () => {
       }
     }
 
-    // Fallback: trigger tel: link if extension element not found
+    // Strategy 2: Search entire page for Callyzer extension elements
     if (!clicked) {
-      window.location.href = telHref(lead.phone)
+      const allExtEls = document.querySelectorAll(
+        'img[src*="chrome-extension"], [class*="callyzer"], [id*="callyzer"], [class*="quickcall"], [data-callyzer]'
+      )
+      for (const el of allExtEls) {
+        // Check if this element is related to the current phone number
+        const parent = el.closest('div, span, td, li')
+        if (parent && parent.textContent?.includes(lead.phone.replace(/\D/g, '').slice(-5))) {
+          el.click()
+          clicked = true
+          break
+        }
+      }
+    }
+
+    // Strategy 3: Try clicking the phone number text itself (extension may have added click handler)
+    if (!clicked && phoneRef.current) {
+      phoneRef.current.click()
+      // Check if extension handled it by looking for any new elements
+      setTimeout(() => {
+        const popup = document.querySelector('[class*="callyzer"], [id*="callyzer"], [class*="quickcall"]')
+        if (popup) popup.click()
+      }, 300)
+    }
+
+    // Final fallback: open tel: link
+    if (!clicked) {
+      window.open(`tel:${lead.phone.replace(/\D/g, '')}`, '_self')
     }
 
     // Start call tracking
@@ -637,7 +703,6 @@ const LeadDetail = () => {
         try {
           const res = await callyzerAPI.pollCallStatus(lead.phone, startTime)
           if (res.callEnded) {
-            // Call ended — auto-stop and show disposition
             if (callTimerRef.current) {
               clearInterval(callTimerRef.current)
               callTimerRef.current = null
@@ -655,8 +720,8 @@ const LeadDetail = () => {
         } catch (err) {
           // Silently ignore poll errors
         }
-      }, 10000) // Poll every 10 seconds
-    }, 15000) // Start polling after 15 seconds
+      }, 10000)
+    }, 15000)
   }
 
   // End call → show disposition modal
@@ -770,17 +835,9 @@ const LeadDetail = () => {
       // If Qualified to Sales, upload floor plan & schedule VM inline
       if (wasQualifiedToSales && callDispFloorPlan && callDispVmDate && callDispVmTime) {
         // 1. Upload floor plan
-        const formData = new FormData()
-        formData.append('floorPlan', callDispFloorPlan)
-        const fpRes = await fetch(`${import.meta.env.PROD ? 'https://hoh108.com/api' : `http://${window.location.hostname}:5001/api`}/leads/${id}/floor-plan`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('hoh108_admin_token')}` },
-          body: formData
-        })
-        if (!fpRes.ok) {
-          const fpErr = await fpRes.json().catch(() => ({}))
-          console.error('Floor plan upload failed:', fpRes.status, fpErr)
-        }
+        setFloorPlanUploadProgress(0)
+        await leadsAPI.uploadFloorPlan(id, callDispFloorPlan, (pct) => setFloorPlanUploadProgress(pct))
+        setFloorPlanUploadProgress(null)
 
         // 2. Qualify lead with VM details
         await leadWorkflowAPI.qualify(id, `VM scheduled for ${callDispVmDate} at ${callDispVmTime}`)
@@ -892,24 +949,26 @@ const LeadDetail = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {!lead._phoneMasked && lead.phone && (
               <button
-                onClick={handleClickToCall}
-                disabled={callInProgress}
+                onClick={callInProgress ? handleEndCall : handleClickToCall}
                 style={{
                   padding: '8px 16px',
-                  background: callInProgress ? '#D1D5DB' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  background: callInProgress ? '#DC2626' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 8,
                   fontSize: 13,
                   fontWeight: 600,
-                  cursor: callInProgress ? 'not-allowed' : 'pointer',
+                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
                 }}
               >
-                <Phone size={15} />
-                Call
+                {callInProgress ? (
+                  <><PhoneOff size={15} /> {Math.floor(callTimer / 60)}:{String(callTimer % 60).padStart(2, '0')} - End</>
+                ) : (
+                  <><Phone size={15} /> Call</>
+                )}
               </button>
             )}
             {lead.primaryStatus === 'hot' && currentUser?.role !== 'pre_sales' && (
@@ -1142,72 +1201,125 @@ const LeadDetail = () => {
                 justifyContent: 'space-between',
               }}>
                 <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1F2937', margin: 0 }}>Call Activities</h3>
-                <Button size="sm" icon={PhoneCall} onClick={() => setShowCallModal(true)}>
-                  Log Call
-                </Button>
+                <span style={{ fontSize: '12px', color: '#9CA3AF', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Zap size={12} /> Powered by Callyzer
+                </span>
               </div>
               <div style={{ padding: '20px' }}>
                 {callActivities.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {callActivities.map((call, index) => (
-                      <div key={call._id || index} style={{
-                        padding: '16px',
-                        background: '#F9FAFB',
-                        borderRadius: '12px',
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{
-                              padding: '10px',
-                              borderRadius: '10px',
-                              background: call.outcome === 'qualified' ? '#D1FAE5' :
-                                         call.outcome === 'interested' ? '#DBEAFE' :
-                                         call.outcome === 'rnr' ? '#FEF3C7' :
-                                         call.outcome === 'not_interested' ? '#FEE2E2' : '#F3F4F6',
-                            }}>
-                              {call.outcome === 'qualified' ? (
-                                <CheckCircle size={20} style={{ color: '#059669' }} />
-                              ) : call.outcome === 'interested' ? (
-                                <PhoneCall size={20} style={{ color: '#2563EB' }} />
-                              ) : call.outcome === 'rnr' ? (
-                                <PhoneOff size={20} style={{ color: '#D97706' }} />
-                              ) : call.outcome === 'not_interested' ? (
-                                <XCircle size={20} style={{ color: '#DC2626' }} />
-                              ) : (
-                                <Phone size={20} style={{ color: '#6B7280' }} />
+                    {callActivities.map((call, index) => {
+                      const isIncoming = call.callType === 'incoming' || call.callType === 'inbound'
+                      const isMissed = call.callType === 'missed' || call.status === 'missed'
+                      const isRejected = call.callType === 'rejected' || call.status === 'rejected'
+                      const duration = call.duration || 0
+                      const mins = Math.floor(duration / 60)
+                      const secs = duration % 60
+
+                      return (
+                        <div key={call._id || index} style={{
+                          padding: '16px',
+                          background: '#F9FAFB',
+                          borderRadius: '12px',
+                          border: '1px solid #F3F4F6',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div style={{
+                                padding: '10px',
+                                borderRadius: '10px',
+                                background: isMissed || isRejected ? '#FEE2E2' :
+                                           isIncoming ? '#DBEAFE' :
+                                           duration > 0 ? '#D1FAE5' : '#FEF3C7',
+                              }}>
+                                {isMissed || isRejected ? (
+                                  <PhoneOff size={20} style={{ color: '#DC2626' }} />
+                                ) : isIncoming ? (
+                                  <PhoneIncoming size={20} style={{ color: '#2563EB' }} />
+                                ) : duration > 0 ? (
+                                  <PhoneCall size={20} style={{ color: '#059669' }} />
+                                ) : (
+                                  <PhoneOff size={20} style={{ color: '#D97706' }} />
+                                )}
+                              </div>
+                              <div>
+                                <p style={{ fontSize: '14px', fontWeight: '500', color: '#1F2937', margin: 0 }}>
+                                  {isMissed ? 'Missed Call' : isRejected ? 'Rejected' : isIncoming ? 'Incoming Call' : 'Outgoing Call'}
+                                </p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                  {duration > 0 && (
+                                    <span style={{
+                                      fontSize: '12px', color: '#059669', fontWeight: '500',
+                                      background: '#ECFDF5', padding: '2px 8px', borderRadius: '4px',
+                                    }}>
+                                      {mins > 0 ? `${mins}m ${secs}s` : `${secs}s`}
+                                    </span>
+                                  )}
+                                  {duration === 0 && !isMissed && !isRejected && (
+                                    <span style={{
+                                      fontSize: '12px', color: '#D97706', fontWeight: '500',
+                                      background: '#FEF3C7', padding: '2px 8px', borderRadius: '4px',
+                                    }}>
+                                      Not Connected
+                                    </span>
+                                  )}
+                                  {call.calledByName || call.calledBy?.name ? (
+                                    <span style={{ fontSize: '12px', color: '#6B7280' }}>
+                                      by {call.calledByName || call.calledBy?.name}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                              <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+                                {formatRelativeTime(call.callyzerData?.callDate || call.createdAt)}
+                              </span>
+                              {(call.callyzerData?.recordingUrl || call.recordingUrl) && (
+                                <a
+                                  href={call.callyzerData?.recordingUrl || call.recordingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    fontSize: '11px', color: '#C59C82', fontWeight: '500',
+                                    textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px',
+                                    padding: '2px 8px', borderRadius: '4px', background: '#C59C8215',
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Play size={10} /> Recording
+                                </a>
                               )}
                             </div>
-                            <div>
-                              <p style={{ fontSize: '14px', fontWeight: '500', color: '#1F2937', margin: 0, textTransform: 'capitalize' }}>
-                                {call.outcome?.replace(/_/g, ' ') || 'Call'}
-                              </p>
-                              <p style={{ fontSize: '12px', color: '#6B7280', margin: '4px 0 0 0' }}>
-                                {call.callType === 'outbound' ? 'Outbound Call' : 'Inbound Call'}
-                              </p>
-                            </div>
                           </div>
-                          <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-                            {formatRelativeTime(call.createdAt)}
-                          </span>
+                          {call.notes && (
+                            <p style={{ fontSize: '13px', color: '#4B5563', margin: '10px 0 0 52px', lineHeight: '1.5' }}>{call.notes}</p>
+                          )}
+                          {call.outcome && (
+                            <div style={{ margin: '8px 0 0 52px' }}>
+                              <span style={{
+                                fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px',
+                                padding: '3px 8px', borderRadius: '4px',
+                                background: call.outcome === 'qualified' ? '#D1FAE5' :
+                                           call.outcome === 'interested' ? '#DBEAFE' :
+                                           call.outcome === 'not_interested' ? '#FEE2E2' : '#F3F4F6',
+                                color: call.outcome === 'qualified' ? '#059669' :
+                                       call.outcome === 'interested' ? '#2563EB' :
+                                       call.outcome === 'not_interested' ? '#DC2626' : '#6B7280',
+                              }}>
+                                {call.outcome.replace(/_/g, ' ')}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        {call.notes && (
-                          <p style={{ fontSize: '14px', color: '#4B5563', margin: '12px 0 0 52px' }}>{call.notes}</p>
-                        )}
-                        {call.calledBy && (
-                          <p style={{ fontSize: '12px', color: '#9CA3AF', margin: '4px 0 0 52px' }}>
-                            by {call.calledBy.name}
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '32px 0' }}>
-                    <PhoneCall size={48} style={{ color: '#D1D5DB', margin: '0 auto 12px' }} />
-                    <p style={{ color: '#6B7280', margin: '0 0 16px 0' }}>No call activities yet</p>
-                    <Button size="sm" variant="outline" onClick={() => setShowCallModal(true)}>
-                      Log First Call
-                    </Button>
+                  <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                    <Phone size={48} style={{ color: '#D1D5DB', margin: '0 auto 12px' }} />
+                    <p style={{ color: '#6B7280', margin: '0 0 4px 0', fontWeight: '500' }}>No call activities yet</p>
+                    <p style={{ color: '#9CA3AF', margin: 0, fontSize: '13px' }}>Call logs from Callyzer will appear here automatically</p>
                   </div>
                 )}
               </div>
@@ -1382,26 +1494,29 @@ const LeadDetail = () => {
                       <div>
                         <label style={{ fontSize: 13, color: '#6B7280', display: 'block', marginBottom: 4 }}>Name</label>
                         <input
-                          style={inputStyle}
+                          style={{ ...inputStyle, ...(currentUser?.role === 'pre_sales' || currentUser?.subDepartment === 'pre_sales' ? { background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' } : {}) }}
                           value={detailsForm.name}
                           onChange={(e) => setDetailsForm({ ...detailsForm, name: e.target.value })}
+                          disabled={currentUser?.role === 'pre_sales' || currentUser?.subDepartment === 'pre_sales'}
                         />
                       </div>
                       <div>
                         <label style={{ fontSize: 13, color: '#6B7280', display: 'block', marginBottom: 4 }}>Email</label>
                         <input
-                          style={inputStyle}
+                          style={{ ...inputStyle, ...(currentUser?.role === 'pre_sales' || currentUser?.subDepartment === 'pre_sales' ? { background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' } : {}) }}
                           type="email"
                           value={detailsForm.email}
                           onChange={(e) => setDetailsForm({ ...detailsForm, email: e.target.value })}
+                          disabled={currentUser?.role === 'pre_sales' || currentUser?.subDepartment === 'pre_sales'}
                         />
                       </div>
                       <div>
                         <label style={{ fontSize: 13, color: '#6B7280', display: 'block', marginBottom: 4 }}>Phone</label>
                         <input
-                          style={inputStyle}
+                          style={{ ...inputStyle, ...(currentUser?.role === 'pre_sales' || currentUser?.subDepartment === 'pre_sales' ? { background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' } : {}) }}
                           value={detailsForm.phone}
                           onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })}
+                          disabled={currentUser?.role === 'pre_sales' || currentUser?.subDepartment === 'pre_sales'}
                         />
                       </div>
                       <div>
@@ -1547,32 +1662,57 @@ const LeadDetail = () => {
                           )
                         })() : (
                           <div>
-                            <label
-                              style={{
-                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                padding: '20px', border: '2px dashed #D1D5DB', borderRadius: 12, cursor: 'pointer',
-                                background: '#F9FAFB', transition: 'border-color 0.2s',
-                              }}
-                            >
-                              <Upload size={24} style={{ color: '#9CA3AF', marginBottom: 8 }} />
-                              <span style={{ fontSize: 13, color: '#6B7280', fontWeight: 500 }}>Upload Floor Plan</span>
-                              <span style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>PDF, JPEG, PNG or any image</span>
-                              <input
-                                type="file"
-                                accept="image/*,application/pdf"
-                                style={{ display: 'none' }}
-                                onChange={async (e) => {
-                                  const file = e.target.files?.[0]
-                                  if (!file) return
-                                  try {
-                                    await leadsAPI.uploadFloorPlan(id, file)
-                                    loadLead()
-                                  } catch (err) {
-                                    alert(err.message || 'Failed to upload floor plan')
-                                  }
+                            {floorPlanUploadProgress !== null ? (
+                              <div style={{
+                                padding: '20px', border: '2px solid #C59C82', borderRadius: 12,
+                                background: '#FFFBF7', textAlign: 'center',
+                              }}>
+                                <div style={{ marginBottom: 10, fontSize: 13, fontWeight: 600, color: '#A67B5B' }}>
+                                  Uploading... {floorPlanUploadProgress}%
+                                </div>
+                                <div style={{
+                                  width: '100%', height: 8, background: '#E5E7EB', borderRadius: 4, overflow: 'hidden',
+                                }}>
+                                  <div style={{
+                                    width: `${floorPlanUploadProgress}%`, height: '100%',
+                                    background: 'linear-gradient(90deg, #C59C82, #A67B5B)',
+                                    borderRadius: 4,
+                                    transition: 'width 0.3s ease',
+                                  }} />
+                                </div>
+                                <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8 }}>Please wait, do not close this page</p>
+                              </div>
+                            ) : (
+                              <label
+                                style={{
+                                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                  padding: '20px', border: '2px dashed #D1D5DB', borderRadius: 12, cursor: 'pointer',
+                                  background: '#F9FAFB', transition: 'border-color 0.2s',
                                 }}
-                              />
-                            </label>
+                              >
+                                <Upload size={24} style={{ color: '#9CA3AF', marginBottom: 8 }} />
+                                <span style={{ fontSize: 13, color: '#6B7280', fontWeight: 500 }}>Upload Floor Plan</span>
+                                <span style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>PDF, JPEG, PNG or any image (up to 100 MB)</span>
+                                <input
+                                  type="file"
+                                  accept="image/*,application/pdf"
+                                  style={{ display: 'none' }}
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0]
+                                    if (!file) return
+                                    try {
+                                      setFloorPlanUploadProgress(0)
+                                      await leadsAPI.uploadFloorPlan(id, file, (pct) => setFloorPlanUploadProgress(pct))
+                                      setFloorPlanUploadProgress(null)
+                                      loadLead()
+                                    } catch (err) {
+                                      setFloorPlanUploadProgress(null)
+                                      alert(err.message || 'Failed to upload floor plan')
+                                    }
+                                  }}
+                                />
+                              </label>
+                            )}
                           </div>
                         )}
                       </div>
@@ -2102,7 +2242,7 @@ const LeadDetail = () => {
               )}
 
               {/* Sales Team Assignments */}
-              {lead.preSalesLocked && (lead.departmentAssignments?.sales?.employeeName || lead.departmentAssignments?.acm?.employeeName || lead.departmentAssignments?.design?.employeeName) && (
+              {lead.preSalesLocked && (lead.departmentAssignments?.sales?.employeeName || lead.departmentAssignments?.communityManager?.employeeName || lead.departmentAssignments?.acm?.employeeName || lead.departmentAssignments?.design?.employeeName) && (
                 <div style={{
                   padding: '12px 14px',
                   background: '#F5F3FF',
@@ -2110,19 +2250,19 @@ const LeadDetail = () => {
                   borderRadius: '10px',
                 }}>
                   <div style={{ fontSize: '13px', fontWeight: '600', color: '#5B21B6', marginBottom: '10px' }}>
-                    Sales Team
+                    Assignment Chain
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px' }}>
                     {lead.departmentAssignments?.sales?.employeeName && (
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: '#6B7280' }}>Sales Executive</span>
+                        <span style={{ color: '#6B7280' }}>SM / ASM</span>
                         <span style={{ fontWeight: '500', color: '#374151' }}>{lead.departmentAssignments.sales.employeeName}</span>
                       </div>
                     )}
-                    {lead.departmentAssignments?.acm?.employeeName && (
+                    {(lead.departmentAssignments?.communityManager?.employeeName || lead.departmentAssignments?.acm?.employeeName) && (
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: '#6B7280' }}>ACM</span>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>{lead.departmentAssignments.acm.employeeName}</span>
+                        <span style={{ color: '#6B7280' }}>CM / ACM</span>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>{lead.departmentAssignments.communityManager?.employeeName || lead.departmentAssignments.acm?.employeeName}</span>
                       </div>
                     )}
                     {lead.departmentAssignments?.design?.employeeName && (
@@ -2131,9 +2271,14 @@ const LeadDetail = () => {
                         <span style={{ fontWeight: '500', color: '#374151' }}>{lead.departmentAssignments.design.employeeName}</span>
                       </div>
                     )}
-                    {lead.departmentAssignments?.acm?.employeeName && !lead.departmentAssignments?.design?.employee && (
+                    {lead.departmentAssignments?.sales?.employee && !(lead.departmentAssignments?.communityManager?.employee || lead.departmentAssignments?.acm?.employee) && (
                       <div style={{ fontSize: '11px', color: '#D97706', fontStyle: 'italic', marginTop: '4px' }}>
-                        Waiting for ACM to assign a designer
+                        Waiting for SM/ASM to assign a Community Manager
+                      </div>
+                    )}
+                    {(lead.departmentAssignments?.communityManager?.employee || lead.departmentAssignments?.acm?.employee) && !lead.departmentAssignments?.design?.employee && (
+                      <div style={{ fontSize: '11px', color: '#D97706', fontStyle: 'italic', marginTop: '4px' }}>
+                        Waiting for CM/ACM to assign a Designer
                       </div>
                     )}
                   </div>
@@ -2172,8 +2317,9 @@ const LeadDetail = () => {
                 </div>
               )}
 
-              {/* Assign Sales Executive + ACM - shows for Sales Head when lead is in sales pipeline */}
+              {/* Step 1: Sales Head assigns SM/ASM */}
               {lead.preSalesLocked && !['won'].includes(lead.primaryStatus) &&
+                !lead.departmentAssignments?.sales?.employee &&
                 ['super_admin', 'company_admin', 'sales_manager'].includes(currentUser?.role) && (
                 <button
                   onClick={handleOpenSalesExecModal}
@@ -2194,17 +2340,47 @@ const LeadDetail = () => {
                   }}
                 >
                   <UserPlus size={16} />
-                  Assign Sales Exec + ACM
+                  Assign SM / ASM
                 </button>
               )}
 
-              {/* Assign Designer - shows for ACM when they are assigned to this lead */}
-              {lead.departmentAssignments?.acm?.employee &&
-                currentUser?._id?.toString() === lead.departmentAssignments.acm.employee?.toString() &&
+              {/* Step 2: SM/ASM assigns CM/ACM */}
+              {lead.departmentAssignments?.sales?.employee &&
+                !(lead.departmentAssignments?.communityManager?.employee || lead.departmentAssignments?.acm?.employee) &&
+                !['won'].includes(lead.primaryStatus) &&
+                (currentUser?._id?.toString() === lead.departmentAssignments.sales.employee?.toString() ||
+                  ['super_admin', 'company_admin', 'sales_manager'].includes(currentUser?.role)) && (
+                <button
+                  onClick={handleOpenCmModal}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <UserPlus size={16} />
+                  Assign CM / ACM
+                </button>
+              )}
+
+              {/* Step 3: CM/ACM assigns Designer */}
+              {(lead.departmentAssignments?.communityManager?.employee || lead.departmentAssignments?.acm?.employee) &&
+                (currentUser?._id?.toString() === (lead.departmentAssignments.communityManager?.employee?.toString() || lead.departmentAssignments.acm?.employee?.toString()) ||
+                  ['super_admin', 'company_admin'].includes(currentUser?.role)) &&
                 !lead.departmentAssignments?.design?.employee &&
                 !['won'].includes(lead.primaryStatus) && (
                 <button
-                  onClick={handleOpenAcmDesignerModal}
+                  onClick={handleOpenCmDesignerModal}
                   style={{
                     width: '100%',
                     padding: '12px 16px',
@@ -2252,7 +2428,8 @@ const LeadDetail = () => {
             </div>
           </div>
 
-          {/* Disposition */}
+          {/* Disposition - hidden for pre_sales (they use Call button disposition instead) */}
+          {currentUser?.role !== 'pre_sales' && currentUser?.subDepartment !== 'pre_sales' && (
           <div style={{
             background: '#ffffff',
             borderRadius: '16px',
@@ -2476,8 +2653,10 @@ const LeadDetail = () => {
               </div>
             )}
           </div>
+          )}
 
-          {/* Status Update */}
+          {/* Status Update - hidden for pre_sales */}
+          {currentUser?.role !== 'pre_sales' && currentUser?.subDepartment !== 'pre_sales' && (
           <div style={{
             background: '#ffffff',
             borderRadius: '16px',
@@ -2508,6 +2687,7 @@ const LeadDetail = () => {
               ))}
             </select>
           </div>
+          )}
 
           {/* Follow-up */}
           <div style={{
@@ -2645,7 +2825,8 @@ const LeadDetail = () => {
             )}
           </div>
 
-          {/* Assigned Team */}
+          {/* Assigned Team - hidden for pre_sales */}
+          {currentUser?.role !== 'pre_sales' && currentUser?.subDepartment !== 'pre_sales' && (
           <div style={{
             background: '#ffffff',
             borderRadius: '16px',
@@ -2712,6 +2893,7 @@ const LeadDetail = () => {
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
 
@@ -2860,11 +3042,11 @@ const LeadDetail = () => {
         </form>
       </Modal>
 
-      {/* Assign Sales Executive + ACM Modal */}
+      {/* Step 1: Assign SM/ASM Modal (Sales Head only) */}
       <Modal
         isOpen={showSalesExecModal}
         onClose={() => setShowSalesExecModal(false)}
-        title="Assign Sales Executive & ACM"
+        title="Assign SM / ASM"
         size="md"
       >
         <form onSubmit={handleAssignSalesExec}>
@@ -2877,18 +3059,16 @@ const LeadDetail = () => {
               fontSize: 13,
               color: '#5B21B6',
             }}>
-              Assign a Sales Executive and ACM (from design team) to handle this qualified lead. The ACM will then assign a Designer.
+              Assign a Sales Manager or Associate Sales Manager to this qualified lead. They will then assign a Community Manager.
             </div>
-
-            {/* Sales Executive */}
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                Sales Executive *
+                Select SM / ASM *
               </label>
               {loadingSalesExec ? (
-                <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', padding: 8 }}>Loading sales team...</p>
+                <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', padding: 8 }}>Loading SM/ASM list...</p>
               ) : salesExecUsers.length === 0 ? (
-                <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', padding: 8 }}>No sales executives found</p>
+                <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', padding: 8 }}>No SM/ASM found</p>
               ) : (
                 <select
                   value={selectedSalesExec}
@@ -2906,7 +3086,7 @@ const LeadDetail = () => {
                     outline: 'none',
                   }}
                 >
-                  <option value="">Select sales executive...</option>
+                  <option value="">Select SM / ASM...</option>
                   {salesExecUsers.map(u => (
                     <option key={u._id} value={u._id}>
                       {u.name}{u.designation ? ` — ${u.designation}` : ''}
@@ -2915,20 +3095,49 @@ const LeadDetail = () => {
                 </select>
               )}
             </div>
+          </div>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowSalesExecModal(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" icon={UserPlus} loading={assigningSalesExec} disabled={!selectedSalesExec}>
+              Assign SM / ASM
+            </Button>
+          </Modal.Footer>
+        </form>
+      </Modal>
 
-            {/* ACM (from Design team) */}
+      {/* Step 2: Assign CM/ACM Modal (SM/ASM only) */}
+      <Modal
+        isOpen={showCmModal}
+        onClose={() => setShowCmModal(false)}
+        title="Assign Community Manager"
+        size="md"
+      >
+        <form onSubmit={handleAssignCm}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{
+              padding: 14,
+              background: '#FFFBEB',
+              border: '1px solid #FDE68A',
+              borderRadius: 10,
+              fontSize: 13,
+              color: '#92400E',
+            }}>
+              Assign a Community Manager or Associate Community Manager. They will then assign a Designer to this lead.
+            </div>
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                ACM (Assistant Client Manager) *
+                Select CM / ACM *
               </label>
-              {loadingSalesExec ? (
-                <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', padding: 8 }}>Loading design team...</p>
-              ) : acmUsers.length === 0 ? (
-                <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', padding: 8 }}>No design team members found</p>
+              {loadingCm ? (
+                <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', padding: 8 }}>Loading community managers...</p>
+              ) : communityManagerUsers.length === 0 ? (
+                <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', padding: 8 }}>No community managers found</p>
               ) : (
                 <select
-                  value={selectedACM}
-                  onChange={(e) => setSelectedACM(e.target.value)}
+                  value={selectedCommunityManager}
+                  onChange={(e) => setSelectedCommunityManager(e.target.value)}
                   required
                   style={{
                     width: '100%',
@@ -2942,38 +3151,35 @@ const LeadDetail = () => {
                     outline: 'none',
                   }}
                 >
-                  <option value="">Select ACM from design team...</option>
-                  {acmUsers.map(u => (
+                  <option value="">Select Community Manager...</option>
+                  {communityManagerUsers.map(u => (
                     <option key={u._id} value={u._id}>
                       {u.name}{u.designation ? ` — ${u.designation}` : ''}
                     </option>
                   ))}
                 </select>
               )}
-              <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>
-                ACM will be responsible for assigning a designer to this lead.
-              </p>
             </div>
           </div>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowSalesExecModal(false)}>
+            <Button variant="secondary" onClick={() => setShowCmModal(false)}>
               Cancel
             </Button>
-            <Button type="submit" icon={UserPlus} loading={assigningSalesExec} disabled={!selectedSalesExec || !selectedACM}>
-              Assign Team
+            <Button type="submit" icon={UserPlus} loading={assigningCm} disabled={!selectedCommunityManager}>
+              Assign CM / ACM
             </Button>
           </Modal.Footer>
         </form>
       </Modal>
 
-      {/* ACM Assign Designer Modal */}
+      {/* Step 3: CM/ACM Assign Designer Modal */}
       <Modal
-        isOpen={showAcmDesignerModal}
-        onClose={() => setShowAcmDesignerModal(false)}
+        isOpen={showCmDesignerModal}
+        onClose={() => setShowCmDesignerModal(false)}
         title="Assign Designer"
         size="md"
       >
-        <form onSubmit={handleAssignAcmDesigner}>
+        <form onSubmit={handleAssignCmDesigner}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{
               padding: 14,
@@ -2983,18 +3189,18 @@ const LeadDetail = () => {
               fontSize: 13,
               color: '#9D174D',
             }}>
-              As ACM, assign a designer who will work with the Sales Executive on this lead.
+              As Community Manager, assign a designer who will work on this lead.
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
                 Select Designer *
               </label>
-              {acmDesignerUsers.length === 0 ? (
+              {cmDesignerUsers.length === 0 ? (
                 <p style={{ fontSize: 13, color: '#9CA3AF', textAlign: 'center', padding: 8 }}>Loading designers...</p>
               ) : (
                 <select
-                  value={selectedAcmDesigner}
-                  onChange={(e) => setSelectedAcmDesigner(e.target.value)}
+                  value={selectedCmDesigner}
+                  onChange={(e) => setSelectedCmDesigner(e.target.value)}
                   required
                   style={{
                     width: '100%',
@@ -3009,7 +3215,7 @@ const LeadDetail = () => {
                   }}
                 >
                   <option value="">Select designer...</option>
-                  {acmDesignerUsers.map(u => (
+                  {cmDesignerUsers.map(u => (
                     <option key={u._id} value={u._id}>
                       {u.name}{u.designation ? ` — ${u.designation}` : ''}
                     </option>
@@ -3019,10 +3225,10 @@ const LeadDetail = () => {
             </div>
           </div>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowAcmDesignerModal(false)}>
+            <Button variant="secondary" onClick={() => setShowCmDesignerModal(false)}>
               Cancel
             </Button>
-            <Button type="submit" icon={UserPlus} loading={assigningAcmDesigner} disabled={!selectedAcmDesigner}>
+            <Button type="submit" icon={UserPlus} loading={assigningCmDesigner} disabled={!selectedCmDesigner}>
               Assign Designer
             </Button>
           </Modal.Footer>
@@ -3095,15 +3301,6 @@ const LeadDetail = () => {
       {/* Call Disposition Modal */}
       <Modal
         isOpen={showDispositionModal}
-        onClose={() => {
-          setShowDispositionModal(false)
-          setCallDispGroup('')
-          setCallDispSub('')
-          setCallDispRemarks('')
-          setCallDispVmDate('')
-          setCallDispVmTime('')
-          setCallDispFloorPlan(null)
-        }}
         title="Call Disposition"
         size="md"
       >
@@ -3260,6 +3457,10 @@ const LeadDetail = () => {
                       fontSize: 13,
                       color: '#374151',
                       outline: 'none',
+                      WebkitAppearance: 'auto',
+                      appearance: 'auto',
+                      background: '#fff',
+                      boxSizing: 'border-box',
                     }}
                   />
                 </div>
@@ -3279,6 +3480,10 @@ const LeadDetail = () => {
                       fontSize: 13,
                       color: '#374151',
                       outline: 'none',
+                      WebkitAppearance: 'auto',
+                      appearance: 'auto',
+                      background: '#fff',
+                      boxSizing: 'border-box',
                     }}
                   />
                 </div>
@@ -3286,7 +3491,7 @@ const LeadDetail = () => {
 
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                  Floor Plan *
+                  Floor Plan <span style={{ color: '#9CA3AF', fontWeight: 400, fontSize: 12 }}>(optional)</span>
                 </label>
                 <input
                   type="file"
@@ -3312,23 +3517,9 @@ const LeadDetail = () => {
 
         <Modal.Footer>
           <Button
-            variant="secondary"
-            onClick={() => {
-              setShowDispositionModal(false)
-              setCallDispGroup('')
-              setCallDispSub('')
-              setCallDispRemarks('')
-              setCallDispVmDate('')
-              setCallDispVmTime('')
-              setCallDispFloorPlan(null)
-            }}
-          >
-            Skip
-          </Button>
-          <Button
             onClick={handleSubmitDisposition}
             loading={savingCallDisposition}
-            disabled={!callDispGroup || !callDispSub || (callDispGroup === 'qualified_to_sales' && (!callDispVmDate || !callDispVmTime || !callDispFloorPlan))}
+            disabled={!callDispGroup || !callDispSub || (callDispGroup === 'qualified_to_sales' && (!callDispVmDate || !callDispVmTime))}
             icon={CheckCircle}
           >
             Save Disposition
@@ -3353,7 +3544,7 @@ const LeadDetail = () => {
               fontSize: 13,
               color: '#065F46',
             }}>
-              Qualify <strong>{lead?.name}</strong> and schedule a VM for the Sales team. Floor plan upload is mandatory.
+              Qualify <strong>{lead?.name}</strong> and schedule a VM for the Sales team.
             </div>
 
             {/* VM Date & Time */}
@@ -3375,6 +3566,10 @@ const LeadDetail = () => {
                     fontSize: 13,
                     color: '#374151',
                     outline: 'none',
+                    WebkitAppearance: 'auto',
+                    appearance: 'auto',
+                    background: '#fff',
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
@@ -3395,6 +3590,10 @@ const LeadDetail = () => {
                     fontSize: 13,
                     color: '#374151',
                     outline: 'none',
+                    WebkitAppearance: 'auto',
+                    appearance: 'auto',
+                    background: '#fff',
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
@@ -3403,13 +3602,12 @@ const LeadDetail = () => {
             {/* Floor Plan Upload */}
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                Floor Plan *
+                Floor Plan <span style={{ color: '#9CA3AF', fontWeight: 400, fontSize: 12 }}>(optional)</span>
               </label>
               <input
                 type="file"
                 accept="image/*,.pdf"
                 onChange={(e) => setQualifyFloorPlan(e.target.files[0] || null)}
-                required
                 style={{
                   width: '100%',
                   padding: '10px 12px',
@@ -3421,15 +3619,32 @@ const LeadDetail = () => {
                 }}
               />
               <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>
-                Upload floor plan (image or PDF) for the Sales team to prepare for the VM.
+                Upload floor plan (image or PDF, up to 100 MB) for the Sales team to prepare for the VM.
               </p>
             </div>
+
+            {/* Upload Progress Bar */}
+            {floorPlanUploadProgress !== null && (
+              <div style={{ padding: '12px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#A67B5B' }}>Uploading floor plan...</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#A67B5B' }}>{floorPlanUploadProgress}%</span>
+                </div>
+                <div style={{ width: '100%', height: 8, background: '#E5E7EB', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{
+                    width: `${floorPlanUploadProgress}%`, height: '100%',
+                    background: 'linear-gradient(90deg, #C59C82, #A67B5B)',
+                    borderRadius: 4, transition: 'width 0.3s ease',
+                  }} />
+                </div>
+              </div>
+            )}
           </div>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowQualifyModal(false)}>
+            <Button variant="secondary" onClick={() => setShowQualifyModal(false)} disabled={floorPlanUploadProgress !== null}>
               Cancel
             </Button>
-            <Button type="submit" icon={CheckCircle} loading={qualifying} disabled={!qualifyForm.vmDate || !qualifyForm.vmTime || !qualifyFloorPlan}>
+            <Button type="submit" icon={CheckCircle} loading={qualifying} disabled={!qualifyForm.vmDate || !qualifyForm.vmTime}>
               Qualify & Schedule VM
             </Button>
           </Modal.Footer>
@@ -3476,6 +3691,10 @@ const LeadDetail = () => {
                     fontSize: 13,
                     color: '#374151',
                     outline: 'none',
+                    WebkitAppearance: 'auto',
+                    appearance: 'auto',
+                    background: '#fff',
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
@@ -3495,6 +3714,10 @@ const LeadDetail = () => {
                     fontSize: 13,
                     color: '#374151',
                     outline: 'none',
+                    WebkitAppearance: 'auto',
+                    appearance: 'auto',
+                    background: '#fff',
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
@@ -3543,7 +3766,7 @@ const LeadDetail = () => {
               fontSize: 12,
               color: '#92400E',
             }}>
-              Designer will be assigned by the ACM after the Sales Head assigns the team.
+              Designer will be assigned by the CM/ACM after the SM/ASM assigns a Community Manager.
             </div>
 
             {/* Meeting Type */}

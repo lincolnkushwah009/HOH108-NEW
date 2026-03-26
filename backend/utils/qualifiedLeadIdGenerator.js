@@ -16,7 +16,7 @@ import mongoose from 'mongoose'
  * Entity Codes (for Revenue):
  *   - IP = Interior Plus
  *   - EP = Education Plus
- *   - CP = Construction Plus
+ *   - XP = Exterior Plus
  *   - RP = Renovation Plus
  *   - OP = ODS Plus
  *
@@ -44,7 +44,7 @@ const MOTHER_COMPANY_CODE = 'HG'
 const ENTITY_CODES = {
   'IP': 'IP',  // Interior Plus
   'EP': 'EP',  // Education Plus
-  'CP': 'CP',  // Construction Plus
+  'XP': 'XP',  // Exterior Plus
   'RP': 'RP',  // Renovation Plus
   'OP': 'OP',  // ODS Plus
   'HOH': 'IP'  // HOH108 maps to IP
@@ -61,51 +61,45 @@ const EXECUTION_CODES = {
 }
 
 /**
- * Get or create the ID Mapping collection for tracking sequences
+ * Get or create the ID Sequence collection for tracking sequences
+ * Note: Uses 'IDSequence' model (not 'IDMapping' which is used by entity relationships)
  */
-const getIDMappingModel = () => {
-  // Check if model exists
-  if (mongoose.models.IDMapping) {
-    return mongoose.models.IDMapping
+const getIDSequenceModel = () => {
+  if (mongoose.models.IDSequence) {
+    return mongoose.models.IDSequence
   }
 
-  // Create schema for ID sequence tracking
-  const idMappingSchema = new mongoose.Schema({
-    // Combination key: CITY-MOTHERCOMPANY-ENTITY (e.g., HYD-HG-IP)
+  const idSequenceSchema = new mongoose.Schema({
     prefix: {
       type: String,
       required: true,
       index: true
     },
-    // Current sequence number
     currentSequence: {
       type: Number,
       default: 0
     },
-    // Type of ID (qualified_lead, project)
     idType: {
       type: String,
       enum: ['qualified_lead', 'project', 'work_order'],
       required: true
     },
-    // Company reference
     company: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company'
     },
-    // Last updated
     lastUpdatedAt: {
       type: Date,
       default: Date.now
     }
   }, {
-    timestamps: true
+    timestamps: true,
+    collection: 'idsequences'
   })
 
-  // Compound unique index: same prefix can exist for different idTypes
-  idMappingSchema.index({ prefix: 1, idType: 1 }, { unique: true })
+  idSequenceSchema.index({ prefix: 1, idType: 1 }, { unique: true })
 
-  return mongoose.model('IDMapping', idMappingSchema)
+  return mongoose.model('IDSequence', idSequenceSchema)
 }
 
 /**
@@ -119,7 +113,7 @@ const getIDMappingModel = () => {
  * @returns {String} Generated ID (e.g., HYD-HG-IP-00001)
  */
 export const generateQualifiedLeadId = async ({ city, entityCode, companyId }) => {
-  const IDMapping = getIDMappingModel()
+  const IDMapping = getIDSequenceModel()
 
   // Get city code
   const cityCode = CITY_CODES[city] || 'OTH'
@@ -188,7 +182,7 @@ export const generateProjectId = async ({ qualifiedLeadId, executionType }) => {
  * @returns {String} Work Order ID
  */
 export const generateWorkOrderId = async ({ projectId, companyId }) => {
-  const IDMapping = getIDMappingModel()
+  const IDMapping = getIDSequenceModel()
 
   // Build prefix for work order sequence
   const prefix = `${projectId}-WO`

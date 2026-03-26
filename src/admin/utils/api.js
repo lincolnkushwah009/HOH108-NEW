@@ -180,6 +180,35 @@ export const leadsAPI = {
     }),
 }
 
+// Data Migration API
+export const dataMigrationAPI = {
+  getEmployees: () => apiRequest('/data-migration/employees'),
+  previewPresalesData: (formData) => {
+    const token = localStorage.getItem('hoh108_admin_token')
+    const companyId = localStorage.getItem('hoh108_active_company')
+    return fetch(`${API_BASE_URL}/data-migration/preview-presales`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-Company-Id': companyId,
+      },
+      body: formData,
+    }).then(r => r.json())
+  },
+  importPresalesData: (formData) => {
+    const token = localStorage.getItem('hoh108_admin_token')
+    const companyId = localStorage.getItem('hoh108_active_company')
+    return fetch(`${API_BASE_URL}/data-migration/import-presales`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-Company-Id': companyId,
+      },
+      body: formData,
+    }).then(r => r.json())
+  },
+}
+
 // CP Data Management API
 export const cpDataAPI = {
   getTree: () => apiRequest('/cp-data/tree'),
@@ -794,10 +823,15 @@ export const leadWorkflowAPI = {
   getWorkflow: (id) => apiRequest(`/leads/${id}/workflow`),
   transferToSales: (id) =>
     apiRequest(`/leads/${id}/transfer-to-sales`, { method: 'POST' }),
-  assignSalesExecutive: (id, executiveId, acmId) =>
+  assignSalesExecutive: (id, executiveId) =>
     apiRequest(`/leads/${id}/assign-sales-executive`, {
       method: 'POST',
-      body: JSON.stringify({ executiveId, ...(acmId ? { acmId } : {}) }),
+      body: JSON.stringify({ executiveId }),
+    }),
+  assignCommunityManager: (id, communityManagerId) =>
+    apiRequest(`/leads/${id}/assign-community-manager`, {
+      method: 'POST',
+      body: JSON.stringify({ communityManagerId }),
     }),
   assignDesigner: (id, designerId) =>
     apiRequest(`/leads/${id}/assign-designer`, {

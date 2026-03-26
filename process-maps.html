@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HOH108 — Process Maps (Swimlane)</title>
+<style>
+  @page { size: A3 landscape; margin: 12mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; background: #fff; font-size: 10px; }
+  .page { page-break-after: always; padding: 10px 0; }
+  .page:last-child { page-break-after: avoid; }
+
+  /* Cover */
+  .cover { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 90vh; text-align: center; }
+  .cover-logo { font-size: 48px; font-weight: 800; color: #A67B5B; margin-bottom: 8px; }
+  .cover-sub { font-size: 16px; color: #64748b; margin-bottom: 40px; }
+  .cover h1 { font-size: 30px; font-weight: 700; color: #1e293b; margin-bottom: 10px; }
+  .cover h2 { font-size: 16px; font-weight: 400; color: #64748b; margin-bottom: 40px; }
+  .cover-meta { font-size: 13px; color: #94a3b8; }
+  .cover-meta span { display: block; margin: 4px 0; }
+
+  /* Section title */
+  .section-title { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
+  .section-desc { font-size: 11px; color: #64748b; margin-bottom: 14px; }
+
+  /* Swimlane container */
+  .swimlane { border: 2px solid #cbd5e1; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  .swimlane-header { background: #1e293b; color: #fff; padding: 8px 14px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+
+  /* Lane */
+  .lane { display: flex; min-height: 72px; border-bottom: 1px solid #e2e8f0; }
+  .lane:last-child { border-bottom: none; }
+  .lane-label { width: 140px; min-width: 140px; padding: 10px; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 700; font-size: 10px; color: #fff; flex-shrink: 0; line-height: 1.3; }
+  .lane-content { flex: 1; display: flex; align-items: center; padding: 8px 12px; gap: 6px; flex-wrap: nowrap; overflow-x: auto; }
+
+  /* Role colors */
+  .role-system { background: #475569; }
+  .role-website { background: #0ea5e9; }
+  .role-presales { background: #8b5cf6; }
+  .role-saleshead { background: #C59C82; }
+  .role-salesexec { background: #d97706; }
+  .role-designer { background: #ec4899; }
+  .role-admin { background: #1e293b; }
+  .role-superadmin { background: #dc2626; }
+  .role-operations { background: #059669; }
+  .role-finance { background: #2563eb; }
+  .role-hr { background: #7c3aed; }
+  .role-pm { background: #0891b2; }
+  .role-site { background: #65a30d; }
+  .role-vendor { background: #ea580c; }
+  .role-customer { background: #0d9488; }
+  .role-approver { background: #6366f1; }
+  .role-partner { background: #a855f7; }
+  .role-employee { background: #6b7280; }
+
+  /* Process step shapes */
+  .step { padding: 6px 12px; border-radius: 8px; font-size: 9.5px; font-weight: 600; text-align: center; white-space: nowrap; flex-shrink: 0; line-height: 1.3; position: relative; }
+
+  /* Step types */
+  .step-start { background: #dcfce7; color: #166534; border: 2px solid #86efac; border-radius: 20px; }
+  .step-end { background: #fee2e2; color: #991b1b; border: 2px solid #fca5a5; border-radius: 20px; }
+  .step-process { background: #dbeafe; color: #1e40af; border: 1.5px solid #93c5fd; }
+  .step-decision { background: #fef3c7; color: #92400e; border: 1.5px solid #fcd34d; transform: rotate(0deg); clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%); padding: 6px 18px; }
+  .step-action { background: #f3e8ff; color: #6b21a8; border: 1.5px solid #c4b5fd; }
+  .step-auto { background: #e0f2fe; color: #075985; border: 1.5px dashed #7dd3fc; }
+  .step-notify { background: #fef9c3; color: #854d0e; border: 1.5px solid #fde047; border-radius: 20px; font-size: 8.5px; }
+  .step-document { background: #f1f5f9; color: #334155; border: 1.5px solid #94a3b8; border-radius: 4px; }
+  .step-critical { background: #fce7f3; color: #9d174d; border: 2px solid #f9a8d4; }
+
+  /* Arrow */
+  .arrow { font-size: 14px; color: #94a3b8; flex-shrink: 0; font-weight: 700; }
+  .arrow-down { writing-mode: vertical-rl; font-size: 12px; color: #C59C82; position: absolute; right: -8px; top: 50%; }
+
+  /* Vertical connector line */
+  .vline { width: 2px; height: 20px; background: #C59C82; margin: 0 auto; }
+
+  /* Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0 16px; padding: 10px 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 600; }
+  .legend-box { width: 40px; height: 18px; border-radius: 4px; display: inline-block; }
+
+  /* Footer */
+  .footer { text-align: center; color: #94a3b8; font-size: 9px; margin-top: 16px; padding-top: 8px; border-top: 1px solid #e2e8f0; }
+
+  /* Two col */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="page cover">
+  <div class="cover-logo">HOH108</div>
+  <div class="cover-sub">Hancet Globe Pvt. Ltd.</div>
+  <h1>Process Maps — Swimlane Diagrams</h1>
+  <h2>Module-wise End-to-End Process Flows with Role-based Ownership</h2>
+  <div style="width: 80px; height: 4px; background: #C59C82; border-radius: 2px; margin: 0 auto 40px;"></div>
+  <div class="cover-meta">
+    <span><strong>Domain:</strong> hoh108.com</span>
+    <span><strong>Report Date:</strong> 21 March 2026</span>
+    <span><strong>Classification:</strong> Internal — Confidential</span>
+  </div>
+</div>
+
+<!-- PAGE 2: LEGEND + LEAD MANAGEMENT -->
+<div class="page">
+  <div class="section-title">Shape & Color Legend</div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-box" style="background:#dcfce7; border:2px solid #86efac; border-radius:20px;"></div> Start / End</div>
+    <div class="legend-item"><div class="legend-box" style="background:#dbeafe; border:1.5px solid #93c5fd;"></div> Process Step</div>
+    <div class="legend-item"><div class="legend-box" style="background:#fef3c7; border:1.5px solid #fcd34d;"></div> Decision</div>
+    <div class="legend-item"><div class="legend-box" style="background:#f3e8ff; border:1.5px solid #c4b5fd;"></div> Action</div>
+    <div class="legend-item"><div class="legend-box" style="background:#e0f2fe; border:1.5px dashed #7dd3fc;"></div> Automated</div>
+    <div class="legend-item"><div class="legend-box" style="background:#fef9c3; border:1.5px solid #fde047; border-radius:20px;"></div> Notification</div>
+    <div class="legend-item"><div class="legend-box" style="background:#f1f5f9; border:1.5px solid #94a3b8;"></div> Document / Output</div>
+    <div class="legend-item"><div class="legend-box" style="background:#fce7f3; border:2px solid #f9a8d4;"></div> Critical Step</div>
+  </div>
+
+  <div class="section-title">1. Lead Management — Website to Qualification</div>
+  <div class="section-desc">End-to-end flow from website lead capture to qualification and sales transfer</div>
+
+  <div class="swimlane">
+    <div class="swimlane-header">LEAD MANAGEMENT — INBOUND TO QUALIFICATION</div>
+    <div class="lane">
+      <div class="lane-label role-website">Website /<br>Customer</div>
+      <div class="lane-content">
+        <span class="step step-start">Customer visits<br>hoh108.com</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Fills Contact<br>Form</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">Lead Data<br>(Name, Phone, City, Service)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-system">System<br>(Auto)</div>
+      <div class="lane-content">
+        <span class="step step-auto">POST /api/leads<br>(Public)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Map to Company<br>(Interior Plus)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Generate Lead ID<br>(IP-OTH-DM-DDMMYY-NNN)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Round-Robin<br>Assignment (by City)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">Notify Pre-Sales<br>+ Sales Head</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">Email via<br>SMTP (Gmail)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-presales">Pre-Sales<br>Executive</div>
+      <div class="lane-content">
+        <span class="step step-process">View Assigned<br>Lead</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Click Call<br>Button</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Set Call<br>Disposition</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Qualified?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Upload Floor<br>Plan (PDF)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Set VM Date<br>& Time</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-critical">Qualify Lead<br>(Generate QL-ID)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-system">System<br>(Auto)</div>
+      <div class="lane-content">
+        <span class="step step-auto">Generate Qualified<br>Lead ID (HYD-HG-IP-00001)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Lock Pre-Sales<br>(Mask Phone)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Transfer to<br>Sales (Round-Robin)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">Notify Sales<br>Manager</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">30-min Meeting<br>Reminder (Cron)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-saleshead">Sales Manager<br>(Sales Head)</div>
+      <div class="lane-content">
+        <span class="step step-process">View All<br>Qualified Leads</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">View Floor Plan<br>& VM Details</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Assign Sales<br>Executive</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Schedule<br>Meeting</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-salesexec">Sales<br>Executive</div>
+      <div class="lane-content">
+        <span class="step step-process">View Assigned<br>Lead</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Conduct VM<br>(Virtual Meeting)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Update Status<br>(Cold/Warm/Hot)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Set Revised<br>Budget</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Won?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-critical">Convert to<br>Customer + Project</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Lead<br>Closed</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">2. Sales Order & Quotation Flow</div>
+  <div class="section-desc">From lead conversion to sales order creation and approval</div>
+  <div class="swimlane">
+    <div class="swimlane-header">SALES ORDER LIFECYCLE</div>
+    <div class="lane">
+      <div class="lane-label role-salesexec">Sales<br>Executive</div>
+      <div class="lane-content">
+        <span class="step step-start">Lead Won</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Create BOQ<br>Quotation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">Generate<br>PDF Quote</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Share with<br>Customer</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Accepted?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Create Sales<br>Order</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-saleshead">Sales Manager<br>(Approver)</div>
+      <div class="lane-content">
+        <span class="step step-process">Review Sales<br>Order</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Approve?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Approve SO</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">3-Way Match<br>(SO-Delivery-Invoice)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-system">System<br>(Auto)</div>
+      <div class="lane-content">
+        <span class="step step-auto">Create Customer<br>Record</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Create Project<br>Record</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">Notify PM +<br>Design Team</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Project<br>Initiated</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: PROCUREMENT -->
+<div class="page">
+  <div class="section-title">3. Procurement — Procure-to-Pay (P2P)</div>
+  <div class="section-desc">Complete procurement cycle from requisition to vendor payment</div>
+
+  <div class="swimlane">
+    <div class="swimlane-header">PROCURE-TO-PAY (P2P) LIFECYCLE</div>
+    <div class="lane">
+      <div class="lane-label role-pm">Project Manager<br>/ Site Engineer</div>
+      <div class="lane-content">
+        <span class="step step-start">Material<br>Need</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Create Purchase<br>Requisition (PR)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">PR Document<br>(Items, Qty, Budget)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-approver">Approver<br>(Matrix-based)</div>
+      <div class="lane-content">
+        <span class="step step-process">Review PR</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Amount &gt;<br>Threshold?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Multi-Level<br>Approval</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Approve PR</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-operations">Operations /<br>Procurement</div>
+      <div class="lane-content">
+        <span class="step step-action">Create RFQ<br>from PR</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Send to<br>Vendors</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Compare<br>Quotations</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Select Vendor<br>& Create PO</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">Purchase Order<br>(PO-YYMM-NNNN)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-vendor">Vendor<br>(External)</div>
+      <div class="lane-content">
+        <span class="step step-process">Receive PO<br>(Portal)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Deliver<br>Materials</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Submit<br>Invoice</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-operations">Operations /<br>Store</div>
+      <div class="lane-content">
+        <span class="step step-action">Receive Goods<br>& Create GRN</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">QC Inspection<br>(Pass/Fail)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Update Stock<br>Inventory</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-finance">Finance<br>Team</div>
+      <div class="lane-content">
+        <span class="step step-process">Receive Vendor<br>Invoice</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-critical">3-Way Match<br>(PO + GRN + Invoice)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Match?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Approve<br>Payment</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Process Payment<br>(Milestones)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">GL Posting<br>(AP Entry)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Payment<br>Complete</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-superadmin">Super Admin<br>(Only)</div>
+      <div class="lane-content">
+        <span class="step step-action">Delete Vendor</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Delete PR</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Delete PO</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Delete GRN</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Delete RFQ</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">4. Vendor Onboarding</div>
+  <div class="section-desc">Vendor registration, verification, and portal access</div>
+  <div class="swimlane">
+    <div class="swimlane-header">VENDOR ONBOARDING</div>
+    <div class="lane">
+      <div class="lane-label role-operations">Operations /<br>Procurement</div>
+      <div class="lane-content">
+        <span class="step step-start">New Vendor<br>Need</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Create Vendor<br>(Name, Type, GSTIN, PAN)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Upload Identity<br>Documents</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">Vendor Record<br>(VEN-NNNN)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-admin">Company Admin<br>/ Manager</div>
+      <div class="lane-content">
+        <span class="step step-process">Review Vendor<br>Details</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Approve?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Approve Vendor<br>(Status: Active)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Enable Portal<br>Access</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Vendor<br>Active</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: PROJECT & PRODUCTION -->
+<div class="page">
+  <div class="section-title">5. Project Lifecycle</div>
+  <div class="section-desc">From sales order to project execution and handover</div>
+
+  <div class="swimlane">
+    <div class="swimlane-header">PROJECT LIFECYCLE — DESIGN TO HANDOVER</div>
+    <div class="lane">
+      <div class="lane-label role-salesexec">Sales<br>Executive</div>
+      <div class="lane-content">
+        <span class="step step-start">Sales Order<br>Approved</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Convert to<br>Project</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Assign PM<br>& Designer</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-designer">Designer</div>
+      <div class="lane-content">
+        <span class="step step-process">Requirement<br>Meeting</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Create Design<br>Iteration v1</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Customer<br>Review</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Approved?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Revise (v2, v3...)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-critical">Final Design<br>Approved</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-pm">Project<br>Manager</div>
+      <div class="lane-content">
+        <span class="step step-action">Create Project<br>Phases & Tasks</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Set Budget<br>& Timeline</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Gantt Chart<br>Planning</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Create Work<br>Orders (PPC)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Track Progress<br>& Budget</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Change Order<br>Management</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-site">Site<br>Engineer</div>
+      <div class="lane-content">
+        <span class="step step-action">Daily Progress<br>Reports</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Material Issue<br>Requests</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Labor<br>Tracking</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">QC<br>Inspections</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Risk<br>Register</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-operations">Operations /<br>PPC</div>
+      <div class="lane-content">
+        <span class="step step-process">BOM<br>Creation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">MRP<br>Planning</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Material<br>Procurement</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Production<br>Cost Tracking</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">P2P<br>Tracking</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-finance">Finance</div>
+      <div class="lane-content">
+        <span class="step step-action">Create Customer<br>Invoices</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Track Payments<br>(AR)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Dunning Reminders<br>(7/15/30/45/60 days)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Bank<br>Reconciliation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Project<br>Closed</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 5: HR -->
+<div class="page">
+  <div class="section-title">6. HR Management — Employee Lifecycle</div>
+  <div class="section-desc">From onboarding to exit management</div>
+
+  <div class="swimlane">
+    <div class="swimlane-header">EMPLOYEE LIFECYCLE</div>
+    <div class="lane">
+      <div class="lane-label role-hr">HR Manager</div>
+      <div class="lane-content">
+        <span class="step step-start">Hiring<br>Decision</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Create Employee<br>Record</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Set Role, Dept,<br>Company, Reporting</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Generate Offer<br>Letter</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Assign Module<br>Permissions</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Set Salary<br>Structure</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-employee">Employee</div>
+      <div class="lane-content">
+        <span class="step step-process">Login to<br>CRM</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Mark<br>Attendance</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Apply for<br>Leave</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Submit<br>Reimbursement</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Request<br>Advance</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Raise Support<br>Ticket</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-approver">Reporting<br>Manager</div>
+      <div class="lane-content">
+        <span class="step step-process">Review Leave<br>Request</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Approve?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Approve/Reject<br>Leave</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Review<br>Reimbursement</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Approve<br>Reimbursement</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Attendance<br>Regularization</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-hr">HR /<br>Payroll</div>
+      <div class="lane-content">
+        <span class="step step-process">Run Monthly<br>Payroll</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Calculate Salary<br>(Attendance + Leaves)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">Payslip<br>Generation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">GL Posting<br>(Salary Entry)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">7. Performance Review Cycle</div>
+  <div class="swimlane">
+    <div class="swimlane-header">PERFORMANCE REVIEW</div>
+    <div class="lane">
+      <div class="lane-label role-hr">HR Manager</div>
+      <div class="lane-content">
+        <span class="step step-start">Create Review<br>Cycle</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Configure KRA<br>& KPI</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Assign Role<br>Templates</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Launch<br>Cycle</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-employee">Employee</div>
+      <div class="lane-content">
+        <span class="step step-action">Self<br>Assessment</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">Submit<br>Review</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-approver">Reporting<br>Manager</div>
+      <div class="lane-content">
+        <span class="step step-process">Review<br>Submission</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Rate KRA/KPI<br>Performance</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Approve<br>Review</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Review<br>Complete</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">8. Exit Management</div>
+  <div class="swimlane">
+    <div class="swimlane-header">EMPLOYEE EXIT</div>
+    <div class="lane">
+      <div class="lane-label role-employee">Employee</div>
+      <div class="lane-content">
+        <span class="step step-start">Resign</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Submit<br>Resignation</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-hr">HR Manager</div>
+      <div class="lane-content">
+        <span class="step step-process">Review<br>Resignation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Initiate Exit<br>Process</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Asset Return<br>Checklist</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Generate<br>Relieving Letter</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Final Settlement<br>Calculation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Deactivate<br>Account</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Exit<br>Complete</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 6: FINANCE & APPROVAL -->
+<div class="page">
+  <div class="section-title">9. Finance — Invoice to Collection</div>
+  <div class="section-desc">Customer invoicing, payment tracking, and reconciliation</div>
+
+  <div class="swimlane">
+    <div class="swimlane-header">ORDER-TO-CASH (O2C)</div>
+    <div class="lane">
+      <div class="lane-label role-pm">Project<br>Manager</div>
+      <div class="lane-content">
+        <span class="step step-start">Milestone<br>Completed</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Request<br>Invoice</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-finance">Finance<br>Team</div>
+      <div class="lane-content">
+        <span class="step step-action">Create Customer<br>Invoice</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">E-Invoice<br>Generation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">Invoice<br>(INV-YYMM-NNNN)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Send to<br>Customer</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Track AR<br>Aging</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-system">System<br>(Auto)</div>
+      <div class="lane-content">
+        <span class="step step-auto">Dunning L1<br>(7 days)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Dunning L2<br>(15 days)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Dunning L3<br>(30 days)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Dunning L4<br>(45 days)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">Collections<br>Warning (60 days)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-customer">Customer</div>
+      <div class="lane-content">
+        <span class="step step-process">View Invoice<br>(Portal)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Make<br>Payment</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-finance">Finance<br>Team</div>
+      <div class="lane-content">
+        <span class="step step-action">Record<br>Payment</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">GL Posting<br>(AR Entry)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Bank<br>Reconciliation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Credit/Debit<br>Notes</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">GST Return<br>Preparation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Collection<br>Complete</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">10. Approval Workflow Engine</div>
+  <div class="section-desc">Configurable maker-checker-approver with escalation</div>
+  <div class="swimlane">
+    <div class="swimlane-header">APPROVAL WORKFLOW (ALL MODULES)</div>
+    <div class="lane">
+      <div class="lane-label role-employee">Maker<br>(Any User)</div>
+      <div class="lane-content">
+        <span class="step step-start">Create<br>Request</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Submit for<br>Approval</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">PR / PO / Leave /<br>Reimbursement / SO</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-system">System<br>(Matrix)</div>
+      <div class="lane-content">
+        <span class="step step-auto">Check Approval<br>Matrix</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Amount &gt;<br>Threshold?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Route to<br>Correct Level</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">Notify<br>Approver(s)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-approver">Checker /<br>Approver</div>
+      <div class="lane-content">
+        <span class="step step-process">Review<br>Request</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Approve /<br>Reject?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Approve</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">More Levels<br>Needed?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Escalate to<br>Next Level</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-system">System<br>(Escalation)</div>
+      <div class="lane-content">
+        <span class="step step-auto">48hr SLA<br>Timer</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">Overdue?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">Escalate to<br>Manager (Cron)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Approved /<br>Rejected</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 7: SUPPORT + COMPLIANCE + NOTIFICATIONS -->
+<div class="page">
+  <div class="section-title">11. Support Tickets</div>
+  <div class="swimlane">
+    <div class="swimlane-header">SUPPORT TICKET LIFECYCLE</div>
+    <div class="lane">
+      <div class="lane-label role-employee">Any<br>Employee</div>
+      <div class="lane-content">
+        <span class="step step-start">Issue<br>Found</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Create<br>Ticket</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-document">Category,<br>Priority, Description</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Attach<br>Files</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-admin">Admin /<br>Manager</div>
+      <div class="lane-content">
+        <span class="step step-process">Triage &<br>Assign</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">SLA Timer<br>Starts</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Investigate<br>& Comment</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-action">Resolve<br>Ticket</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-decision">SLA Met?</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Closed</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">12. Notification & Communication Flow</div>
+  <div class="swimlane">
+    <div class="swimlane-header">NOTIFICATION DELIVERY (ALL MODULES)</div>
+    <div class="lane">
+      <div class="lane-label role-system">Trigger<br>Event</div>
+      <div class="lane-content">
+        <span class="step step-start">Event<br>Occurs</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Lead Assigned / Qualified /<br>Transferred / Meeting / Approval</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">collectRecipients()<br>(Owner + 3-level Hierarchy)</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-system">In-App<br>Channel</div>
+      <div class="lane-content">
+        <span class="step step-auto">Notification.notifyUsers()<br>(MongoDB Insert)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Socket.IO<br>emitToUser()</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">Bell Icon<br>Real-time Push</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Click to<br>Navigate</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-system">Email<br>Channel</div>
+      <div class="lane-content">
+        <span class="step step-auto">SMTP Gmail<br>(product.engineer@hoh108.com)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Branded HTML<br>Template</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-notify">Email Delivered<br>(Fire & Forget)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Delivered</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">13. Compliance & Governance</div>
+  <div class="swimlane">
+    <div class="swimlane-header">COMPLIANCE CONTROLS</div>
+    <div class="lane">
+      <div class="lane-label role-system">SOX<br>Controls</div>
+      <div class="lane-content">
+        <span class="step step-auto">ITGC-002: Token<br>Blacklist on Logout</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">ITGC-004: Account<br>Lockout</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">ITGC-004: Password<br>Expiry & History</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">SoD Review &<br>Access Audit</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-system">DPDP / GDPR</div>
+      <div class="lane-content">
+        <span class="step step-auto">Consent<br>Collection</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Phone Masking<br>(Pre-Sales)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">Data Subject<br>Request (DSR)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Data Retention<br>Policy</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Breach<br>Notification</span>
+      </div>
+    </div>
+    <div class="lane">
+      <div class="lane-label role-finance">Tax<br>Compliance</div>
+      <div class="lane-content">
+        <span class="step step-auto">E-Invoice<br>Generation</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-process">GST Return<br>Filing</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-auto">Audit Trail<br>(All Modules)</span>
+        <span class="arrow">&rarr;</span>
+        <span class="step step-end">Compliant</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>HOH108.com — Process Maps (Swimlane Diagrams) | Generated: 21 March 2026 | Confidential — For Internal Use Only</p>
+    <p style="margin-top: 4px;">Hancet Globe Pvt. Ltd. | hoh108.com</p>
+  </div>
+</div>
+
+</body>
+</html>

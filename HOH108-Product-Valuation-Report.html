@@ -1,0 +1,2689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOH108 | Product Valuation & Ecosystem Assessment Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --navy: #0f1a2e;
+    --navy-light: #1a2a45;
+    --gold: #C59C82;
+    --gold-light: #d4b69c;
+    --gold-dark: #a07a5e;
+    --white: #ffffff;
+    --gray-50: #f8f9fa;
+    --gray-100: #f0f1f3;
+    --gray-200: #e2e4e8;
+    --gray-300: #c8ccd2;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --green: #059669;
+    --blue: #2563eb;
+    --red: #dc2626;
+    --amber: #d97706;
+  }
+  body {
+    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: var(--gray-900);
+    background: var(--gray-50);
+    line-height: 1.7;
+    font-size: 13pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-feature-settings: 'cv01', 'cv02', 'ss01';
+  }
+
+  /* ───────── PAGE CONTAINER ───────── */
+  .page {
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+    margin: 0 auto;
+    padding: 30px 40px 40px 44px;
+    page-break-after: auto;
+    position: relative;
+    background: var(--white);
+    border-left: 5px solid var(--gold);
+    page-break-inside: avoid;
+  }
+  .page:last-child { page-break-after: auto; }
+  .page + .page { border-top: 3px solid var(--gold); padding-top: 35px; }
+  .page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(225deg, rgba(197,156,130,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .page::after {
+    content: 'HOH108';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%) rotate(-45deg);
+    font-size: 72pt;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    color: rgba(197,156,130,0.028);
+    pointer-events: none;
+    white-space: nowrap;
+    letter-spacing: 12px;
+  }
+
+  /* ───────── COVER PAGE ───────── */
+  .cover {
+    background: linear-gradient(160deg, #060d1a 0%, var(--navy) 30%, #162844 60%, #0f1a2e 100%);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 80px 40px;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    border-left: 5px solid var(--gold) !important;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 75% 20%, rgba(197,156,130,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 20% 80%, rgba(197,156,130,0.08) 0%, transparent 40%),
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(197,156,130,0.015) 40px, rgba(197,156,130,0.015) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(197,156,130,0.015) 40px, rgba(197,156,130,0.015) 41px);
+    pointer-events: none;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    top: 60px;
+    left: 60px;
+    right: 60px;
+    bottom: 60px;
+    border: 1px solid rgba(197,156,130,0.12);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .cover-badge {
+    background: rgba(197,156,130,0.2);
+    border: 1px solid rgba(197,156,130,0.4);
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 8pt;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+  }
+  .cover-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 52pt;
+    font-weight: 900;
+    letter-spacing: 10px;
+    color: var(--gold);
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 30px rgba(197,156,130,0.3);
+  }
+  .cover-tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 11pt;
+    font-weight: 300;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 45px;
+    position: relative;
+    z-index: 1;
+  }
+  .cover-usp {
+    font-family: 'Playfair Display', serif;
+    font-size: 24pt;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+    max-width: 500px;
+  }
+  .cover-usp em {
+    color: var(--gold);
+    font-style: normal;
+  }
+  .cover-subtitle {
+    font-size: 11pt;
+    font-weight: 300;
+    color: rgba(255,255,255,0.75);
+    max-width: 420px;
+    margin-bottom: 50px;
+    position: relative;
+    z-index: 1;
+    line-height: 1.7;
+  }
+  .cover-title {
+    font-size: 16pt;
+    font-weight: 600;
+    border-top: 2px solid var(--gold);
+    border-bottom: 2px solid var(--gold);
+    padding: 12px 30px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+  }
+  .cover-meta {
+    font-size: 8.5pt;
+    color: rgba(255,255,255,0.5);
+    position: relative;
+    z-index: 1;
+    line-height: 1.8;
+  }
+  .cover-footer {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9pt;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1px;
+    z-index: 1;
+  }
+
+  /* ───────── HEADINGS ───────── */
+  .section-num {
+    font-size: 11pt;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: block;
+    position: relative;
+    padding-bottom: 10px;
+  }
+  .section-num::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28pt;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+    line-height: 1.25;
+  }
+  h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 16pt;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 24px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid var(--gold);
+    display: inline-block;
+    letter-spacing: 0.3px;
+  }
+  h3 {
+    font-size: 14pt;
+    font-weight: 700;
+    color: var(--navy-light);
+    margin: 14px 0 8px;
+  }
+  h4 {
+    font-size: 12pt;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin: 12px 0 6px;
+  }
+  .section-lead {
+    font-size: 13pt;
+    color: var(--gray-500);
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: none;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    font-size: 9pt;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    background: linear-gradient(to right, rgba(197,156,130,0.08), transparent);
+    padding: 8px 12px;
+    border-radius: 3px;
+    position: relative;
+  }
+  .page-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, var(--gold), transparent);
+  }
+  .page-header-logo {
+    color: var(--gold);
+    font-weight: 800;
+    font-size: 10pt;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 3px;
+  }
+  .page-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8pt;
+    color: var(--gray-300);
+    padding-top: 8px;
+    margin-top: 40px;
+    position: relative;
+  }
+  .page-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, var(--gold), var(--gray-200), transparent);
+  }
+
+  /* ───────── CONTENT ───────── */
+  p { margin-bottom: 10px; text-align: justify; }
+  .text-sm { font-size: 11pt; }
+  .text-xs { font-size: 10pt; }
+  .text-gold { color: var(--gold-dark); }
+  .text-navy { color: var(--navy); }
+  .text-green { color: var(--green); }
+  .text-blue { color: var(--blue); }
+  .text-red { color: var(--red); }
+  .fw-700 { font-weight: 700; }
+  .fw-600 { font-weight: 600; }
+  .text-center { text-align: center; }
+  .text-right { text-align: right; }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mb-4 { margin-bottom: 4px; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-16 { margin-bottom: 16px; }
+
+  /* ───────── TABLES ───────── */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 14px 0;
+    font-size: 11pt;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    border: 1px solid var(--gray-200);
+  }
+  th {
+    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    color: var(--white);
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 10pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  th:first-child { border-top-left-radius: 7px; }
+  th:last-child { border-top-right-radius: 7px; }
+  td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    transition: all 0.15s;
+  }
+  tr:nth-child(even) { background: var(--gray-50); }
+  tr:hover td { background: rgba(197,156,130,0.06); border-left-color: var(--gold); }
+  .table-highlight td { background: rgba(197,156,130,0.14) !important; font-weight: 600; border-bottom: 2px solid var(--gold); }
+
+  /* ───────── CALLOUT BOXES ───────── */
+  .callout {
+    border-left: 5px solid var(--gold);
+    background: linear-gradient(135deg, var(--gray-50), rgba(197,156,130,0.04));
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 10px 10px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    position: relative;
+  }
+  .callout-navy {
+    border-left-color: var(--navy);
+    background: linear-gradient(135deg, rgba(15,26,46,0.04), rgba(15,26,46,0.02));
+  }
+  .callout-green {
+    border-left-color: var(--green);
+    background: linear-gradient(135deg, rgba(5,150,105,0.05), rgba(5,150,105,0.02));
+  }
+  .callout-title {
+    font-weight: 700;
+    font-size: 12pt;
+    margin-bottom: 6px;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .callout-title::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+  .callout-navy .callout-title::before { background: var(--navy); }
+  .callout-green .callout-title::before { background: var(--green); }
+
+  /* ───────── KPI CARDS ───────── */
+  .kpi-row {
+    display: flex;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .kpi-card {
+    flex: 1;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gray-200);
+  }
+  .kpi-card.gold {
+    background: linear-gradient(145deg, #0a1628, var(--navy), var(--navy-light));
+    color: var(--white);
+    border: none;
+    box-shadow: 0 6px 20px rgba(15,26,46,0.25);
+  }
+  .kpi-card.gold::after {
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+  }
+  .kpi-card.gold .kpi-value {
+    color: var(--gold);
+    text-shadow: 0 1px 12px rgba(197,156,130,0.3);
+  }
+  .kpi-label {
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--gray-500);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .kpi-card.gold .kpi-label { color: rgba(255,255,255,0.55); }
+  .kpi-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 22pt;
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1.1;
+  }
+  .kpi-unit {
+    font-size: 9pt;
+    color: var(--gray-500);
+    font-weight: 500;
+  }
+  .kpi-card.gold .kpi-unit { color: rgba(255,255,255,0.45); }
+
+  /* ───────── GRID ───────── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+
+  /* ───────── BAR CHART ───────── */
+  .bar-chart { margin: 10px 0; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    margin: 4px 0;
+  }
+  .bar-label {
+    width: 90px;
+    font-size: 10pt;
+    color: var(--gray-700);
+    text-align: right;
+    padding-right: 10px;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+  .bar-track {
+    flex: 1;
+    height: 28px;
+    background: var(--gray-100);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 9pt;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    transition: width 0.3s;
+  }
+  .bar-fill.navy { background: linear-gradient(90deg, var(--navy), var(--navy-light)); }
+  .bar-fill.gold { background: linear-gradient(90deg, var(--gold-dark), var(--gold)); }
+  .bar-fill.green { background: linear-gradient(90deg, #047857, var(--green)); }
+  .bar-fill.blue { background: linear-gradient(90deg, #1d4ed8, var(--blue)); }
+  .bar-fill.amber { background: linear-gradient(90deg, #b45309, var(--amber)); }
+
+  /* ───────── DONUT / CIRCLE ───────── */
+  .circle-chart {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 12px 0;
+  }
+
+  /* ───────── FOOTBALL FIELD ───────── */
+  .football-field {
+    margin: 14px 0;
+    font-size: 8pt;
+  }
+  .ff-row {
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+  }
+  .ff-label {
+    width: 120px;
+    font-size: 10pt;
+    color: var(--gray-700);
+    text-align: right;
+    padding-right: 12px;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+  .ff-track {
+    flex: 1;
+    height: 32px;
+    position: relative;
+    background: repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(0,0,0,0.03) 49px, rgba(0,0,0,0.03) 50px);
+    border-radius: 6px;
+  }
+  .ff-bar {
+    position: absolute;
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9pt;
+    font-weight: 700;
+    color: white;
+    min-width: 50px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .ff-scale {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 130px;
+    font-size: 8pt;
+    color: var(--gray-300);
+    margin-top: 4px;
+  }
+
+  /* ───────── TIMELINE ───────── */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+    margin: 12px 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--gray-200);
+  }
+  .tl-item {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 2px var(--gold);
+  }
+  .tl-date {
+    font-size: 7pt;
+    color: var(--gold-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .tl-content {
+    font-size: 8.5pt;
+  }
+
+  /* ───────── BADGE ───────── */
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .badge-gold { background: linear-gradient(135deg, rgba(197,156,130,0.18), rgba(197,156,130,0.1)); color: var(--gold-dark); }
+  .badge-green { background: linear-gradient(135deg, rgba(5,150,105,0.14), rgba(5,150,105,0.06)); color: var(--green); }
+  .badge-navy { background: linear-gradient(135deg, rgba(15,26,46,0.12), rgba(15,26,46,0.06)); color: var(--navy); }
+  .badge-blue { background: linear-gradient(135deg, rgba(37,99,235,0.14), rgba(37,99,235,0.06)); color: var(--blue); }
+  .badge-red { background: linear-gradient(135deg, rgba(220,38,38,0.14), rgba(220,38,38,0.06)); color: var(--red); }
+
+  /* ───────── MODULE GRID ───────── */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .module-item {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 10px 10px;
+    font-size: 10pt;
+    text-align: center;
+    font-weight: 500;
+  }
+  .module-item.active {
+    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    color: var(--white);
+    border-color: var(--navy);
+    box-shadow: 0 2px 6px rgba(15,26,46,0.2);
+  }
+  .module-item.ai {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    box-shadow: 0 2px 10px rgba(99,102,241,0.3);
+  }
+
+  /* ───────── CITY MAP ───────── */
+  .india-map-container {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  /* ───────── LISTS ───────── */
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin-bottom: 5px; font-size: 11pt; line-height: 1.5; }
+
+  /* ───────── COLUMNS ───────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ───────── PRINT OPTIMIZATION ───────── */
+  @media print {
+    body { font-size: 9pt; background: white; }
+    .page { width: 210mm; min-height: 297mm; margin: 0; padding: 15mm 18mm 20mm 22mm; box-shadow: none !important; }
+    .cover { min-height: 297mm; padding: 30mm 25mm; }
+    .kpi-card { box-shadow: none !important; }
+    table { box-shadow: none !important; }
+    .callout { box-shadow: none !important; }
+    .page-footer { position: absolute; bottom: 14mm; left: 22mm; right: 18mm; margin-top: 0; }
+    .no-print { display: none; }
+  }
+  @media screen {
+    .page {
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .page:last-child {
+      border-bottom: none;
+    }
+  }
+
+  /* ───────── TOC ───────── */
+  .toc-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--gray-200);
+    font-size: 12pt;
+  }
+  .toc-item .num { color: var(--gold); font-weight: 700; min-width: 36px; }
+  .toc-section { font-weight: 700; color: var(--navy); padding: 12px 0 4px; font-size: 13pt; border-bottom: none; }
+
+  /* ───────── COMPARISON TABLE ───────── */
+  .comp-table th { font-size: 9pt; padding: 8px 8px; }
+  .comp-table td { font-size: 10pt; padding: 6px 8px; }
+  .comp-table .check { color: var(--green); font-weight: 700; }
+  .comp-table .cross { color: var(--red); }
+  .comp-table .partial { color: var(--amber); }
+
+  /* ───────── ECOSYSTEM DIAGRAM ───────── */
+  .eco-center {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #0a1628, var(--navy), var(--navy-light));
+    color: var(--gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-weight: 700;
+    font-size: 14pt;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 8px 30px rgba(15,26,46,0.3), 0 0 0 4px rgba(197,156,130,0.2);
+    font-family: 'Playfair Display', serif;
+  }
+  .eco-ring {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -20px auto 10px;
+    max-width: 500px;
+    position: relative;
+    z-index: 1;
+  }
+  .eco-node {
+    background: var(--white);
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 10pt;
+    font-weight: 600;
+    text-align: center;
+    min-width: 90px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: all 0.15s;
+  }
+
+  /* ───────── ADDITIONAL PREMIUM ELEMENTS ───────── */
+  .section-lead {
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    padding-left: 14px;
+    border-left: 3px solid rgba(197,156,130,0.3);
+  }
+  h4 {
+    position: relative;
+    padding-left: 10px;
+  }
+  h4::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 3px;
+    width: 4px;
+    height: 12px;
+    background: var(--gold);
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- COVER PAGE -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page cover">
+  <div class="cover-badge">Confidential &bull; Privileged Document</div>
+  <div class="cover-logo">HOH108</div>
+  <div class="cover-tagline">Hancet Globe Private Limited</div>
+
+  <div class="cover-usp">"From <em>Inspiration</em> to <em>Installation</em>"</div>
+  <div class="cover-subtitle">
+    The World's First Integrated Phygital Ecosystem for the Built Environment &mdash;
+    Unifying AI-Powered Material Intelligence, Enterprise ERP, and Omnichannel Commerce
+    Across the Construction &amp; Interior Design Value Chain.
+  </div>
+
+  <div class="cover-title">Product Valuation &amp; Ecosystem Assessment</div>
+
+  <div class="cover-meta">
+    Prepared in accordance with Big-4 Valuation Standards (IVS 2024 / ICAI / Ind AS 113)<br>
+    Assessment Date: March 2026 &nbsp;|&nbsp; Fiscal Reference: FY 2025-26<br><br>
+    <span style="color:rgba(255,255,255,0.35)">
+    Valuation Methodologies: DCF &bull; Comparable Company Analysis &bull; Precedent Transactions &bull; Rule of 40
+    </span>
+  </div>
+
+  <div class="cover-footer">
+    HOH108 &bull; A Product of Hancet Globe Private Limited &bull; CIN: Not Disclosed &bull; Registered Office: India<br>
+    This document contains proprietary and confidential information. Distribution without written consent is prohibited.
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- TABLE OF CONTENTS -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Product Valuation Report &bull; FY 2025-26</span>
+  </div>
+
+  <h1 style="margin-bottom:4px;">Table of Contents</h1>
+  <p class="section-lead">Comprehensive Ecosystem Valuation &mdash; 19 Sections</p>
+
+  <div style="margin-top:10px">
+    <div class="toc-section"><span class="num">A</span> Strategic Overview</div>
+    <div class="toc-item"><span><span class="num">01</span> Executive Summary &amp; Investment Thesis</span><span>4</span></div>
+    <div class="toc-item"><span><span class="num">02</span> The USP: "From Inspiration to Installation"</span><span>5</span></div>
+    <div class="toc-item"><span><span class="num">03</span> Company &amp; Ecosystem Overview</span><span>6</span></div>
+
+    <div class="toc-section"><span class="num">B</span> Product &amp; Technology</div>
+    <div class="toc-item"><span><span class="num">04</span> Product Portfolio &mdash; 21 Module Deep Dive</span><span>8</span></div>
+    <div class="toc-item"><span><span class="num">05</span> Technology Architecture &amp; Stack</span><span>10</span></div>
+    <div class="toc-item"><span><span class="num">06</span> AI &amp; Agentic MCP Capabilities</span><span>11</span></div>
+    <div class="toc-item"><span><span class="num">07</span> Payment Infrastructure &amp; BBPS Roadmap</span><span>12</span></div>
+
+    <div class="toc-section"><span class="num">C</span> Market Analysis</div>
+    <div class="toc-item"><span><span class="num">08</span> India Market Deep Dive</span><span>13</span></div>
+    <div class="toc-item"><span><span class="num">09</span> TAM &bull; SAM &bull; SOM Analysis</span><span>15</span></div>
+    <div class="toc-item"><span><span class="num">10</span> Competitive Landscape &amp; Positioning</span><span>16</span></div>
+    <div class="toc-item"><span><span class="num">11</span> International Expansion: MY, SG, UAE, HK</span><span>18</span></div>
+
+    <div class="toc-section"><span class="num">D</span> Financial Model</div>
+    <div class="toc-item"><span><span class="num">12</span> Revenue Model &amp; SaaS Pricing</span><span>19</span></div>
+    <div class="toc-item"><span><span class="num">13</span> Financial Projections &mdash; QoQ &amp; YoY</span><span>21</span></div>
+    <div class="toc-item"><span><span class="num">14</span> Customer Metrics: CAC, Engagement, Retention, LTV</span><span>23</span></div>
+    <div class="toc-item"><span><span class="num">15</span> Geographic Positioning &mdash; Pan India</span><span>25</span></div>
+
+    <div class="toc-section"><span class="num">E</span> Valuation</div>
+    <div class="toc-item"><span><span class="num">16</span> Valuation Assessment &mdash; Big-4 Framework</span><span>26</span></div>
+    <div class="toc-item"><span><span class="num">17</span> Risk Analysis &amp; Mitigation</span><span>29</span></div>
+    <div class="toc-item"><span><span class="num">18</span> Assumptions &amp; Data Sources</span><span>30</span></div>
+    <div class="toc-item"><span><span class="num">19</span> Appendices &amp; Methodology Notes</span><span>31</span></div>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 2</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 01: EXECUTIVE SUMMARY -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 01 &bull; Executive Summary</span>
+  </div>
+
+  <span class="section-num">Section 01</span>
+  <h1>Executive Summary &amp; Investment Thesis</h1>
+  <p class="section-lead">A snapshot of the HOH108 ecosystem, its market position, and implied valuation range.</p>
+
+  <div class="kpi-row">
+    <div class="kpi-card gold">
+      <div class="kpi-label">Current ARR (FY25-26)</div>
+      <div class="kpi-value" style="font-size:16pt;">&#8377;60 Cr</div>
+      <div class="kpi-unit">USD 7.2M</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Projected ARR (FY27-28)</div>
+      <div class="kpi-value" style="font-size:16pt;">&#8377;327 Cr</div>
+      <div class="kpi-unit">USD 39.4M</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Implied Valuation</div>
+      <div class="kpi-value" style="font-size:16pt;">&#8377;850 Cr</div>
+      <div class="kpi-unit">USD ~102M (Base Case)</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Valuation Range</div>
+      <div class="kpi-value" style="font-size:16pt;">&#8377;720&ndash;1,800 Cr</div>
+      <div class="kpi-unit">USD 87M&ndash;217M</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Investment Thesis</div>
+    <p class="text-sm">HOH108 occupies a <strong>unique whitespace</strong> at the intersection of vertical ERP for the built environment, AI-powered material intelligence (HOH Match), and integrated financial services (BBPS/BNPL/eNACH). No global competitor combines all three pillars. With INR 60 Cr current ARR growing at 100%+ YoY, the Rule of 40 score exceeds 118, placing HOH108 in the top decile of SaaS companies globally for valuation premium eligibility.</p>
+  </div>
+
+  <h2>Key Highlights</h2>
+  <div class="grid-2">
+    <div>
+      <h4>Platform Scale</h4>
+      <ul>
+        <li><strong>107</strong> database models across 21+ business modules</li>
+        <li><strong>102</strong> REST API endpoints with full RBAC</li>
+        <li><strong>95+</strong> admin pages, 14 public portals</li>
+        <li><strong>5</strong> subsidiary entities (IP, EP, XP, RP, OP)</li>
+        <li><strong>4</strong> product lines in production</li>
+      </ul>
+
+      <h4>Compliance &amp; Enterprise Grade</h4>
+      <ul>
+        <li>SOX 404 compliant (3-way match, SoD, approval workflows)</li>
+        <li>GDPR-ready (consent, DSR, breach notification)</li>
+        <li>GST/TDS Indian tax compliance built-in</li>
+        <li>Multi-company, multi-currency architecture</li>
+      </ul>
+    </div>
+    <div>
+      <h4>AI &amp; Innovation</h4>
+      <ul>
+        <li><strong>HOH Match:</strong> Vision Transformer (ViT-L/14) for material recognition</li>
+        <li><strong>7 Agentic MCPs</strong> for customer profiling, segmentation, budget optimization</li>
+        <li><strong>12 microservices</strong> architecture for HOH Match</li>
+        <li>Vector search across 10M+ product embeddings</li>
+      </ul>
+
+      <h4>Market Positioning</h4>
+      <ul>
+        <li>India: INR 30-35B interior design market, 25-30% CAGR in ConTech</li>
+        <li>Expansion: Malaysia, Singapore, UAE, Hong Kong from Q2 FY26-27</li>
+        <li>TAM: USD 2-4B (India) / USD 8-12B (incl. international)</li>
+        <li>Zero direct competitors with comparable full-stack offering</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout callout-green">
+    <div class="callout-title">The "From Inspiration to Installation" Moat</div>
+    <p class="text-sm">HOH108 is the <strong>only platform globally</strong> that covers the entire value chain: AI-driven material discovery (HOH Match) &#8594; Design collaboration (DesignHub) &#8594; Project management &amp; procurement (Core ERP) &#8594; Financial settlement &amp; compliance (Payment Stack). This end-to-end coverage creates deep ecosystem lock-in with LTV:CAC ratios exceeding 15x.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 3</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 02: THE USP -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 02 &bull; Unique Selling Proposition</span>
+  </div>
+
+  <span class="section-num">Section 02</span>
+  <h1>The USP: "From Inspiration to Installation"</h1>
+  <p class="section-lead">The singular phrase that defines the HOH108 ecosystem value proposition.</p>
+
+  <div style="background:linear-gradient(135deg, var(--navy), var(--navy-light)); color:white; padding:20px 24px; border-radius:8px; text-align:center; margin:14px 0;">
+    <div style="font-size:9pt; text-transform:uppercase; letter-spacing:3px; color:rgba(255,255,255,0.5); margin-bottom:6px;">The HOH108 Ecosystem Promise</div>
+    <div style="font-size:20pt; font-weight:800; color:var(--gold); line-height:1.3;">
+      "FROM INSPIRATION TO INSTALLATION"
+    </div>
+    <div style="font-size:9pt; color:rgba(255,255,255,0.7); margin-top:8px; max-width:400px; margin-left:auto; margin-right:auto;">
+      One Ecosystem. Every Surface. Infinite Possibilities.<br>
+      <em>The world's first integrated phygital platform where AI vision meets physical experience.</em>
+    </div>
+  </div>
+
+  <h2>The Six-Stage Value Chain</h2>
+  <p class="text-sm">HOH108 is the only platform that owns every stage of the customer journey in the built environment:</p>
+
+  <div style="display:flex; gap:4px; margin:12px 0; font-size:9pt; text-align:center;">
+    <div style="flex:1; background:var(--navy); color:white; padding:10px 4px; border-radius:6px 0 0 6px;">
+      <div style="font-size:18pt; margin-bottom:4px;">1</div>
+      <strong>INSPIRE</strong><br>
+      <span style="color:var(--gold);">HOH Match AI</span><br>
+      Upload any image<br>AI identifies materials
+    </div>
+    <div style="flex:1; background:#1e3a5f; color:white; padding:10px 4px;">
+      <div style="font-size:18pt; margin-bottom:4px;">2</div>
+      <strong>DESIGN</strong><br>
+      <span style="color:var(--gold);">DesignHub</span><br>
+      Collaborate with<br>professionals
+    </div>
+    <div style="flex:1; background:#2a4a6f; color:white; padding:10px 4px;">
+      <div style="font-size:18pt; margin-bottom:4px;">3</div>
+      <strong>PROCURE</strong><br>
+      <span style="color:var(--gold);">Core ERP</span><br>
+      RFQ, PO, vendor<br>management
+    </div>
+    <div style="flex:1; background:#36597f; color:white; padding:10px 4px;">
+      <div style="font-size:18pt; margin-bottom:4px;">4</div>
+      <strong>EXECUTE</strong><br>
+      <span style="color:var(--gold);">Project Mgmt</span><br>
+      Tasks, milestones<br>quality control
+    </div>
+    <div style="flex:1; background:#42688f; color:white; padding:10px 4px;">
+      <div style="font-size:18pt; margin-bottom:4px;">5</div>
+      <strong>SETTLE</strong><br>
+      <span style="color:var(--gold);">Payment Stack</span><br>
+      BNPL, EMI, eNACH<br>bank reconciliation
+    </div>
+    <div style="flex:1; background:var(--gold-dark); color:white; padding:10px 4px; border-radius:0 6px 6px 0;">
+      <div style="font-size:18pt; margin-bottom:4px;">6</div>
+      <strong>RETAIN</strong><br>
+      <span style="color:white;">GIK &amp; CRM</span><br>
+      Gamification, loyalty<br>referral engine
+    </div>
+  </div>
+
+  <h2>Why This Matters: The $680B Problem</h2>
+  <div class="grid-2">
+    <div>
+      <h4>The Fragmented Status Quo</h4>
+      <ul>
+        <li><strong>92%</strong> purchase abandonment in interior material selection</li>
+        <li><strong>47 hours</strong> average research time per interior project</li>
+        <li><strong>18%</strong> of projects delayed due to material specification errors</li>
+        <li><strong>70%</strong> of interior firms use no dedicated software</li>
+        <li><strong>3-5 disconnected tools</strong> used by organized firms (CRM + accounting + project + procurement + design)</li>
+      </ul>
+    </div>
+    <div>
+      <h4>The HOH108 Solution</h4>
+      <ul>
+        <li><strong>&lt;3 seconds:</strong> AI material identification from any image</li>
+        <li><strong>1 platform:</strong> Replaces 5+ disconnected tools</li>
+        <li><strong>Zero specification errors:</strong> AI-validated material matching with vendor catalogues</li>
+        <li><strong>85% time reduction</strong> in material sourcing workflow</li>
+        <li><strong>End-to-end audit trail:</strong> From inspiration image to final installation sign-off</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Competitive Moat: Four Defensive Layers</h2>
+  <table>
+    <tr><th style="width:25%">Moat Layer</th><th>Description</th><th style="width:18%">Time to Replicate</th></tr>
+    <tr><td><strong>1. Proprietary Material Taxonomy</strong></td><td>500K+ material-image pairs with enriched metadata. Grows with every user interaction. No public dataset exists.</td><td><span class="badge badge-red">3-4 years</span></td></tr>
+    <tr><td><strong>2. Vendor Network Lock-in</strong></td><td>Deep API integrations with vendor ERPs/PIMs. Catalogue ingestion, real-time inventory sync, demand analytics.</td><td><span class="badge badge-red">2-3 years</span></td></tr>
+    <tr><td><strong>3. Two-Sided Network Effects</strong></td><td>More users = more demand signals = more vendors = better matches = more users. Classic marketplace flywheel.</td><td><span class="badge badge-red">4-5 years</span></td></tr>
+    <tr><td><strong>4. Full-Stack ERP Integration</strong></td><td>21-module ERP with SOX/GST/GDPR compliance. Competitors offer point solutions, not the full chain.</td><td><span class="badge badge-red">5+ years</span></td></tr>
+  </table>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 4</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 03: COMPANY & ECOSYSTEM -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 03 &bull; Company &amp; Ecosystem Overview</span>
+  </div>
+
+  <span class="section-num">Section 03</span>
+  <h1>Company &amp; Ecosystem Overview</h1>
+  <p class="section-lead">Hancet Globe's multi-entity structure powering the built environment revolution.</p>
+
+  <h2>Corporate Structure</h2>
+  <table>
+    <tr><th>Entity</th><th>Code</th><th>Focus Area</th><th>Status</th><th>Revenue Contribution</th></tr>
+    <tr><td><strong>Interior Plus</strong></td><td>IP</td><td>Interior design, fit-out, modular solutions</td><td><span class="badge badge-green">Active</span></td><td>Primary (FY25-26)</td></tr>
+    <tr><td><strong>Education Plus</strong></td><td>EP</td><td>Design education, skill development, certifications</td><td><span class="badge badge-blue">Planned Q3 FY26-27</span></td><td>SaaS subscriptions</td></tr>
+    <tr><td><strong>Exterior Plus</strong></td><td>XP</td><td>Landscape, facade, exterior construction</td><td><span class="badge badge-blue">Planned Q4 FY26-27</span></td><td>Project-based + SaaS</td></tr>
+    <tr><td><strong>Renovation Plus</strong></td><td>RP</td><td>Renovation, refurbishment, restoration</td><td><span class="badge badge-blue">Planned FY27-28</span></td><td>Hybrid model</td></tr>
+    <tr><td><strong>ODS Plus</strong></td><td>OP</td><td>On-demand services, maintenance, AMC</td><td><span class="badge badge-blue">Planned FY27-28</span></td><td>Subscription + usage</td></tr>
+  </table>
+
+  <h2>Ecosystem Architecture</h2>
+  <div style="max-width:620px; margin:14px auto; text-align:center;">
+    <div class="eco-center" style="width:120px; height:120px; font-size:11pt;">
+      <div style="font-size:10pt;">HOH108</div>
+      <div style="font-size:9pt; color:rgba(255,255,255,0.6);">Core ERP</div>
+      <div style="font-size:8pt; color:var(--gold-light);">21 Modules</div>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; max-width:480px; margin:-15px auto 10px; position:relative; z-index:1;">
+      <div class="eco-node" style="background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; box-shadow:0 2px 10px rgba(99,102,241,0.3);">HOH Match<br><span style="font-size:10pt;">AI Material Intel</span></div>
+      <div class="eco-node">DesignHub<br><span style="font-size:10pt;">Collaboration</span></div>
+      <div class="eco-node">GIK Platform<br><span style="font-size:10pt;">Gamification</span></div>
+      <div class="eco-node">Interior Plus<br><span style="font-size:10pt;">B2B Portal</span></div>
+      <div class="eco-node">Mobile XC<br><span style="font-size:10pt;">Experience on Wheels</span></div>
+      <div class="eco-node">Payment Stack<br><span style="font-size:10pt;">BBPS / BNPL</span></div>
+    </div>
+    <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-top:8px;">
+      <div class="eco-node" style="font-size:8pt; min-width:60px; padding:4px 6px; border-color:var(--gray-300);">B2C Flow</div>
+      <div class="eco-node" style="font-size:8pt; min-width:60px; padding:4px 6px; border-color:var(--gray-300);">B2B Flow</div>
+      <div class="eco-node" style="font-size:8pt; min-width:60px; padding:4px 6px; border-color:var(--gray-300);">Vendor Flow</div>
+      <div class="eco-node" style="font-size:8pt; min-width:60px; padding:4px 6px; border-color:var(--gray-300);">7 AI Agents</div>
+      <div class="eco-node" style="font-size:8pt; min-width:60px; padding:4px 6px; border-color:var(--gray-300);">Callyzer IVR</div>
+      <div class="eco-node" style="font-size:8pt; min-width:60px; padding:4px 6px; border-color:var(--gray-300);">WhatsApp</div>
+    </div>
+  </div>
+
+  <h2>Technology Roadmap Execution Status</h2>
+  <table>
+    <tr><th style="width:5%">#</th><th style="width:32%">Roadmap Item</th><th style="width:18%">Status</th><th>Target</th><th>Revenue Impact</th></tr>
+    <tr><td>1</td><td>Core ERP (18 modules)</td><td><span class="badge badge-green">Production</span></td><td>FY25-26</td><td>INR 60 Cr ARR</td></tr>
+    <tr><td>2</td><td>B2C Customer Workflow</td><td><span class="badge badge-green">Production</span></td><td>FY25-26</td><td>Integrated in CRM</td></tr>
+    <tr><td>3</td><td>Vendor Centric Workflow</td><td><span class="badge badge-green">Production</span></td><td>FY25-26</td><td>Procurement module</td></tr>
+    <tr><td>4</td><td>B2B Designers' Hub (DesignHub)</td><td><span class="badge badge-gold">Beta</span></td><td>Q2 FY26-27</td><td>+INR 8-12 Cr ARR</td></tr>
+    <tr><td>5</td><td>Mobile Experience Centre</td><td><span class="badge badge-gold">Pilot</span></td><td>Q3 FY26-27</td><td>+INR 3-5 Cr ARR</td></tr>
+    <tr><td>6</td><td>HOH Match (AI Phygital Platform)</td><td><span class="badge badge-gold">Beta</span></td><td>Q1 FY26-27</td><td>+INR 15-25 Cr ARR (Y2)</td></tr>
+    <tr><td>7</td><td>Agentic MCPs (7 AI agents)</td><td><span class="badge badge-blue">Development</span></td><td>Q2-Q4 FY26-27</td><td>+INR 5-10 Cr ARR</td></tr>
+    <tr><td>8</td><td>Payment Infrastructure (BBPS/BNPL)</td><td><span class="badge badge-blue">Planning</span></td><td>Q3 FY26-27</td><td>Transaction revenue</td></tr>
+  </table>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 5</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 04: PRODUCT PORTFOLIO -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 04 &bull; Product Portfolio</span>
+  </div>
+
+  <span class="section-num">Section 04</span>
+  <h1>Product Portfolio &mdash; 21 Module Deep Dive</h1>
+  <p class="section-lead">Enterprise-grade modules built for the construction &amp; interior design value chain.</p>
+
+  <h2>Module Map &mdash; Core ERP (18 Modules)</h2>
+  <div class="module-grid">
+    <div class="module-item active">CRM &amp; Lead Mgmt</div>
+    <div class="module-item active">Project Management</div>
+    <div class="module-item active">Finance &amp; GL</div>
+    <div class="module-item active">Accounts Payable</div>
+    <div class="module-item active">Accounts Receivable</div>
+    <div class="module-item active">Procurement</div>
+    <div class="module-item active">Inventory &amp; Stock</div>
+    <div class="module-item active">Vendor Management</div>
+    <div class="module-item active">HR &amp; Payroll</div>
+    <div class="module-item active">PPC &amp; Work Orders</div>
+    <div class="module-item active">Quality Control</div>
+    <div class="module-item active">Compliance (SOX/GST)</div>
+    <div class="module-item active">Approval Workflows</div>
+    <div class="module-item active">Document Mgmt</div>
+    <div class="module-item active">Analytics &amp; KPI</div>
+    <div class="module-item active">Customer Portal</div>
+    <div class="module-item active">Vendor Portal</div>
+    <div class="module-item active">Master Data Mgmt</div>
+  </div>
+
+  <h2>Extended Ecosystem (3 Additional Products)</h2>
+  <div class="module-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+    <div class="module-item ai">HOH Match &mdash; AI Material Intelligence</div>
+    <div class="module-item" style="background:var(--gold); color:white; border:none;">DesignHub &mdash; Collaboration Platform</div>
+    <div class="module-item" style="background:#059669; color:white; border:none;">GIK &mdash; Gamification Engine</div>
+  </div>
+
+  <h2>Module Detail Matrix</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Module</th><th>Key Features</th><th>Models</th><th>APIs</th><th>Pages</th></tr>
+    <tr><td><strong>CRM &amp; Leads</strong></td><td>Lead lifecycle, scoring, round-robin, Callyzer IVR, WhatsApp, activity tracking</td><td>8</td><td>12</td><td>8</td></tr>
+    <tr><td><strong>Project Mgmt</strong></td><td>Phases, milestones, gates, Gantt, Kanban, budget, change orders, DPR</td><td>9</td><td>8</td><td>10</td></tr>
+    <tr><td><strong>Finance &amp; GL</strong></td><td>Chart of accounts, journal entries, ledger, bank reconciliation, budget forecast</td><td>7</td><td>8</td><td>8</td></tr>
+    <tr><td><strong>AP / AR</strong></td><td>Customer/vendor invoicing, payment milestones, aging, credit-debit notes</td><td>6</td><td>6</td><td>6</td></tr>
+    <tr><td><strong>Procurement</strong></td><td>PR, RFQ, PO, GR, 3-way match, vendor performance, material pricelist</td><td>12</td><td>14</td><td>12</td></tr>
+    <tr><td><strong>Inventory</strong></td><td>Material master, stock levels, movements, stock takes, consumption, MRP</td><td>8</td><td>8</td><td>6</td></tr>
+    <tr><td><strong>HR &amp; Payroll</strong></td><td>Attendance, leaves, payroll, reviews, KRA/KPI, reimbursements, exit mgmt</td><td>14</td><td>12</td><td>10</td></tr>
+    <tr><td><strong>PPC</strong></td><td>Work orders, BOM, labor entries, DPR, production costs, dashboard</td><td>6</td><td>6</td><td>8</td></tr>
+    <tr><td><strong>Compliance</strong></td><td>SOX 404 (SoD, 3WM), GDPR (consent, DSR, breach), GST returns, e-Invoice, TDS</td><td>10</td><td>6</td><td>6</td></tr>
+    <tr><td><strong>Vendor Mgmt</strong></td><td>Vendor master, performance KPIs, channel partners, master agreements, portal</td><td>5</td><td>8</td><td>4</td></tr>
+    <tr><td><strong>Quality</strong></td><td>QC parameters, risk register, change management</td><td>3</td><td>3</td><td>3</td></tr>
+    <tr><td><strong>Analytics</strong></td><td>Sales, HR, Finance, Project analytics dashboards, KPI master</td><td>4</td><td>6</td><td>5</td></tr>
+    <tr class="table-highlight"><td><strong>TOTAL</strong></td><td>&mdash;</td><td><strong>107</strong></td><td><strong>102</strong></td><td><strong>95+</strong></td></tr>
+  </table>
+
+  <h2>HOH Match &mdash; AI Material Intelligence Platform</h2>
+  <div class="callout">
+    <div class="callout-title">First-of-its-Kind: AI-Powered Phygital Material Matching</div>
+    <p class="text-sm"><strong>12 microservices</strong> powering real-time visual material identification. Upload any interior image &rarr; AI decomposes scene into material regions &rarr; vector search matches across vendor catalogues &rarr; outputs material boards with SKUs, pricing, purchase links.</p>
+  </div>
+
+  <div class="grid-3" style="font-size:10pt;">
+    <div>
+      <h4>Core AI Capabilities</h4>
+      <ul>
+        <li>Fine-tuned ViT-L/14 Vision Transformer</li>
+        <li>4-stage segmentation pipeline</li>
+        <li>512-dim material embeddings</li>
+        <li>&lt;3 sec inference (GPU)</li>
+        <li>80%+ accuracy (targeting 93% Y3)</li>
+      </ul>
+    </div>
+    <div>
+      <h4>12 Microservices</h4>
+      <ul>
+        <li>API Gateway (Kong/ALB)</li>
+        <li>Auth &amp; Identity Service</li>
+        <li>Image Ingestion Service</li>
+        <li>AI Vision &amp; Scene Decomposition</li>
+        <li>Vector Search &amp; Matching</li>
+        <li>Catalogue Management</li>
+        <li>Material Board &amp; Output</li>
+        <li>Analytics &amp; Demand Intelligence</li>
+        <li>Notification Service</li>
+        <li>Payment &amp; Billing</li>
+        <li>AR/Visualization Service</li>
+        <li>Board Export Service</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Revenue Projections</h4>
+      <ul>
+        <li>Year 1: USD 474K</li>
+        <li>Year 2: USD 2.16M (+356%)</li>
+        <li>Year 3: USD 6.66M (+208%)</li>
+        <li>Gross margin: 62% &rarr; 78%</li>
+        <li>14K subscribers by Y3</li>
+        <li>65 enterprise API clients</li>
+        <li>LTV:CAC &gt; 10x from Y1</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 6</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 05: TECHNOLOGY ARCHITECTURE -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 05 &bull; Technology Architecture</span>
+  </div>
+
+  <span class="section-num">Section 05</span>
+  <h1>Technology Architecture &amp; Stack</h1>
+  <p class="section-lead">Full-stack technology investment across 6 product lines.</p>
+
+  <h2>Technology Stack Summary</h2>
+  <table>
+    <tr><th>Layer</th><th>HOH108 Core ERP</th><th>HOH Match</th><th>DesignHub</th><th>GIK</th></tr>
+    <tr><td><strong>Frontend</strong></td><td>React 19, Vite, Tailwind</td><td>Next.js 16, Zustand, TanStack</td><td>Next.js 16, Prisma, Shadcn UI</td><td>Next.js 16, Three.js, GSAP</td></tr>
+    <tr><td><strong>Backend</strong></td><td>Node.js, Express (ES modules)</td><td>Node.js/TS + Python/FastAPI</td><td>Next.js API, Prisma ORM</td><td>Next.js API</td></tr>
+    <tr><td><strong>Database</strong></td><td>MongoDB Atlas</td><td>PostgreSQL, Redis, Pinecone</td><td>PostgreSQL</td><td>MongoDB Atlas</td></tr>
+    <tr><td><strong>AI / ML</strong></td><td>&mdash;</td><td>PyTorch, HuggingFace, ViT-L/14</td><td>&mdash;</td><td>&mdash;</td></tr>
+    <tr><td><strong>Infra</strong></td><td>Nginx, PM2, Linux VPS</td><td>AWS EKS, Docker, Terraform</td><td>Vercel / VPS</td><td>Vercel / VPS</td></tr>
+    <tr><td><strong>Auth</strong></td><td>JWT, bcrypt, OTP</td><td>OAuth 2.0, JWT, MFA</td><td>NextAuth + Prisma</td><td>JWT</td></tr>
+    <tr><td><strong>Payments</strong></td><td>Razorpay, PhonePe</td><td>Stripe (planned)</td><td>Razorpay</td><td>&mdash;</td></tr>
+  </table>
+
+  <h2>Infrastructure Cost Model</h2>
+  <table>
+    <tr><th>Component</th><th>Current (FY25-26)</th><th>Scaled (FY27-28)</th><th>Notes</th></tr>
+    <tr><td>Cloud Hosting (VPS/AWS)</td><td>INR 3-5 Lakh/mo</td><td>INR 15-25 Lakh/mo</td><td>Migration to AWS EKS for HOH Match</td></tr>
+    <tr><td>MongoDB Atlas</td><td>INR 1-2 Lakh/mo</td><td>INR 5-8 Lakh/mo</td><td>M30+ cluster at scale</td></tr>
+    <tr><td>GPU Compute (ML inference)</td><td>INR 2-4 Lakh/mo</td><td>INR 12-20 Lakh/mo</td><td>NVIDIA A10G/T4 on AWS g5 instances</td></tr>
+    <tr><td>Pinecone (Vector DB)</td><td>INR 50K/mo</td><td>INR 3-5 Lakh/mo</td><td>Scales with product catalogue size</td></tr>
+    <tr><td>CDN &amp; Storage (S3)</td><td>INR 30K/mo</td><td>INR 2-4 Lakh/mo</td><td>Image storage, exports</td></tr>
+    <tr><td>Third-party APIs</td><td>INR 1-2 Lakh/mo</td><td>INR 4-6 Lakh/mo</td><td>Callyzer, WhatsApp, SendGrid</td></tr>
+    <tr><td>Domain, SSL, Monitoring</td><td>INR 20K/mo</td><td>INR 1-2 Lakh/mo</td><td>Multi-region deployment</td></tr>
+    <tr class="table-highlight"><td><strong>Total Infrastructure</strong></td><td><strong>INR 8-14 Lakh/mo</strong></td><td><strong>INR 42-70 Lakh/mo</strong></td><td><strong>1.6-2.1% of revenue</strong></td></tr>
+  </table>
+
+  <h2>Engineering Team &amp; Cost</h2>
+  <table>
+    <tr><th>Role</th><th>Current</th><th>FY27-28</th><th>Avg CTC (INR LPA)</th></tr>
+    <tr><td>Full-Stack Engineers</td><td>6</td><td>15</td><td>12-18</td></tr>
+    <tr><td>ML/AI Engineers</td><td>2</td><td>6</td><td>18-30</td></tr>
+    <tr><td>DevOps/Cloud Engineers</td><td>1</td><td>3</td><td>15-22</td></tr>
+    <tr><td>QA Engineers</td><td>2</td><td>5</td><td>8-12</td></tr>
+    <tr><td>Product Managers</td><td>1</td><td>3</td><td>20-30</td></tr>
+    <tr><td>UI/UX Designers</td><td>1</td><td>3</td><td>10-18</td></tr>
+    <tr class="table-highlight"><td><strong>Total Engineering</strong></td><td><strong>13</strong></td><td><strong>35</strong></td><td><strong>INR 2.5-4.5 Cr/year &rarr; 7-12 Cr/year</strong></td></tr>
+  </table>
+
+  <h2>Code Quality Metrics</h2>
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Database Models</div>
+      <div class="kpi-value" style="font-size:20pt;">107</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">API Endpoints</div>
+      <div class="kpi-value" style="font-size:20pt;">102</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Frontend Pages</div>
+      <div class="kpi-value" style="font-size:20pt;">95+</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Test Framework</div>
+      <div class="kpi-value" style="font-size:12pt;">Jest + Playwright</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Security</div>
+      <div class="kpi-value" style="font-size:12pt;">RBAC + MFA</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 7</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 06: AI & AGENTIC MCPs -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 06 &bull; AI &amp; Agentic Capabilities</span>
+  </div>
+
+  <span class="section-num">Section 06</span>
+  <h1>AI &amp; Agentic MCP Capabilities</h1>
+  <p class="section-lead">Seven autonomous AI agents powering intelligent decision-making across the ecosystem.</p>
+
+  <h2>Agentic MCP Architecture</h2>
+  <table>
+    <tr><th style="width:5%">#</th><th style="width:25%">Agent Name</th><th>Capability</th><th style="width:20%">Business Impact</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Ideal Customer Profiling</strong></td>
+      <td>AI-driven ICP generation using behavioral data, purchase history, engagement signals. Creates dynamic customer personas that evolve with market signals.</td>
+      <td><span class="badge badge-green">+25% conversion rate</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Clustering, Segmentation &amp; Marketing Automation</strong></td>
+      <td>Unsupervised clustering (K-means, DBSCAN) on customer data. Auto-generates segments with tailored marketing sequences via email/WhatsApp/SMS.</td>
+      <td><span class="badge badge-green">+40% campaign ROI</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Budget Optimisation for Social Campaigns</strong></td>
+      <td>Multi-channel budget allocation using reinforcement learning. Optimizes spend across Meta, Google, LinkedIn with real-time ROI tracking.</td>
+      <td><span class="badge badge-green">30% CAC reduction</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>B2B Customer &amp; CP Ranking</strong></td>
+      <td>Evaluates channel partners and B2B customers on a composite score: payment behavior, project volume, referral quality, NPS. Powers tiered service levels.</td>
+      <td><span class="badge badge-green">Revenue quality +20%</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>Part-Time Job Portal</strong></td>
+      <td>AI-matched gig worker allocation for project-based work. Skills matching, availability prediction, performance scoring.</td>
+      <td><span class="badge badge-blue">New revenue stream</span></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Vendor Qualification</strong></td>
+      <td>Automated vendor scoring using financial health, delivery track record, quality metrics, compliance status. Generates vendor risk profiles.</td>
+      <td><span class="badge badge-green">15% procurement savings</span></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>Token Optimisation</strong></td>
+      <td>Intelligent token management for AI API calls. Prompt compression, caching, batching, and model routing to minimize inference costs while maximizing quality.</td>
+      <td><span class="badge badge-green">40% AI cost reduction</span></td>
+    </tr>
+  </table>
+
+  <h2>AI Revenue Impact Model</h2>
+  <div class="bar-chart">
+    <div class="bar-row">
+      <div class="bar-label">ICP Agent</div>
+      <div class="bar-track"><div class="bar-fill navy" style="width:75%">+25% Conversion</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Segmentation</div>
+      <div class="bar-track"><div class="bar-fill gold" style="width:85%">+40% Campaign ROI</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Budget Opt.</div>
+      <div class="bar-track"><div class="bar-fill green" style="width:70%">-30% CAC</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">B2B Ranking</div>
+      <div class="bar-track"><div class="bar-fill blue" style="width:65%">+20% Revenue Quality</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Vendor QA</div>
+      <div class="bar-track"><div class="bar-fill amber" style="width:60%">-15% Procurement Cost</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Token Opt.</div>
+      <div class="bar-track"><div class="bar-fill navy" style="width:72%">-40% AI Infra Cost</div></div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Estimated Annual Impact of AI Agents (at scale)</div>
+    <p class="text-sm">Combined AI agent impact at INR 300+ Cr ARR: <strong>INR 45-65 Cr incremental revenue</strong> through better conversion, <strong>INR 20-30 Cr cost savings</strong> through procurement and marketing optimization. Net AI contribution: <strong>INR 65-95 Cr/year</strong> (22-32% of revenue).</p>
+  </div>
+
+  <h2>Payment Infrastructure Roadmap</h2>
+  <table>
+    <tr><th>Capability</th><th>Integration Partner</th><th>Timeline</th><th>Revenue Model</th></tr>
+    <tr><td>Payment Gateway</td><td>Razorpay, PhonePe</td><td><span class="badge badge-green">Live</span></td><td>MDR pass-through + markup</td></tr>
+    <tr><td>Direct Bank API</td><td>Partner Bank (TBD)</td><td>Q3 FY26-27</td><td>Transaction processing fees</td></tr>
+    <tr><td>BNPL Enablement</td><td>Bajaj Finserv, Simpl</td><td>Q3 FY26-27</td><td>Referral commission (0.5-1.5%)</td></tr>
+    <tr><td>eNACH Auto-Debit</td><td>Via Razorpay/Cashfree</td><td>Q2 FY26-27</td><td>Subscription automation</td></tr>
+    <tr><td>No-Cost EMI</td><td>NBFC Partners</td><td>Q4 FY26-27</td><td>Subvention income</td></tr>
+    <tr><td>CBDC Readiness</td><td>RBI e-Rupee pilot banks</td><td>FY27-28</td><td>Programmable payments</td></tr>
+    <tr><td>BBPS Agent</td><td>NPCI Operating Unit</td><td>Q4 FY26-27</td><td>Agent commission (0.5-1.5%)</td></tr>
+    <tr><td>AI Certification Framework</td><td>Internal + regulatory</td><td>FY27-28</td><td>Compliance premium pricing</td></tr>
+  </table>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 8</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 08: INDIA MARKET ANALYSIS -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 08 &bull; India Market Deep Dive</span>
+  </div>
+
+  <span class="section-num">Section 08</span>
+  <h1>India Market Deep Dive</h1>
+  <p class="section-lead">The primary market for Q1-Q3 &mdash; a USD 800B construction ecosystem ripe for digital transformation.</p>
+
+  <div class="kpi-row">
+    <div class="kpi-card gold">
+      <div class="kpi-label">India Construction</div>
+      <div class="kpi-value" style="font-size:14pt;">$700-800B</div>
+      <div class="kpi-unit">3rd largest globally</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Interior Design</div>
+      <div class="kpi-value" style="font-size:14pt;">$30-35B</div>
+      <div class="kpi-unit">12-15% CAGR</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">ConTech Market</div>
+      <div class="kpi-value" style="font-size:14pt;">$1.5-2.0B</div>
+      <div class="kpi-unit">25-30% CAGR</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Tech Penetration</div>
+      <div class="kpi-value" style="font-size:14pt;">&lt;1.5%</div>
+      <div class="kpi-unit">Massive headroom</div>
+    </div>
+  </div>
+
+  <h2>Market Size Projections</h2>
+  <table>
+    <tr><th>Segment</th><th>2024</th><th>2026</th><th>2028</th><th>CAGR</th></tr>
+    <tr><td>India Interior Design (Total)</td><td>USD 30-35B</td><td>USD 38-44B</td><td>USD 50-60B</td><td>12-15%</td></tr>
+    <tr><td>Construction Technology (SaaS)</td><td>USD 1.5-2.0B</td><td>USD 2.5-3.5B</td><td>USD 4.5-6.0B</td><td>25-30%</td></tr>
+    <tr><td>Interior/Construction SaaS (Vertical)</td><td>USD 200-400M</td><td>USD 400-700M</td><td>USD 800M-1.5B</td><td>35-45%</td></tr>
+    <tr><td>AI in Construction (India)</td><td>USD 50-100M</td><td>USD 150-300M</td><td>USD 500M-1B</td><td>40-50%</td></tr>
+    <tr><td>Digital Payments (Total)</td><td>USD 1.5-2.0T</td><td>USD 3.0-4.0T</td><td>USD 5.0-7.0T</td><td>30-35%</td></tr>
+  </table>
+
+  <h2>Key Market Drivers</h2>
+  <div class="grid-2">
+    <div>
+      <h4>Macro Tailwinds</h4>
+      <ul>
+        <li><strong>Urbanization:</strong> 40% &rarr; 50% urban by 2030; 10-12M new housing units/year</li>
+        <li><strong>RERA Compliance:</strong> 25,000+ registered developers need digital project tracking</li>
+        <li><strong>Smart Cities Mission:</strong> 100 cities, INR 2.04 lakh crore investment</li>
+        <li><strong>PM Gati Shakti:</strong> INR 111 lakh crore infrastructure pipeline</li>
+        <li><strong>Rising Disposable Income:</strong> Interior spend per household up 15-20% annually</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Industry Pain Points (HOH108 Opportunity)</h4>
+      <ul>
+        <li><strong>70%</strong> of interior firms use no dedicated software</li>
+        <li><strong>85%</strong> of architects use only basic tools (Excel, Tally)</li>
+        <li><strong>60%</strong> of projects exceed budget due to poor procurement tracking</li>
+        <li><strong>45%</strong> of vendor payments are delayed due to manual reconciliation</li>
+        <li><strong>90%</strong> material selection is done through physical showroom visits</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Addressable Entity Landscape</h2>
+  <table>
+    <tr><th>Segment</th><th>Estimated Count (India)</th><th>Digital Readiness</th><th>SaaS Spend Potential</th></tr>
+    <tr><td>Interior Design Firms (organized)</td><td>15,000-20,000</td><td>Medium-High</td><td>INR 2-10 Lakh/year</td></tr>
+    <tr><td>Architects (practicing firms)</td><td>40,000-50,000</td><td>Medium</td><td>INR 1-5 Lakh/year</td></tr>
+    <tr><td>RERA-Registered Developers</td><td>25,000-30,000</td><td>High</td><td>INR 10-50 Lakh/year</td></tr>
+    <tr><td>Construction Companies (mid-large)</td><td>60,000</td><td>Low-Medium</td><td>INR 3-15 Lakh/year</td></tr>
+    <tr><td>MEP &amp; PMC Consultants</td><td>30,000-40,000</td><td>Medium</td><td>INR 2-8 Lakh/year</td></tr>
+    <tr><td>Material Suppliers/Distributors</td><td>200,000+</td><td>Low</td><td>INR 1-5 Lakh/year</td></tr>
+    <tr class="table-highlight"><td><strong>Total Addressable Entities</strong></td><td><strong>370,000-400,000</strong></td><td>&mdash;</td><td><strong>USD 2-4B TAM</strong></td></tr>
+  </table>
+
+  <h2>India Digital Payment Infrastructure</h2>
+  <div class="grid-2">
+    <div>
+      <table style="font-size:10pt;">
+        <tr><th>Metric</th><th>Value (FY24)</th></tr>
+        <tr><td>UPI Transactions</td><td>14-16B/month</td></tr>
+        <tr><td>BBPS Transactions</td><td>1,300-1,500 Cr/year</td></tr>
+        <tr><td>BBPS Value</td><td>INR 16-18 Lakh Cr</td></tr>
+        <tr><td>eNACH Active Mandates</td><td>50-60 Cr</td></tr>
+        <tr><td>BNPL Market (India)</td><td>USD 11-15B txn value</td></tr>
+        <tr><td>Digital Rupee (e-R) Users</td><td>5M+ (pilot)</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="callout callout-navy">
+        <div class="callout-title">BBPS Agent Opportunity</div>
+        <p class="text-xs">As a BBPS Operating Unit / Agent, HOH108 can process utility, rent, and construction-related payments for its ecosystem. Commission: 0.5-1.5% per transaction. At INR 100 Cr monthly payment volume through the platform, BBPS agent income alone could contribute INR 6-18 Cr/year.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 9</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 09: TAM SAM SOM -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 09 &bull; TAM &bull; SAM &bull; SOM</span>
+  </div>
+
+  <span class="section-num">Section 09</span>
+  <h1>TAM &bull; SAM &bull; SOM Analysis</h1>
+  <p class="section-lead">Bottom-up market sizing across India and international expansion markets.</p>
+
+  <!-- TAM SAM SOM Concentric -->
+  <div style="max-width:620px; margin:20px auto;">
+    <svg viewBox="0 0 600 400" style="width:100%;">
+      <defs><filter id="glow1"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <!-- TAM Circle -->
+      <circle cx="300" cy="210" r="180" fill="rgba(15,26,46,0.05)" stroke="#0f1a2e" stroke-width="1.5" stroke-dasharray="5,5"/>
+      <text x="300" y="45" text-anchor="middle" font-size="14" fill="#0f1a2e" font-weight="700" font-family="Inter,sans-serif">TAM: USD 8-12 BILLION</text>
+      <text x="300" y="62" text-anchor="middle" font-size="11" fill="#6b7280" font-family="Inter,sans-serif">Global Construction/Interior SaaS + AI Material Tech</text>
+      <!-- SAM Circle -->
+      <circle cx="300" cy="235" r="125" fill="rgba(197,156,130,0.08)" stroke="#C59C82" stroke-width="2.5"/>
+      <text x="300" y="132" text-anchor="middle" font-size="14" fill="#a07a5e" font-weight="700" font-family="Inter,sans-serif">SAM: USD 2-4 BILLION</text>
+      <text x="300" y="150" text-anchor="middle" font-size="11" fill="#6b7280" font-family="Inter,sans-serif">India + MY + SG + UAE + HK (Digitally Ready Firms)</text>
+      <!-- SOM Circle -->
+      <circle cx="300" cy="258" r="68" fill="rgba(5,150,105,0.1)" stroke="#059669" stroke-width="2.5" filter="url(#glow1)"/>
+      <text x="300" y="248" text-anchor="middle" font-size="14" fill="#059669" font-weight="700" font-family="Inter,sans-serif">SOM: USD 50-150M</text>
+      <text x="300" y="266" text-anchor="middle" font-size="11" fill="#6b7280" font-family="Inter,sans-serif">Year 3-5 Achievable</text>
+      <text x="300" y="284" text-anchor="middle" font-size="11" fill="#6b7280" font-family="Inter,sans-serif">2,000-5,000 customers</text>
+    </svg>
+  </div>
+
+  <h2>Bottom-Up TAM Calculation</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Market</th><th>Entities</th><th>Avg SaaS Spend/yr</th><th>Market Size</th></tr>
+    <tr><td>India &mdash; Interior/Arch/Construction SaaS</td><td>370,000</td><td>USD 5,400</td><td>USD 2.0B</td></tr>
+    <tr><td>India &mdash; AI Material Intelligence</td><td>100,000</td><td>USD 3,600</td><td>USD 360M</td></tr>
+    <tr><td>India &mdash; Payment/FinTech Layer</td><td>200,000</td><td>USD 2,400</td><td>USD 480M</td></tr>
+    <tr><td>Malaysia</td><td>15,000</td><td>USD 6,000</td><td>USD 90M</td></tr>
+    <tr><td>Singapore</td><td>8,000</td><td>USD 12,000</td><td>USD 96M</td></tr>
+    <tr><td>UAE</td><td>20,000</td><td>USD 10,000</td><td>USD 200M</td></tr>
+    <tr><td>Hong Kong</td><td>6,000</td><td>USD 14,000</td><td>USD 84M</td></tr>
+    <tr><td>Rest of GCC &amp; SEA</td><td>50,000</td><td>USD 5,000</td><td>USD 250M</td></tr>
+    <tr class="table-highlight"><td><strong>Total TAM</strong></td><td><strong>769,000</strong></td><td>&mdash;</td><td><strong>USD 3.56B (conservative) &mdash; 12B (expanded)</strong></td></tr>
+  </table>
+
+  <h2>SAM &mdash; Serviceable Addressable Market</h2>
+  <div class="callout">
+    <p class="text-sm"><strong>Filters applied:</strong> Organized firms only + digital readiness score &ge;3/5 + revenue &ge;INR 50 lakh + English-language markets. This yields ~80,000-100,000 firms globally with average SaaS spend potential of USD 3,000-15,000/year.</p>
+  </div>
+  <table style="font-size:10pt;">
+    <tr><th>Market</th><th>SAM Entities</th><th>SAM Value</th><th>HOH108 Entry</th></tr>
+    <tr><td>India (Primary, Q1-Q3 focus)</td><td>65,000-80,000</td><td>USD 400-800M</td><td>FY25-26 (Current)</td></tr>
+    <tr><td>Malaysia</td><td>4,000-6,000</td><td>USD 30-50M</td><td>Q4 FY26-27</td></tr>
+    <tr><td>Singapore</td><td>3,000-4,000</td><td>USD 40-60M</td><td>Q4 FY26-27</td></tr>
+    <tr><td>UAE</td><td>8,000-12,000</td><td>USD 80-150M</td><td>Q3 FY26-27</td></tr>
+    <tr><td>Hong Kong</td><td>2,000-3,000</td><td>USD 30-50M</td><td>Q1 FY27-28</td></tr>
+    <tr class="table-highlight"><td><strong>Total SAM</strong></td><td><strong>82,000-105,000</strong></td><td><strong>USD 580M-1.1B</strong></td><td>&mdash;</td></tr>
+  </table>
+
+  <h2>SOM &mdash; Serviceable Obtainable Market (5-Year)</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Year</th><th>Customers (India)</th><th>Customers (Int'l)</th><th>Total</th><th>ACV</th><th>Revenue</th></tr>
+    <tr><td>FY25-26 (Current)</td><td>300</td><td>0</td><td>300</td><td>INR 20L</td><td>INR 60 Cr</td></tr>
+    <tr><td>FY26-27</td><td>550</td><td>50</td><td>600</td><td>INR 20L</td><td>INR 121.5 Cr</td></tr>
+    <tr><td>FY27-28</td><td>900</td><td>250</td><td>1,150</td><td>INR 28L</td><td>INR 327 Cr</td></tr>
+    <tr><td>FY28-29</td><td>1,400</td><td>500</td><td>1,900</td><td>INR 40L</td><td>INR 756 Cr</td></tr>
+    <tr><td>FY29-30</td><td>2,200</td><td>900</td><td>3,100</td><td>INR 45L</td><td>INR 1,395 Cr</td></tr>
+    <tr class="table-highlight"><td colspan="5"><strong>5-Year Cumulative Revenue</strong></td><td><strong>INR 2,659 Cr (USD ~320M)</strong></td></tr>
+  </table>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 10</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 10: COMPETITIVE LANDSCAPE -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 10 &bull; Competitive Landscape</span>
+  </div>
+
+  <span class="section-num">Section 10</span>
+  <h1>Competitive Landscape &amp; Positioning</h1>
+  <p class="section-lead">HOH108 occupies a unique whitespace &mdash; no competitor offers the complete "Inspiration to Installation" stack.</p>
+
+  <h2>Competitive Comparison Matrix</h2>
+  <table class="comp-table" style="font-size:9pt;">
+    <tr>
+      <th style="width:16%">Capability</th>
+      <th style="width:10%">HOH108</th>
+      <th style="width:10%">Livspace</th>
+      <th style="width:10%">HomeLane</th>
+      <th style="width:10%">Infurnia</th>
+      <th style="width:10%">SAP B1</th>
+      <th style="width:10%">Procore</th>
+      <th style="width:10%">Sell.Do</th>
+      <th style="width:10%">Zoho</th>
+    </tr>
+    <tr><td><strong>Full ERP (GL/AP/AR)</strong></td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="check">&#10003;</td></tr>
+    <tr><td><strong>CRM + Lead Mgmt</strong></td><td class="check">&#10003;</td><td class="partial">~</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+    <tr><td><strong>Project Management</strong></td><td class="check">&#10003;</td><td class="partial">~</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="partial">~</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="partial">~</td></tr>
+    <tr><td><strong>Procurement (PO/GR/3WM)</strong></td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="partial">~</td></tr>
+    <tr><td><strong>HR &amp; Payroll</strong></td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td></tr>
+    <tr><td><strong>AI Material Matching</strong></td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+    <tr><td><strong>Vendor Portal</strong></td><td class="check">&#10003;</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="partial">~</td></tr>
+    <tr><td><strong>Customer Portal</strong></td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="partial">~</td></tr>
+    <tr><td><strong>Interior Industry Focus</strong></td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+    <tr><td><strong>GST/SOX Compliance</strong></td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="partial">~</td><td class="cross">&#10007;</td><td class="check">&#10003;</td></tr>
+    <tr><td><strong>BNPL / Payment Stack</strong></td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+    <tr><td><strong>AI Agents (7 MCPs)</strong></td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+    <tr><td><strong>Physical XC Integration</strong></td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td></tr>
+    <tr class="table-highlight"><td><strong>Score (of 13)</strong></td><td><strong>13/13</strong></td><td><strong>5/13</strong></td><td><strong>4/13</strong></td><td><strong>1/13</strong></td><td><strong>5/13</strong></td><td><strong>3/13</strong></td><td><strong>2/13</strong></td><td><strong>5/13</strong></td></tr>
+  </table>
+
+  <h2>Competitor Valuation Benchmarks</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Company</th><th>Type</th><th>Valuation / Market Cap</th><th>Revenue</th><th>EV/Revenue</th><th>Key Differentiator</th></tr>
+    <tr><td>Procore (NYSE: PCOR)</td><td>ConTech SaaS</td><td>USD 10-12B</td><td>USD 900M</td><td>~12x</td><td>Project management, US focused</td></tr>
+    <tr><td>Autodesk (NASDAQ: ADSK)</td><td>Design Tools</td><td>USD 50B</td><td>USD 5.8B</td><td>~8-9x</td><td>BIM, design software</td></tr>
+    <tr><td>Livspace</td><td>Interior Marketplace</td><td>USD 1.5B</td><td>USD 60-80M</td><td>~19-25x</td><td>Full-stack execution, India</td></tr>
+    <tr><td>Freshworks (NASDAQ: FRSH)</td><td>Horizontal SaaS</td><td>USD 5-6B</td><td>USD 600M</td><td>~9x</td><td>India-origin SaaS benchmark</td></tr>
+    <tr><td>Zoho (Private)</td><td>Horizontal SaaS</td><td>USD 12-15B</td><td>USD 1B</td><td>~12-15x</td><td>India SME dominance</td></tr>
+    <tr><td>Sell.Do</td><td>RE CRM</td><td>USD 30-50M</td><td>USD 5-10M</td><td>~5-6x</td><td>India RE developer CRM</td></tr>
+  </table>
+
+  <h2>Positioning Map</h2>
+  <div style="position:relative; height:220px; border:1px solid var(--gray-200); border-radius:8px; margin:10px 0; overflow:hidden;">
+    <!-- Axes -->
+    <div style="position:absolute; bottom:10px; left:50%; transform:translateX(-50%); font-size:9pt; color:var(--gray-500);">INDUSTRY SPECIFICITY (Interior / Construction) &rarr;</div>
+    <div style="position:absolute; left:6px; top:50%; transform:rotate(-90deg) translateX(-50%); font-size:9pt; color:var(--gray-500); transform-origin:left;">FUNCTIONAL BREADTH &rarr;</div>
+    <!-- Quadrant Labels -->
+    <div style="position:absolute; top:8px; left:40px; font-size:8pt; color:var(--gray-300);">BROAD + GENERIC</div>
+    <div style="position:absolute; top:8px; right:20px; font-size:8pt; color:var(--gray-300);">BROAD + SPECIALIZED</div>
+    <div style="position:absolute; bottom:24px; left:40px; font-size:8pt; color:var(--gray-300);">NARROW + GENERIC</div>
+    <div style="position:absolute; bottom:24px; right:20px; font-size:8pt; color:var(--gray-300);">NARROW + SPECIALIZED</div>
+    <!-- Companies -->
+    <div style="position:absolute; top:30px; right:30px; background:var(--navy); color:var(--gold); padding:4px 10px; border-radius:12px; font-size:8pt; font-weight:700; box-shadow:0 2px 8px rgba(197,156,130,0.3);">HOH108 &#9733;</div>
+    <div style="position:absolute; top:40px; left:50px; background:var(--gray-100); padding:3px 8px; border-radius:10px; font-size:9pt;">SAP B1</div>
+    <div style="position:absolute; top:45px; left:140px; background:var(--gray-100); padding:3px 8px; border-radius:10px; font-size:9pt;">Zoho</div>
+    <div style="position:absolute; top:80px; right:80px; background:var(--gray-100); padding:3px 8px; border-radius:10px; font-size:9pt;">Procore</div>
+    <div style="position:absolute; bottom:80px; right:50px; background:var(--gray-100); padding:3px 8px; border-radius:10px; font-size:9pt;">Livspace</div>
+    <div style="position:absolute; bottom:60px; right:120px; background:var(--gray-100); padding:3px 8px; border-radius:10px; font-size:9pt;">HomeLane</div>
+    <div style="position:absolute; bottom:90px; left:80px; background:var(--gray-100); padding:3px 8px; border-radius:10px; font-size:9pt;">Freshworks</div>
+    <div style="position:absolute; bottom:55px; right:200px; background:var(--gray-100); padding:3px 8px; border-radius:10px; font-size:9pt;">Infurnia</div>
+    <div style="position:absolute; bottom:70px; left:170px; background:var(--gray-100); padding:3px 8px; border-radius:10px; font-size:9pt;">Sell.Do</div>
+    <!-- Crosshair -->
+    <div style="position:absolute; left:50%; top:20px; bottom:20px; width:1px; background:var(--gray-200);"></div>
+    <div style="position:absolute; top:50%; left:30px; right:10px; height:1px; background:var(--gray-200);"></div>
+  </div>
+
+  <div class="callout callout-green">
+    <div class="callout-title">HOH108 Unique Position: Top-Right Quadrant</div>
+    <p class="text-sm">HOH108 is the <strong>only player</strong> combining maximum functional breadth (21 ERP modules + AI + payments) with maximum industry specificity (purpose-built for interior design &amp; construction). SAP has breadth but no industry focus. Livspace has industry focus but no ERP. Procore has project management but no CRM, finance, or AI matching.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 11</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 11: INTERNATIONAL EXPANSION -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 11 &bull; International Expansion</span>
+  </div>
+
+  <span class="section-num">Section 11</span>
+  <h1>International Expansion: MY, SG, UAE, HK</h1>
+  <p class="section-lead">Phased geographic expansion into high-growth markets in subsequent quarters.</p>
+
+  <h2>Market Opportunity by Geography</h2>
+  <table>
+    <tr><th>Market</th><th>Construction Size</th><th>ConTech Size</th><th>Interior Design</th><th>CAGR</th><th>Entry Timeline</th></tr>
+    <tr><td><strong>India (Primary)</strong></td><td>USD 700-800B</td><td>USD 1.5-2.0B</td><td>USD 30-35B</td><td>25-30%</td><td><span class="badge badge-green">Current</span></td></tr>
+    <tr><td><strong>UAE</strong></td><td>USD 80-100B</td><td>USD 800M-1.2B</td><td>USD 8-10B</td><td>25-30%</td><td>Q3 FY26-27</td></tr>
+    <tr><td><strong>Malaysia</strong></td><td>USD 35-40B</td><td>USD 200-300M</td><td>USD 3-4B</td><td>20-25%</td><td>Q4 FY26-27</td></tr>
+    <tr><td><strong>Singapore</strong></td><td>USD 25-30B</td><td>USD 400-600M</td><td>USD 2-3B</td><td>15-20%</td><td>Q4 FY26-27</td></tr>
+    <tr><td><strong>Hong Kong</strong></td><td>USD 25-30B</td><td>USD 300-500M</td><td>USD 3-5B</td><td>12-15%</td><td>Q1 FY27-28</td></tr>
+    <tr><td><strong>KSA (Vision 2030)</strong></td><td>USD 180-200B</td><td>USD 700M-1B</td><td>USD 5-8B</td><td>30-35%</td><td>Q2 FY27-28</td></tr>
+    <tr class="table-highlight"><td><strong>Total International</strong></td><td><strong>USD 345-400B</strong></td><td><strong>USD 2.4-3.6B</strong></td><td><strong>USD 21-30B</strong></td><td>&mdash;</td><td>&mdash;</td></tr>
+  </table>
+
+  <h2>Go-To-Market Strategy by Market</h2>
+  <div class="grid-2">
+    <div>
+      <h4>UAE &amp; GCC (High Priority)</h4>
+      <ul style="font-size:10pt;">
+        <li><strong>Entry mode:</strong> Dubai Free Zone entity + local partner</li>
+        <li><strong>Target:</strong> Interior fit-out companies, developers (NEOM spillover)</li>
+        <li><strong>Pricing:</strong> 2-3x India pricing (market supports premium)</li>
+        <li><strong>Key advantage:</strong> Multi-currency, multi-company ERP already built</li>
+        <li><strong>Revenue target:</strong> INR 15-20 Cr by FY27-28</li>
+      </ul>
+      <h4>Singapore (Premium Market)</h4>
+      <ul style="font-size:10pt;">
+        <li><strong>Entry mode:</strong> SaaS-first, government BCA compliance angle</li>
+        <li><strong>Target:</strong> Design studios, A&amp;D firms, developers</li>
+        <li><strong>BIM mandate:</strong> Positions HOH108 for BIM-adjacent workflows</li>
+        <li><strong>Revenue target:</strong> INR 8-12 Cr by FY27-28</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Malaysia (Volume Market)</h4>
+      <ul style="font-size:10pt;">
+        <li><strong>Entry mode:</strong> Direct SaaS sales + agency model</li>
+        <li><strong>Target:</strong> 15,000+ construction firms, 12th Malaysia Plan beneficiaries</li>
+        <li><strong>Government push:</strong> BIM mandated for projects &gt;MYR 50M</li>
+        <li><strong>Revenue target:</strong> INR 6-10 Cr by FY27-28</li>
+      </ul>
+      <h4>Hong Kong (Niche Premium)</h4>
+      <ul style="font-size:10pt;">
+        <li><strong>Entry mode:</strong> Partner-led, focus on renovation vertical</li>
+        <li><strong>Target:</strong> Interior firms, property developers</li>
+        <li><strong>Premium pricing:</strong> 3-4x India rates</li>
+        <li><strong>Revenue target:</strong> INR 5-8 Cr by FY28-29</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>International Revenue Build-Up</h2>
+  <div class="bar-chart">
+    <div class="bar-row">
+      <div class="bar-label">FY25-26</div>
+      <div class="bar-track"><div class="bar-fill navy" style="width:100%">India Only &mdash; INR 60 Cr (100%)</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">FY26-27</div>
+      <div class="bar-track">
+        <div class="bar-fill navy" style="width:88%">India INR 107 Cr (88%)</div>
+        <div class="bar-fill gold" style="width:12%; position:relative;">Int'l 12%</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">FY27-28</div>
+      <div class="bar-track">
+        <div class="bar-fill navy" style="width:72%">India INR 235 Cr (72%)</div>
+        <div class="bar-fill gold" style="width:28%; position:relative;">Int'l 28%</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">FY28-29</div>
+      <div class="bar-track">
+        <div class="bar-fill navy" style="width:62%">India INR 469 Cr (62%)</div>
+        <div class="bar-fill gold" style="width:38%; position:relative;">Int'l 38%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 12</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 12: REVENUE MODEL & SAAS PRICING -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 12 &bull; Revenue Model &amp; SaaS Pricing</span>
+  </div>
+
+  <span class="section-num">Section 12</span>
+  <h1>Revenue Model &amp; SaaS Pricing</h1>
+  <p class="section-lead">Multi-stream revenue architecture across subscriptions, transactions, and value-added services.</p>
+
+  <h2>Revenue Streams</h2>
+  <table>
+    <tr><th>Stream</th><th>Description</th><th>FY25-26 Mix</th><th>FY28-29 Mix</th></tr>
+    <tr><td><strong>1. SaaS Subscriptions</strong></td><td>Monthly/annual ERP platform access, module-based pricing</td><td>65%</td><td>48%</td></tr>
+    <tr><td><strong>2. HOH Match SaaS</strong></td><td>AI material matching platform subscriptions + API</td><td>5%</td><td>18%</td></tr>
+    <tr><td><strong>3. DesignHub Memberships</strong></td><td>Explorer (Free), Professional (&#8377;2,999), Studio (&#8377;7,999), Enterprise (&#8377;14,999)/mo</td><td>3%</td><td>10%</td></tr>
+    <tr><td><strong>4. Transaction Revenue</strong></td><td>Payment processing, BBPS commissions, BNPL referral</td><td>2%</td><td>12%</td></tr>
+    <tr><td><strong>5. Implementation &amp; Consulting</strong></td><td>Onboarding, customization, integration services</td><td>20%</td><td>8%</td></tr>
+    <tr><td><strong>6. GIK Engagement Platform</strong></td><td>Gamification campaigns, spin-to-win, brand engagement</td><td>3%</td><td>2%</td></tr>
+    <tr><td><strong>7. Data &amp; Analytics Licensing</strong></td><td>Market intelligence, demand signals, trend reports (Year 2+)</td><td>2%</td><td>2%</td></tr>
+  </table>
+
+  <h2>HOH108 Core ERP &mdash; SaaS Pricing Tiers</h2>
+  <table>
+    <tr><th style="width:18%">Plan</th><th style="width:15%">Monthly Price</th><th>Modules Included</th><th style="width:12%">Users</th><th style="width:15%">Target Segment</th></tr>
+    <tr>
+      <td><span class="badge badge-navy">Starter</span></td>
+      <td>INR 9,999/mo</td>
+      <td>CRM, Leads, Basic Finance, 1 Project</td>
+      <td>Up to 5</td>
+      <td>Freelancers, Micro firms</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">Professional</span></td>
+      <td>INR 24,999/mo</td>
+      <td>All CRM + Finance + Procurement + 5 Projects</td>
+      <td>Up to 15</td>
+      <td>Small studios</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-gold">Business</span></td>
+      <td>INR 49,999/mo</td>
+      <td>Full ERP + HR + Inventory + Unlimited Projects</td>
+      <td>Up to 50</td>
+      <td>Mid-market firms</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-green">Enterprise</span></td>
+      <td>INR 99,999+/mo</td>
+      <td>Full ERP + Multi-company + SOX + AI Agents + API</td>
+      <td>Unlimited</td>
+      <td>Developers, large firms</td>
+    </tr>
+  </table>
+
+  <h2>HOH Match &mdash; AI Platform Pricing</h2>
+  <table>
+    <tr><th>Plan</th><th>Monthly Price</th><th>Analyses/mo</th><th>Key Features</th></tr>
+    <tr><td><span class="badge badge-navy">Starter</span></td><td>USD 29 (INR 2,400)</td><td>15</td><td>PDF export, 3 workspaces</td></tr>
+    <tr><td><span class="badge badge-blue">Professional</span></td><td>USD 99 (INR 8,300)</td><td>Unlimited</td><td>Client sharing, 500 API calls</td></tr>
+    <tr><td><span class="badge badge-gold">Team/Studio</span></td><td>USD 249 (INR 20,800)</td><td>Unlimited</td><td>Team collab, 2,500 API calls, priority support</td></tr>
+    <tr><td><span class="badge badge-green">Enterprise API</span></td><td>USD 999+ (INR 83,000+)</td><td>Unlimited</td><td>White-label, private catalogue, SLA, custom</td></tr>
+  </table>
+
+  <h2>DesignHub &mdash; Membership Pricing</h2>
+  <table>
+    <tr><th>Tier</th><th>Monthly (INR)</th><th>Hot Desk Hours</th><th>Meeting Room</th><th>Execution Discount</th><th>Walkthroughs</th></tr>
+    <tr><td>Explorer</td><td>Free</td><td>1 hr</td><td>0</td><td>0%</td><td>0</td></tr>
+    <tr><td>Professional</td><td>&#8377;2,999</td><td>40 hrs</td><td>4 hrs</td><td>5%</td><td>2</td></tr>
+    <tr><td>Studio</td><td>&#8377;7,999</td><td>Unlimited</td><td>10 hrs</td><td>10%</td><td>Unlimited</td></tr>
+    <tr><td>Enterprise</td><td>&#8377;14,999</td><td>Unlimited</td><td>20 hrs</td><td>15%</td><td>Unlimited</td></tr>
+  </table>
+
+  <h2>Revenue Growth Trajectory</h2>
+  <div class="bar-chart">
+    <div class="bar-row">
+      <div class="bar-label">FY25-26</div>
+      <div class="bar-track"><div class="bar-fill navy" style="width:8%">&#8377;60 Cr</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">FY26-27</div>
+      <div class="bar-track"><div class="bar-fill navy" style="width:16%">&#8377;121.5 Cr (+102%)</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">FY27-28</div>
+      <div class="bar-track"><div class="bar-fill gold" style="width:43%">&#8377;327 Cr (+169%)</div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">FY28-29</div>
+      <div class="bar-track"><div class="bar-fill green" style="width:100%">&#8377;756 Cr (+131%)</div></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 13</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 13: FINANCIAL PROJECTIONS QoQ & YoY -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 13 &bull; Financial Projections</span>
+  </div>
+
+  <span class="section-num">Section 13</span>
+  <h1>Financial Projections &mdash; QoQ &amp; YoY</h1>
+  <p class="section-lead">Quarterly and annual revenue, margin, and profitability projections for FY25-26 through FY28-29.</p>
+
+  <h2>Quarterly Revenue Projections (INR Crore)</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Quarter</th><th>Monthly Rev</th><th>Quarterly Rev</th><th>QoQ Growth</th><th>Key Milestone</th></tr>
+    <tr style="background:rgba(15,26,46,0.04);"><td colspan="5" style="font-weight:700; color:var(--navy);">FY 2025-26 (Current Year) &mdash; Annual: INR 60 Cr</td></tr>
+    <tr><td>Q1 (Apr-Jun 25)</td><td>4.0</td><td>12.0</td><td>&mdash;</td><td>Core ERP production</td></tr>
+    <tr><td>Q2 (Jul-Sep 25)</td><td>4.5</td><td>13.5</td><td>+12.5%</td><td>CRM enhancements</td></tr>
+    <tr><td>Q3 (Oct-Dec 25)</td><td>5.2</td><td>15.6</td><td>+15.6%</td><td>HOH Match beta launch</td></tr>
+    <tr><td>Q4 (Jan-Mar 26)</td><td>6.3</td><td>18.9</td><td>+21.2%</td><td>DesignHub beta, AI agents v1</td></tr>
+
+    <tr style="background:rgba(15,26,46,0.04);"><td colspan="5" style="font-weight:700; color:var(--navy);">FY 2026-27 &mdash; Annual: INR 121.5 Cr (+102% YoY)</td></tr>
+    <tr><td>Q1 (Apr-Jun 26)</td><td>7.5</td><td>22.5</td><td>+19.0%</td><td>HOH Match GA, BNPL launch</td></tr>
+    <tr><td>Q2 (Jul-Sep 26)</td><td>9.5</td><td>28.5</td><td>+26.7%</td><td>UAE market entry, BBPS agent</td></tr>
+    <tr><td>Q3 (Oct-Dec 26)</td><td>12.0</td><td>36.0</td><td>+26.3%</td><td>MY+SG entry, DesignHub GA</td></tr>
+    <tr><td>Q4 (Jan-Mar 27)</td><td>15.0</td><td>45.0</td><td>+25.0%</td><td>Mobile XC expansion, AI agents v2</td></tr>
+
+    <tr style="background:rgba(15,26,46,0.04);"><td colspan="5" style="font-weight:700; color:var(--navy);">FY 2027-28 &mdash; Annual: INR 327 Cr (+169% YoY)</td></tr>
+    <tr><td>Q1 (Apr-Jun 27)</td><td>20.0</td><td>60.0</td><td>+33.3%</td><td>HK entry, EP subsidiary launch</td></tr>
+    <tr><td>Q2 (Jul-Sep 27)</td><td>26.0</td><td>78.0</td><td>+30.0%</td><td>KSA market, CBDC pilot</td></tr>
+    <tr><td>Q3 (Oct-Dec 27)</td><td>33.0</td><td>99.0</td><td>+26.9%</td><td>HOH Match enterprise API scale</td></tr>
+    <tr><td>Q4 (Jan-Mar 28)</td><td>40.0</td><td>120.0</td><td>+21.2%</td><td>XP + RP subsidiaries live</td></tr>
+
+    <tr style="background:rgba(15,26,46,0.04);"><td colspan="5" style="font-weight:700; color:var(--navy);">FY 2028-29 &mdash; Annual: INR 756 Cr (+131% YoY)</td></tr>
+    <tr><td>Q1 (Apr-Jun 28)</td><td>48.0</td><td>144.0</td><td>+20.0%</td><td>Data licensing launched</td></tr>
+    <tr><td>Q2 (Jul-Sep 28)</td><td>58.0</td><td>174.0</td><td>+20.8%</td><td>5 market presence</td></tr>
+    <tr><td>Q3 (Oct-Dec 28)</td><td>70.0</td><td>210.0</td><td>+20.7%</td><td>ODS Plus subsidiary</td></tr>
+    <tr><td>Q4 (Jan-Mar 29)</td><td>85.0</td><td>255.0</td><td>+21.4%</td><td>IPO readiness preparation</td></tr>
+  </table>
+
+  <h2>Profitability Model (INR Crore)</h2>
+  <table>
+    <tr><th>Metric</th><th>FY25-26</th><th>FY26-27</th><th>FY27-28</th><th>FY28-29</th></tr>
+    <tr><td><strong>Revenue</strong></td><td>60.0</td><td>121.5</td><td>327.0</td><td>756.0</td></tr>
+    <tr><td>Cost of Revenue (Hosting, AI, Support)</td><td>(16.8)</td><td>(32.7)</td><td>(78.5)</td><td>(158.8)</td></tr>
+    <tr><td><strong>Gross Profit</strong></td><td><strong>43.2</strong></td><td><strong>88.8</strong></td><td><strong>248.5</strong></td><td><strong>597.2</strong></td></tr>
+    <tr><td><em>Gross Margin %</em></td><td><em>72%</em></td><td><em>73%</em></td><td><em>76%</em></td><td><em>79%</em></td></tr>
+    <tr><td>Engineering &amp; Product</td><td>(15.0)</td><td>(28.0)</td><td>(55.0)</td><td>(95.0)</td></tr>
+    <tr><td>Sales &amp; Marketing</td><td>(12.0)</td><td>(30.4)</td><td>(72.0)</td><td>(136.0)</td></tr>
+    <tr><td>General &amp; Administrative</td><td>(6.0)</td><td>(10.9)</td><td>(23.0)</td><td>(45.0)</td></tr>
+    <tr><td><strong>EBITDA</strong></td><td><strong>10.2</strong></td><td><strong>19.5</strong></td><td><strong>98.5</strong></td><td><strong>321.2</strong></td></tr>
+    <tr class="table-highlight"><td><strong>EBITDA Margin %</strong></td><td><strong>17%</strong></td><td><strong>16%</strong></td><td><strong>30%</strong></td><td><strong>42%</strong></td></tr>
+    <tr><td><strong>Rule of 40 Score</strong></td><td><strong>117</strong></td><td><strong>118</strong></td><td><strong>199</strong></td><td><strong>173</strong></td></tr>
+    <tr><td><em>(Growth % + EBITDA %)</em></td><td><em>(100+17)</em></td><td><em>(102+16)</em></td><td><em>(169+30)</em></td><td><em>(131+42)</em></td></tr>
+  </table>
+
+  <div class="callout callout-green">
+    <div class="callout-title">Rule of 40 &mdash; Consistently in Top Decile</div>
+    <p class="text-sm">A Rule of 40 score above 40 is considered "good" for SaaS companies. Scores above 80 are exceptional and typically command 2-3x valuation premium. HOH108's projected scores of <strong>117-199</strong> across all forecast years place it in the <strong>top 1% globally</strong>, driven by triple-digit growth rates that more than compensate for growth-phase EBITDA compression.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 14</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 14: CUSTOMER METRICS -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 14 &bull; Customer Metrics</span>
+  </div>
+
+  <span class="section-num">Section 14</span>
+  <h1>Customer Metrics: CAC, Engagement, Retention &amp; LTV</h1>
+  <p class="section-lead">Unit economics across three major audience segments driving sustainable growth.</p>
+
+  <h2>Three Customer Segments</h2>
+  <table>
+    <tr><th style="width:20%">Segment</th><th>Customer Acquisition</th><th>Customer Engagement</th><th>Customer Retention</th></tr>
+    <tr>
+      <td><strong>Segment A:<br>New Acquisition</strong></td>
+      <td>First-touch prospects entering via marketing, referrals, experience centres, or HOH Match. Goal: convert to paid subscriber.</td>
+      <td>Onboarding journey, product activation, module adoption, first project setup.</td>
+      <td>30-day activation targets, NPS survey at Day 45, CSM assignment at Day 7.</td>
+    </tr>
+    <tr>
+      <td><strong>Segment B:<br>Active Engagement</strong></td>
+      <td>Existing subscribers using the platform actively. Goal: increase usage, enable expansion revenue.</td>
+      <td>Daily active usage, module depth, AI agent utilization, cross-product adoption (ERP + Match + DesignHub).</td>
+      <td>Monthly health scores, QBR cadence, feature adoption nudges, community events.</td>
+    </tr>
+    <tr>
+      <td><strong>Segment C:<br>Retention &amp; Expansion</strong></td>
+      <td>Mature accounts approaching renewal. Goal: renew, upsell, cross-sell, generate referrals.</td>
+      <td>Multi-year contract incentives, premium module upsells, subsidiary entity expansion.</td>
+      <td>Annual renewal with 90%+ logo retention target, 115%+ net revenue retention.</td>
+    </tr>
+  </table>
+
+  <h2>Customer Acquisition Cost (CAC) by Channel</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Channel</th><th>CAC (INR)</th><th>Conversion Rate</th><th>Avg Deal Size</th><th>Payback (months)</th></tr>
+    <tr><td>Digital Marketing (Meta, Google, LinkedIn)</td><td>1,20,000</td><td>2.5%</td><td>INR 3.0L ACV</td><td>4.8</td></tr>
+    <tr><td>Experience Centre Walk-ins</td><td>60,000</td><td>8.0%</td><td>INR 5.0L ACV</td><td>1.4</td></tr>
+    <tr><td>Mobile Experience Centre</td><td>45,000</td><td>10.0%</td><td>INR 3.5L ACV</td><td>1.5</td></tr>
+    <tr><td>Referral / Word of Mouth</td><td>25,000</td><td>15.0%</td><td>INR 4.0L ACV</td><td>0.8</td></tr>
+    <tr><td>Channel Partner Referral</td><td>80,000</td><td>5.0%</td><td>INR 8.0L ACV</td><td>1.2</td></tr>
+    <tr><td>Inbound (Content + SEO)</td><td>40,000</td><td>4.0%</td><td>INR 2.5L ACV</td><td>1.9</td></tr>
+    <tr><td>HOH Match Freemium-to-Paid</td><td>15,000</td><td>12.0%</td><td>INR 1.0L ACV</td><td>1.8</td></tr>
+    <tr class="table-highlight"><td><strong>Blended Average</strong></td><td><strong>INR 75,000</strong></td><td><strong>5.5%</strong></td><td><strong>INR 3.5L ACV</strong></td><td><strong>2.6 months</strong></td></tr>
+  </table>
+
+  <h2>Lifetime Value (LTV) by Segment</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Segment</th><th>ACV (INR)</th><th>Avg Lifetime</th><th>Gross Margin</th><th>LTV (INR)</th><th>LTV:CAC</th></tr>
+    <tr><td>SME (Starter/Professional)</td><td>1.5-3.0 Lakh</td><td>3 years</td><td>75%</td><td>3.4-6.8 Lakh</td><td>4.5-9.0x</td></tr>
+    <tr><td>Mid-Market (Business)</td><td>6.0-12.0 Lakh</td><td>4 years</td><td>78%</td><td>18.7-37.4 Lakh</td><td>15.6-31.2x</td></tr>
+    <tr><td>Enterprise</td><td>12.0-50.0 Lakh</td><td>5+ years</td><td>80%</td><td>48.0-200.0 Lakh</td><td>24.0-100x</td></tr>
+    <tr><td>HOH Match (B2C)</td><td>0.3-2.5 Lakh</td><td>2 years</td><td>70%</td><td>0.4-3.5 Lakh</td><td>2.7-23x</td></tr>
+    <tr><td>HOH Match (Enterprise API)</td><td>10.0-50.0 Lakh</td><td>3+ years</td><td>82%</td><td>24.6-123 Lakh</td><td>12.3-62x</td></tr>
+    <tr class="table-highlight"><td><strong>Blended Portfolio</strong></td><td><strong>INR 4.0 Lakh</strong></td><td><strong>3.5 years</strong></td><td><strong>76%</strong></td><td><strong>INR 10.6 Lakh</strong></td><td><strong>14.2x</strong></td></tr>
+  </table>
+
+  <h2>Key SaaS Health Metrics</h2>
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Blended CAC</div>
+      <div class="kpi-value" style="font-size:14pt;">&#8377;75K</div>
+      <div class="kpi-unit">~USD 900</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Blended LTV</div>
+      <div class="kpi-value" style="font-size:14pt;">&#8377;10.6L</div>
+      <div class="kpi-unit">~USD 12,800</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">LTV:CAC</div>
+      <div class="kpi-value" style="font-size:14pt;">14.2x</div>
+      <div class="kpi-unit">Benchmark: &gt;3x</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">CAC Payback</div>
+      <div class="kpi-value" style="font-size:14pt;">2.6 mo</div>
+      <div class="kpi-unit">Benchmark: &lt;18mo</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Target NRR</div>
+      <div class="kpi-value" style="font-size:14pt;">115%+</div>
+      <div class="kpi-unit">Net Revenue Retention</div>
+    </div>
+  </div>
+
+  <h2>Customer Growth Trajectory</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Metric</th><th>FY25-26</th><th>FY26-27</th><th>FY27-28</th><th>FY28-29</th></tr>
+    <tr><td>New Customers Added</td><td>300</td><td>350</td><td>650</td><td>900</td></tr>
+    <tr><td>Churned Customers</td><td>(30)</td><td>(50)</td><td>(100)</td><td>(150)</td></tr>
+    <tr><td><strong>Total Active Customers (End)</strong></td><td><strong>300</strong></td><td><strong>600</strong></td><td><strong>1,150</strong></td><td><strong>1,900</strong></td></tr>
+    <tr><td>Logo Retention Rate</td><td>90%</td><td>92%</td><td>91%</td><td>92%</td></tr>
+    <tr><td>Net Revenue Retention</td><td>112%</td><td>115%</td><td>118%</td><td>120%</td></tr>
+    <tr><td>Expansion Revenue (% of existing)</td><td>15%</td><td>20%</td><td>25%</td><td>28%</td></tr>
+  </table>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 15</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 15: GEOGRAPHIC POSITIONING - PAN INDIA -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 15 &bull; Geographic Positioning &mdash; Pan India</span>
+  </div>
+
+  <span class="section-num">Section 15</span>
+  <h1>Geographic Positioning &mdash; Pan India</h1>
+  <p class="section-lead">City-tier expansion strategy across Metro, Tier 1, and Tier 2 cities.</p>
+
+  <h2>India City-Tier Strategy</h2>
+
+  <!-- India Map -->
+  <div style="max-width:650px; margin:16px auto;">
+    <svg viewBox="0 0 500 560" style="width:100%;">
+      <defs>
+        <filter id="shadow1" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.15"/></filter>
+        <radialGradient id="mapBg" cx="50%" cy="40%"><stop offset="0%" stop-color="rgba(197,156,130,0.06)"/><stop offset="100%" stop-color="rgba(15,26,46,0.03)"/></radialGradient>
+      </defs>
+      <!-- India outline -->
+      <path d="M225,25 L275,18 L325,38 L362,62 L388,100 L412,125 L438,162 L450,200 L444,250 L425,300 L412,338 L388,375 L350,412 L312,450 L288,475 L262,500 L250,525 L238,538 L225,525 L206,494 L175,462 L150,425 L125,388 L100,350 L88,312 L81,275 L88,238 L100,200 L119,162 L138,125 L162,88 L188,56 L212,31 Z" fill="url(#mapBg)" stroke="#0f1a2e" stroke-width="2" stroke-linejoin="round"/>
+
+      <!-- Metro Cities (Phase 1) - Gold -->
+      <circle cx="162" cy="231" r="11" fill="#C59C82" stroke="white" stroke-width="3" filter="url(#shadow1)"/>
+      <text x="126" y="226" font-size="12" fill="#0f1a2e" font-weight="700" font-family="Inter,sans-serif">Mumbai</text>
+
+      <circle cx="238" cy="150" r="11" fill="#C59C82" stroke="white" stroke-width="3" filter="url(#shadow1)"/>
+      <text x="252" y="148" font-size="12" fill="#0f1a2e" font-weight="700" font-family="Inter,sans-serif">Delhi NCR</text>
+
+      <circle cx="325" cy="262" r="10" fill="#C59C82" stroke="white" stroke-width="3" filter="url(#shadow1)"/>
+      <text x="338" y="260" font-size="12" fill="#0f1a2e" font-weight="700" font-family="Inter,sans-serif">Kolkata</text>
+
+      <circle cx="250" cy="412" r="11" fill="#C59C82" stroke="white" stroke-width="3" filter="url(#shadow1)"/>
+      <text x="264" y="410" font-size="12" fill="#0f1a2e" font-weight="700" font-family="Inter,sans-serif">Bengaluru</text>
+
+      <circle cx="288" cy="388" r="10" fill="#C59C82" stroke="white" stroke-width="3" filter="url(#shadow1)"/>
+      <text x="300" y="386" font-size="12" fill="#0f1a2e" font-weight="700" font-family="Inter,sans-serif">Chennai</text>
+
+      <circle cx="212" cy="375" r="10" fill="#C59C82" stroke="white" stroke-width="3" filter="url(#shadow1)"/>
+      <text x="160" y="373" font-size="12" fill="#0f1a2e" font-weight="700" font-family="Inter,sans-serif">Hyderabad</text>
+
+      <!-- Tier 1 (Phase 2) - Blue -->
+      <circle cx="206" cy="275" r="7" fill="#2563eb" stroke="white" stroke-width="2" filter="url(#shadow1)"/>
+      <text x="216" y="278" font-size="10" fill="#2563eb" font-weight="600" font-family="Inter,sans-serif">Pune</text>
+
+      <circle cx="175" cy="194" r="7" fill="#2563eb" stroke="white" stroke-width="2" filter="url(#shadow1)"/>
+      <text x="126" y="196" font-size="10" fill="#2563eb" font-weight="600" font-family="Inter,sans-serif">Ahmedabad</text>
+
+      <circle cx="262" cy="194" r="7" fill="#2563eb" stroke="white" stroke-width="2" filter="url(#shadow1)"/>
+      <text x="272" y="196" font-size="10" fill="#2563eb" font-weight="600" font-family="Inter,sans-serif">Lucknow</text>
+
+      <circle cx="212" cy="181" r="7" fill="#2563eb" stroke="white" stroke-width="2" filter="url(#shadow1)"/>
+      <text x="222" y="178" font-size="10" fill="#2563eb" font-weight="600" font-family="Inter,sans-serif">Jaipur</text>
+
+      <circle cx="312" cy="212" r="7" fill="#2563eb" stroke="white" stroke-width="2" filter="url(#shadow1)"/>
+      <text x="322" y="214" font-size="10" fill="#2563eb" font-weight="600" font-family="Inter,sans-serif">Patna</text>
+
+      <circle cx="219" cy="438" r="7" fill="#2563eb" stroke="white" stroke-width="2" filter="url(#shadow1)"/>
+      <text x="186" y="448" font-size="10" fill="#2563eb" font-weight="600" font-family="Inter,sans-serif">Kochi</text>
+
+      <!-- Tier 2 (Phase 3) - Green -->
+      <circle cx="138" cy="169" r="6" fill="#059669" stroke="white" stroke-width="1.5"/>
+      <text x="100" y="168" font-size="9" fill="#059669" font-weight="500" font-family="Inter,sans-serif">Surat</text>
+
+      <circle cx="250" cy="219" r="6" fill="#059669" stroke="white" stroke-width="1.5"/>
+      <text x="260" y="222" font-size="9" fill="#059669" font-weight="500" font-family="Inter,sans-serif">Bhopal</text>
+
+      <circle cx="288" cy="238" r="6" fill="#059669" stroke="white" stroke-width="1.5"/>
+      <text x="298" y="240" font-size="9" fill="#059669" font-weight="500" font-family="Inter,sans-serif">Raipur</text>
+
+      <circle cx="188" cy="325" r="6" fill="#059669" stroke="white" stroke-width="1.5"/>
+      <text x="153" y="326" font-size="9" fill="#059669" font-weight="500" font-family="Inter,sans-serif">Goa</text>
+
+      <circle cx="275" cy="338" r="6" fill="#059669" stroke="white" stroke-width="1.5"/>
+      <text x="285" y="340" font-size="9" fill="#059669" font-weight="500" font-family="Inter,sans-serif">Vizag</text>
+
+      <circle cx="288" cy="438" r="6" fill="#059669" stroke="white" stroke-width="1.5"/>
+      <text x="298" y="440" font-size="9" fill="#059669" font-weight="500" font-family="Inter,sans-serif">Coimbatore</text>
+
+      <circle cx="194" cy="131" r="6" fill="#059669" stroke="white" stroke-width="1.5"/>
+      <text x="148" y="130" font-size="9" fill="#059669" font-weight="500" font-family="Inter,sans-serif">Chandigarh</text>
+
+      <!-- Legend -->
+      <rect x="15" y="488" width="470" height="62" rx="8" fill="white" stroke="#e2e4e8" stroke-width="1.5"/>
+      <circle cx="38" cy="505" r="8" fill="#C59C82"/>
+      <text x="52" y="509" font-size="10" fill="#374151" font-family="Inter,sans-serif">Metro (Phase 1 - FY25-26): Mumbai, Delhi NCR, Bengaluru, Hyderabad, Chennai, Kolkata</text>
+      <circle cx="38" cy="524" r="7" fill="#2563eb"/>
+      <text x="52" y="528" font-size="10" fill="#374151" font-family="Inter,sans-serif">Tier 1 (Phase 2 - FY26-27): Pune, Ahmedabad, Jaipur, Lucknow, Kochi, Patna</text>
+      <circle cx="38" cy="543" r="6" fill="#059669"/>
+      <text x="52" y="547" font-size="10" fill="#374151" font-family="Inter,sans-serif">Tier 2 (Phase 3 - FY27-28): Surat, Bhopal, Goa, Vizag, Coimbatore, Chandigarh +20 more</text>
+    </svg>
+  </div>
+
+  <h2>City-Tier Revenue Breakdown</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Tier</th><th>Cities</th><th>Entities (est.)</th><th>FY25-26</th><th>FY26-27</th><th>FY27-28</th><th>FY28-29</th></tr>
+    <tr><td><strong>Metro (6 cities)</strong></td><td>Mumbai, Delhi NCR, Bengaluru, Hyderabad, Chennai, Kolkata</td><td>120,000</td><td>INR 54 Cr (90%)</td><td>INR 85 Cr (70%)</td><td>INR 183 Cr (56%)</td><td>INR 340 Cr (45%)</td></tr>
+    <tr><td><strong>Tier 1 (12 cities)</strong></td><td>Pune, Ahmedabad, Jaipur, Lucknow, Kochi, Indore, Chandigarh, Nagpur, Vadodara, Coimbatore, Patna, Bhubaneswar</td><td>80,000</td><td>INR 6 Cr (10%)</td><td>INR 22 Cr (18%)</td><td>INR 88 Cr (27%)</td><td>INR 220 Cr (29%)</td></tr>
+    <tr><td><strong>Tier 2 (20+ cities)</strong></td><td>Surat, Bhopal, Raipur, Goa, Vizag, Mysuru, Mangaluru, Jodhpur, etc.</td><td>170,000</td><td>INR 0 (0%)</td><td>INR 14.5 Cr (12%)</td><td>INR 56 Cr (17%)</td><td>INR 196 Cr (26%)</td></tr>
+    <tr class="table-highlight"><td colspan="3"><strong>India Total</strong></td><td><strong>INR 60 Cr</strong></td><td><strong>INR 121.5 Cr</strong></td><td><strong>INR 327 Cr</strong></td><td><strong>INR 756 Cr</strong></td></tr>
+  </table>
+
+  <div class="callout">
+    <div class="callout-title">Experience Centre Strategy</div>
+    <p class="text-sm"><strong>Physical Experience Centres</strong> in Metros + <strong>Mobile Experience Centres</strong> (on wheels) for Tier 1/2 cities. Each mobile XC covers 3-4 cities per quarter, reducing physical infrastructure costs by 80% while maintaining high-touch customer engagement. Integrated with HOH108 CRM for real-time lead capture &amp; follow-up.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 16</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 16: VALUATION ASSESSMENT -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 16 &bull; Valuation Assessment</span>
+  </div>
+
+  <span class="section-num">Section 16</span>
+  <h1>Valuation Assessment &mdash; Big-4 Framework</h1>
+  <p class="section-lead">Multi-methodology valuation per IVS 2024, ICAI Valuation Standards, and Ind AS 113 Fair Value guidelines.</p>
+
+  <h2>Methodology 1: Discounted Cash Flow (DCF)</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Parameter</th><th>Value</th><th>Rationale</th></tr>
+    <tr><td>Projection Period</td><td>5 years (FY25-26 to FY29-30)</td><td>Standard for high-growth SaaS</td></tr>
+    <tr><td>Revenue CAGR (5Y)</td><td>~88%</td><td>From INR 60 Cr to INR 1,395 Cr</td></tr>
+    <tr><td>Terminal Growth Rate</td><td>6%</td><td>India GDP growth + inflation + industry premium</td></tr>
+    <tr><td>WACC</td><td>16.5%</td><td>Risk-free (7.2%) + Equity Risk Premium (8.3%) + Size Premium (1%)</td></tr>
+    <tr><td>Terminal Year EBITDA Margin</td><td>45%</td><td>Mature vertical SaaS benchmark</td></tr>
+    <tr><td>Terminal Value Multiple</td><td>15x EBITDA</td><td>Comparable mature SaaS exits</td></tr>
+  </table>
+
+  <table style="font-size:10pt;">
+    <tr><th>Year</th><th>Revenue</th><th>EBITDA</th><th>FCF</th><th>Discount Factor</th><th>PV of FCF</th></tr>
+    <tr><td>FY25-26</td><td>60.0</td><td>10.2</td><td>7.1</td><td>0.858</td><td>6.1</td></tr>
+    <tr><td>FY26-27</td><td>121.5</td><td>19.5</td><td>14.6</td><td>0.737</td><td>10.8</td></tr>
+    <tr><td>FY27-28</td><td>327.0</td><td>98.5</td><td>73.9</td><td>0.632</td><td>46.7</td></tr>
+    <tr><td>FY28-29</td><td>756.0</td><td>321.2</td><td>240.9</td><td>0.543</td><td>130.8</td></tr>
+    <tr><td>FY29-30</td><td>1,395.0</td><td>627.8</td><td>470.8</td><td>0.466</td><td>219.4</td></tr>
+    <tr><td>Terminal Value</td><td>&mdash;</td><td>&mdash;</td><td>9,416 (15x EBITDA)</td><td>0.466</td><td>4,388.0</td></tr>
+    <tr class="table-highlight"><td colspan="5"><strong>Enterprise Value (DCF)</strong></td><td><strong>INR 4,802 Cr</strong></td></tr>
+    <tr><td colspan="5"><em>Applying 40% private company discount + 15% execution risk</em></td><td><strong>INR 2,449 Cr</strong></td></tr>
+    <tr class="table-highlight"><td colspan="5"><strong>Adjusted DCF Valuation Range</strong></td><td><strong>INR 1,800-2,500 Cr</strong></td></tr>
+  </table>
+
+  <h2>Methodology 2: Comparable Company Analysis</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Comparable</th><th>EV/Revenue</th><th>Growth</th><th>Rule of 40</th><th>Implied for HOH108</th></tr>
+    <tr><td>Procore (ConTech)</td><td>12x</td><td>24%</td><td>28</td><td>INR 720 Cr (on trailing)</td></tr>
+    <tr><td>Freshworks (India SaaS)</td><td>9x</td><td>20%</td><td>22</td><td>INR 540 Cr</td></tr>
+    <tr><td>Zoho (India SaaS, Private)</td><td>12-15x</td><td>25%</td><td>45</td><td>INR 720-900 Cr</td></tr>
+    <tr><td>Livspace (Interior, Private)</td><td>19-25x</td><td>40%</td><td>&mdash;</td><td>INR 1,140-1,500 Cr</td></tr>
+    <tr><td>India B2B SaaS (Private Median)</td><td>15-20x</td><td>50%+</td><td>55+</td><td>INR 900-1,200 Cr</td></tr>
+  </table>
+
+  <div class="callout">
+    <p class="text-sm"><strong>Growth-Adjusted Analysis:</strong> HOH108's 100%+ growth rate warrants a 2-3x premium over median. Adjusted comparable range: <strong>INR 900-1,800 Cr</strong> (trailing) or <strong>INR 1,800-3,600 Cr</strong> (forward NTM).</p>
+  </div>
+
+  <h2>Methodology 3: Precedent Transaction Analysis</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Transaction</th><th>Year</th><th>Revenue Multiple</th><th>Implied for HOH108</th></tr>
+    <tr><td>Autodesk acquired Spacemaker (AI design)</td><td>2020</td><td>~24x</td><td>INR 1,440 Cr</td></tr>
+    <tr><td>Thoma Bravo vertical SaaS acquisitions (avg)</td><td>2022-24</td><td>8-12x</td><td>INR 480-720 Cr</td></tr>
+    <tr><td>Livspace Series F (interior tech)</td><td>2022</td><td>~19x GMV-adjusted</td><td>INR 1,140 Cr</td></tr>
+    <tr><td>Roper/Vertafore (vertical SaaS)</td><td>2020</td><td>~14x</td><td>INR 840 Cr</td></tr>
+    <tr class="table-highlight"><td colspan="3"><strong>Precedent Transaction Range</strong></td><td><strong>INR 840-1,440 Cr</strong></td></tr>
+  </table>
+
+  <h2>Valuation Football Field (INR Crore)</h2>
+  <div class="football-field">
+    <div class="ff-row">
+      <div class="ff-label">DCF (Adjusted)</div>
+      <div class="ff-track">
+        <div class="ff-bar" style="left:50%; width:25%; background:linear-gradient(90deg,var(--navy),var(--navy-light));">1,800 - 2,500</div>
+      </div>
+    </div>
+    <div class="ff-row">
+      <div class="ff-label">Comps (Trailing)</div>
+      <div class="ff-track">
+        <div class="ff-bar" style="left:20%; width:30%; background:linear-gradient(90deg,var(--gold-dark),var(--gold));">900 - 1,800</div>
+      </div>
+    </div>
+    <div class="ff-row">
+      <div class="ff-label">Comps (Forward)</div>
+      <div class="ff-track">
+        <div class="ff-bar" style="left:50%; width:40%; background:linear-gradient(90deg,#047857,var(--green));">1,800 - 3,600</div>
+      </div>
+    </div>
+    <div class="ff-row">
+      <div class="ff-label">Precedent Txns</div>
+      <div class="ff-track">
+        <div class="ff-bar" style="left:18%; width:22%; background:linear-gradient(90deg,#1d4ed8,var(--blue));">840 - 1,440</div>
+      </div>
+    </div>
+    <div class="ff-scale">
+      <span>0</span><span>500</span><span>1,000</span><span>1,500</span><span>2,000</span><span>2,500</span><span>3,000</span><span>3,500</span><span>4,000</span>
+    </div>
+  </div>
+
+  <h2>Valuation Summary</h2>
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Conservative</div>
+      <div class="kpi-value" style="font-size:14pt;">&#8377;850 Cr</div>
+      <div class="kpi-unit">USD ~102M</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Base Case</div>
+      <div class="kpi-value" style="font-size:14pt;">&#8377;1,500 Cr</div>
+      <div class="kpi-unit">USD ~181M</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Optimistic</div>
+      <div class="kpi-value" style="font-size:14pt;">&#8377;2,500 Cr</div>
+      <div class="kpi-unit">USD ~301M</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Bull (FY28-29)</div>
+      <div class="kpi-value" style="font-size:14pt;">&#8377;6,000+ Cr</div>
+      <div class="kpi-unit">USD ~723M (Unicorn Path)</div>
+    </div>
+  </div>
+
+  <div class="callout callout-green">
+    <div class="callout-title">Implied Valuation: INR 850-2,500 Cr (USD 102-301M) | Base: INR 1,500 Cr (USD 181M)</div>
+    <p class="text-sm">Weighted average across three methodologies with 40% weight to DCF, 35% to comparable company, and 25% to precedent transactions. The base case reflects trailing 25x revenue, justified by 100%+ growth, Rule of 40 score of 117, unique market position, and AI/phygital differentiation. At current trajectory, HOH108 achieves <strong>unicorn valuation (INR 8,300+ Cr / USD 1B+) by FY29-30</strong>.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 17</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 16B: VALUATION QoQ & YoY -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 16 (Contd.) &bull; Valuation Progression</span>
+  </div>
+
+  <h2>Ecosystem Valuation Progression &mdash; QoQ &amp; YoY</h2>
+  <p class="section-lead">Valuation growth based on revenue achievement, customer expansion, and milestone execution.</p>
+
+  <table>
+    <tr><th>Period</th><th>ARR (INR Cr)</th><th>Customers</th><th>Applicable Multiple</th><th>Implied Valuation (INR Cr)</th><th>USD (M)</th></tr>
+    <tr><td>Q4 FY25-26 (Current)</td><td>60</td><td>300</td><td>14x (trailing)</td><td>850</td><td>102</td></tr>
+    <tr><td>Q1 FY26-27</td><td>75</td><td>370</td><td>15x</td><td>1,125</td><td>136</td></tr>
+    <tr><td>Q2 FY26-27</td><td>90</td><td>430</td><td>16x (int'l entry)</td><td>1,440</td><td>173</td></tr>
+    <tr><td>Q3 FY26-27</td><td>108</td><td>510</td><td>16x</td><td>1,728</td><td>208</td></tr>
+    <tr class="table-highlight"><td><strong>Q4 FY26-27 (YoY)</strong></td><td><strong>121.5</strong></td><td><strong>600</strong></td><td><strong>17x</strong></td><td><strong>2,066</strong></td><td><strong>249</strong></td></tr>
+    <tr><td>Q1 FY27-28</td><td>160</td><td>720</td><td>16x</td><td>2,560</td><td>308</td></tr>
+    <tr><td>Q2 FY27-28</td><td>220</td><td>870</td><td>15x</td><td>3,300</td><td>398</td></tr>
+    <tr><td>Q3 FY27-28</td><td>280</td><td>1,020</td><td>14x</td><td>3,920</td><td>472</td></tr>
+    <tr class="table-highlight"><td><strong>Q4 FY27-28 (YoY)</strong></td><td><strong>327</strong></td><td><strong>1,150</strong></td><td><strong>14x</strong></td><td><strong>4,578</strong></td><td><strong>552</strong></td></tr>
+    <tr><td>Q1 FY28-29</td><td>420</td><td>1,300</td><td>13x</td><td>5,460</td><td>658</td></tr>
+    <tr><td>Q2 FY28-29</td><td>530</td><td>1,500</td><td>12x</td><td>6,360</td><td>766</td></tr>
+    <tr><td>Q3 FY28-29</td><td>650</td><td>1,700</td><td>12x</td><td>7,800</td><td>940</td></tr>
+    <tr class="table-highlight"><td><strong>Q4 FY28-29 (YoY)</strong></td><td><strong>756</strong></td><td><strong>1,900</strong></td><td><strong>11x</strong></td><td><strong>8,316</strong></td><td><strong>1,002</strong></td></tr>
+  </table>
+
+  <div class="callout callout-green">
+    <div class="callout-title">Unicorn Milestone: FY28-29 Q3</div>
+    <p class="text-sm">At projected growth rates, HOH108 crosses the USD 1B (INR 8,300 Cr) valuation mark in <strong>Q3/Q4 FY28-29</strong>, approximately 3 years from the current assessment date. This is predicated on maintaining &gt;100% YoY revenue growth through FY27-28, followed by &gt;80% growth in FY28-29, consistent with the TAM opportunity and competitive positioning.</p>
+  </div>
+
+  <h2>Valuation Sensitivity Analysis</h2>
+  <p class="text-sm">Base case valuation (INR Cr) under different growth and multiple scenarios:</p>
+  <table style="font-size:10pt;">
+    <tr><th>FY27-28 ARR Growth</th><th>10x Multiple</th><th>12x Multiple</th><th>14x Multiple</th><th>16x Multiple</th><th>18x Multiple</th></tr>
+    <tr><td>+100% (INR 243 Cr)</td><td>2,430</td><td>2,916</td><td>3,402</td><td>3,888</td><td>4,374</td></tr>
+    <tr><td>+150% (INR 304 Cr)</td><td>3,040</td><td>3,648</td><td>4,256</td><td>4,864</td><td>5,472</td></tr>
+    <tr class="table-highlight"><td><strong>+169% (INR 327 Cr) - Base</strong></td><td><strong>3,270</strong></td><td><strong>3,924</strong></td><td><strong>4,578</strong></td><td><strong>5,232</strong></td><td><strong>5,886</strong></td></tr>
+    <tr><td>+200% (INR 365 Cr)</td><td>3,650</td><td>4,380</td><td>5,110</td><td>5,840</td><td>6,570</td></tr>
+    <tr><td>+250% (INR 425 Cr)</td><td>4,250</td><td>5,100</td><td>5,950</td><td>6,800</td><td>7,650</td></tr>
+  </table>
+
+  <h2>Key Value Drivers &amp; Catalysts</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Catalyst</th><th>Timeline</th><th>Valuation Impact</th></tr>
+    <tr><td>HOH Match GA launch with vendor catalogue integration</td><td>Q1 FY26-27</td><td>+15-20% premium (AI/deep-tech multiple)</td></tr>
+    <tr><td>First international revenue (UAE)</td><td>Q3 FY26-27</td><td>+10-15% (geographic diversification)</td></tr>
+    <tr><td>BBPS Agent + Payment stack live</td><td>Q4 FY26-27</td><td>+10% (FinTech layer adds valuation floor)</td></tr>
+    <tr><td>NRR &gt; 120% sustained for 4 quarters</td><td>FY27-28</td><td>+20% (best-in-class retention signal)</td></tr>
+    <tr><td>100+ vendor catalogues in HOH Match</td><td>FY27-28</td><td>+15% (network effects proven)</td></tr>
+    <tr><td>INR 300+ Cr ARR milestone</td><td>FY27-28</td><td>Step-change to "scale-up" multiples</td></tr>
+    <tr><td>Series A/B fundraise (if applicable)</td><td>FY27-28</td><td>Validates market pricing</td></tr>
+    <tr><td>Education Plus (EP) subsidiary revenue</td><td>FY27-28</td><td>+5-10% (TAM expansion into education)</td></tr>
+  </table>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 18</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 17: RISK ANALYSIS -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 17 &bull; Risk Analysis</span>
+  </div>
+
+  <span class="section-num">Section 17</span>
+  <h1>Risk Analysis &amp; Mitigation</h1>
+  <p class="section-lead">Comprehensive risk assessment with mitigation strategies.</p>
+
+  <table>
+    <tr><th style="width:20%">Risk Category</th><th style="width:8%">Severity</th><th style="width:8%">Likelihood</th><th>Description</th><th style="width:30%">Mitigation</th></tr>
+    <tr>
+      <td><strong>Execution Risk</strong></td>
+      <td><span class="badge badge-red">High</span></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td>Scaling from INR 60 Cr to 756 Cr in 3 years requires flawless execution across products, markets, and team.</td>
+      <td>Phased rollout, quarterly milestone tracking, proven ERP foundation already in production.</td>
+    </tr>
+    <tr>
+      <td><strong>Technology Risk</strong></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td>HOH Match AI accuracy, infrastructure scalability, multi-region deployment complexity.</td>
+      <td>Microservice architecture, AWS EKS for scale, active learning pipeline for continuous model improvement.</td>
+    </tr>
+    <tr>
+      <td><strong>Competition Risk</strong></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td><span class="badge badge-green">Low</span></td>
+      <td>Horizontal SaaS players (Zoho, SAP) could build vertical features; Livspace could add ERP.</td>
+      <td>4-layer moat (taxonomy + vendor lock-in + network effects + full-stack ERP). 5+ year replication timeline.</td>
+    </tr>
+    <tr>
+      <td><strong>Market Risk</strong></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td>India construction cyclicality, real estate market downturns, SME SaaS adoption slower than projected.</td>
+      <td>Multi-segment (B2C + B2B + B2B2C) diversification; payment revenue is counter-cyclical.</td>
+    </tr>
+    <tr>
+      <td><strong>Regulatory Risk</strong></td>
+      <td><span class="badge badge-green">Low</span></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td>RBI BNPL regulations, DPDPA (India data protection), cross-border data transfer for international ops.</td>
+      <td>GDPR-ready architecture already built, compliance module (SOX/GST) demonstrates regulatory capability.</td>
+    </tr>
+    <tr>
+      <td><strong>Talent Risk</strong></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td>Scaling engineering team from 13 to 35, especially ML/AI talent scarcity in India.</td>
+      <td>Competitive CTC, ESOP pool, remote-first culture, partnership with ML research institutes.</td>
+    </tr>
+    <tr>
+      <td><strong>Key Person Risk</strong></td>
+      <td><span class="badge badge-red">High</span></td>
+      <td><span class="badge badge-green">Low</span></td>
+      <td>Dependence on founder/core team for vision and execution.</td>
+      <td>Documented architecture, modular codebase, cross-functional training, advisory board.</td>
+    </tr>
+    <tr>
+      <td><strong>International Expansion</strong></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td><span class="badge badge-gold">Medium</span></td>
+      <td>UAE/SG/MY/HK market entry costs, localization, regulatory compliance, partner dependency.</td>
+      <td>Partner-led entry, multi-currency/multi-company architecture pre-built, phased city-by-city rollout.</td>
+    </tr>
+  </table>
+
+  <h2>SWOT Analysis</h2>
+  <div class="grid-2" style="gap:10px;">
+    <div style="background:rgba(5,150,105,0.05); border:1px solid rgba(5,150,105,0.2); border-radius:6px; padding:10px;">
+      <h4 style="color:var(--green);">Strengths</h4>
+      <ul style="font-size:10pt;">
+        <li>Only full-stack ERP + AI + Payments for interior/construction</li>
+        <li>107 data models, 102 APIs &mdash; production-grade</li>
+        <li>SOX, GDPR, GST compliance built-in</li>
+        <li>INR 5 Cr/month revenue validates product-market fit</li>
+        <li>Multi-company architecture ready for international</li>
+        <li>4 product lines in production / beta</li>
+      </ul>
+    </div>
+    <div style="background:rgba(220,38,38,0.05); border:1px solid rgba(220,38,38,0.2); border-radius:6px; padding:10px;">
+      <h4 style="color:var(--red);">Weaknesses</h4>
+      <ul style="font-size:10pt;">
+        <li>Small engineering team (13) for multi-product ambition</li>
+        <li>Single-server deployment (not yet multi-region)</li>
+        <li>HOH Match still in beta (not yet revenue-generating at scale)</li>
+        <li>Limited brand awareness outside current customer base</li>
+        <li>Heavy reliance on India market (100% currently)</li>
+      </ul>
+    </div>
+    <div style="background:rgba(37,99,235,0.05); border:1px solid rgba(37,99,235,0.2); border-radius:6px; padding:10px;">
+      <h4 style="color:var(--blue);">Opportunities</h4>
+      <ul style="font-size:10pt;">
+        <li>USD 800B India construction market with &lt;1.5% tech penetration</li>
+        <li>GCC mega-projects (NEOM, Vision 2030) need digital ERP</li>
+        <li>BBPS agent revenue could become significant (INR 100 Cr+ flow)</li>
+        <li>AI material matching is a blue ocean &mdash; no competitor</li>
+        <li>Education Plus can create pipeline for future ERP customers</li>
+        <li>Subscription revenue from 5 subsidiary verticals</li>
+      </ul>
+    </div>
+    <div style="background:rgba(217,119,6,0.05); border:1px solid rgba(217,119,6,0.2); border-radius:6px; padding:10px;">
+      <h4 style="color:var(--amber);">Threats</h4>
+      <ul style="font-size:10pt;">
+        <li>Zoho/SAP could build industry-specific modules</li>
+        <li>Livspace or HomeLane could pivot to platform/SaaS model</li>
+        <li>India construction downcycle could slow SME SaaS adoption</li>
+        <li>Regulatory changes in BNPL/payments space</li>
+        <li>AI model commoditization (open-source vision models)</li>
+        <li>Talent war for ML engineers in Indian market</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 19</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 18: ASSUMPTIONS & DATA SOURCES -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 18 &bull; Assumptions &amp; Data Sources</span>
+  </div>
+
+  <span class="section-num">Section 18</span>
+  <h1>Assumptions &amp; Data Sources</h1>
+  <p class="section-lead">Key assumptions underpinning the financial model and valuation assessment.</p>
+
+  <h2>Financial Model Assumptions</h2>
+  <table style="font-size:10pt;">
+    <tr><th style="width:35%">Assumption</th><th>Value Used</th><th>Sensitivity Range</th><th>Source / Basis</th></tr>
+    <tr><td>Base Revenue (FY25-26)</td><td>INR 60 Cr (INR 5 Cr/month)</td><td>INR 55-65 Cr</td><td>Management representation</td></tr>
+    <tr><td>Revenue CAGR (3-year)</td><td>~133%</td><td>80-180%</td><td>Industry growth + product roadmap execution</td></tr>
+    <tr><td>Gross Margin</td><td>72% (FY26) &rarr; 79% (FY29)</td><td>65-82%</td><td>SaaS industry benchmarks (Bessemer)</td></tr>
+    <tr><td>EBITDA Margin (Terminal)</td><td>42-45%</td><td>35-50%</td><td>Mature vertical SaaS (Veeva, Procore trajectory)</td></tr>
+    <tr><td>Logo Churn (Annual)</td><td>8-10%</td><td>5-15%</td><td>India B2B SaaS benchmarks</td></tr>
+    <tr><td>Net Revenue Retention</td><td>115% (FY26) &rarr; 120% (FY29)</td><td>105-130%</td><td>Best-in-class vertical SaaS: 120-140%</td></tr>
+    <tr><td>Blended CAC</td><td>INR 75,000</td><td>INR 50K-120K</td><td>India B2B SaaS industry data</td></tr>
+    <tr><td>Blended ACV</td><td>INR 4.0 Lakh (FY26)</td><td>INR 2.5L-6.0L</td><td>Pricing tiers weighted by segment mix</td></tr>
+    <tr><td>International Revenue Start</td><td>Q3 FY26-27</td><td>Q2-Q4 FY26-27</td><td>Market entry timelines</td></tr>
+    <tr><td>Exchange Rate (INR/USD)</td><td>83</td><td>80-88</td><td>Forward rate estimates</td></tr>
+    <tr><td>WACC</td><td>16.5%</td><td>14-19%</td><td>CAPM with India risk premium</td></tr>
+    <tr><td>Terminal Growth</td><td>6%</td><td>4-8%</td><td>India GDP growth + inflation</td></tr>
+    <tr><td>Private Company Discount</td><td>40%</td><td>30-50%</td><td>Industry standard for unlisted companies</td></tr>
+    <tr><td>Execution Risk Discount</td><td>15%</td><td>10-25%</td><td>Early-stage SaaS with multiple products</td></tr>
+  </table>
+
+  <h2>Data Sources &amp; References</h2>
+  <table style="font-size:10pt;">
+    <tr><th style="width:35%">Data Point</th><th>Source</th></tr>
+    <tr><td>India Interior Design Market Size</td><td>IBEF (India Brand Equity Foundation), Mordor Intelligence Reports 2024</td></tr>
+    <tr><td>India Construction Market</td><td>Ministry of Statistics (MOSPI), CIDC, McKinsey Global Institute</td></tr>
+    <tr><td>ConTech Market Size &amp; CAGR</td><td>Grand View Research, BCG "Future of Construction Technology" 2024</td></tr>
+    <tr><td>India SaaS Market</td><td>NASSCOM-Zinnov India SaaS Report 2024, Bessemer State of the Cloud</td></tr>
+    <tr><td>RERA Developer Count</td><td>State RERA websites (aggregated), CREDAI data</td></tr>
+    <tr><td>Architect Count</td><td>Council of Architecture (CoA) India, annual registration data</td></tr>
+    <tr><td>SaaS Valuation Multiples</td><td>Pitchbook, Tracxn, Crunchbase; Public company filings (SEC / NSE/BSE)</td></tr>
+    <tr><td>Competitor Valuations</td><td>Press releases, Crunchbase funding data, public filings</td></tr>
+    <tr><td>Payment Ecosystem Data</td><td>NPCI published statistics, RBI Annual Report 2024, RedSeer BNPL Report</td></tr>
+    <tr><td>International Market Data</td><td>BCA Singapore, Malaysia 12th Plan, UAE Ministry of Economy</td></tr>
+    <tr><td>AI/ML Market in Construction</td><td>Grand View Research, MarketsAndMarkets AI in Construction Report</td></tr>
+    <tr><td>Product Codebase Analysis</td><td>Direct source code review of HOH108-NEW repository (107 models, 102 routes, 95+ pages)</td></tr>
+    <tr><td>HOH Match Projections</td><td>HOHMatch_Business_Document.md (internal business plan)</td></tr>
+  </table>
+
+  <h2>Key Disclaimers</h2>
+  <div class="callout callout-navy" style="font-size:10pt;">
+    <p>1. This valuation is based on management-provided financial data (INR 5 Cr/month current revenue) which has not been independently audited.</p>
+    <p>2. Forward projections assume successful execution of the technology roadmap (HOH Match, DesignHub, Payment Stack, International Expansion) as outlined.</p>
+    <p>3. Market sizing data is sourced from third-party research reports with inherent estimation ranges. Actual market sizes may vary.</p>
+    <p>4. SaaS valuation multiples are point-in-time references and fluctuate based on market conditions, interest rates, and investor sentiment.</p>
+    <p>5. The private company discount (40%) and execution risk discount (15%) are applied to account for liquidity risk and early-stage execution uncertainty.</p>
+    <p>6. International expansion timelines and revenue assumptions are management estimates and subject to regulatory, geopolitical, and market entry risks.</p>
+    <p>7. The AI material matching technology (HOH Match) is in beta stage. Revenue projections for this product line carry higher uncertainty than the core ERP platform.</p>
+    <p>8. This document is prepared for internal management use and should not be construed as investment advice. Independent professional valuation is recommended for fundraising, M&A, or regulatory purposes.</p>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 20</span>
+  </div>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<!-- SECTION 19: APPENDICES -->
+<!-- ████████████████████████████████████████████████████████████████████████████ -->
+<div class="page">
+  <div class="page-header">
+    <span class="page-header-logo">HOH108</span>
+    <span>Section 19 &bull; Appendices</span>
+  </div>
+
+  <span class="section-num">Section 19</span>
+  <h1>Appendices &amp; Methodology Notes</h1>
+
+  <h2>Appendix A: Valuation Methodology Standards</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Standard</th><th>Application</th></tr>
+    <tr><td>IVS 2024 (International Valuation Standards)</td><td>Overall framework for business valuation; IVS 200 (Businesses), IVS 210 (Intangible Assets)</td></tr>
+    <tr><td>Ind AS 113 (Fair Value Measurement)</td><td>Indian GAAP-equivalent fair value hierarchy; Level 3 inputs used (unobservable, model-based)</td></tr>
+    <tr><td>ICAI Valuation Standards</td><td>ICAI registered valuers framework; income, market, and cost approaches applied</td></tr>
+    <tr><td>ASC 820 / IFRS 13</td><td>Referenced for international comparability of fair value measurement</td></tr>
+  </table>
+
+  <h2>Appendix B: SaaS Metrics Glossary</h2>
+  <table style="font-size:10pt;">
+    <tr><th>Metric</th><th>Definition</th></tr>
+    <tr><td>ARR</td><td>Annual Recurring Revenue &mdash; annualized value of recurring subscription contracts</td></tr>
+    <tr><td>ACV</td><td>Annual Contract Value &mdash; average annual revenue per customer</td></tr>
+    <tr><td>NRR</td><td>Net Revenue Retention &mdash; revenue from existing customers including expansion and churn</td></tr>
+    <tr><td>CAC</td><td>Customer Acquisition Cost &mdash; total sales &amp; marketing spend / new customers acquired</td></tr>
+    <tr><td>LTV</td><td>Customer Lifetime Value &mdash; total gross profit per customer over average lifetime</td></tr>
+    <tr><td>Rule of 40</td><td>Revenue growth rate (%) + EBITDA margin (%) &mdash; benchmark: &gt;40 is good, &gt;80 is exceptional</td></tr>
+    <tr><td>WACC</td><td>Weighted Average Cost of Capital &mdash; discount rate for DCF analysis</td></tr>
+    <tr><td>EV/Revenue</td><td>Enterprise Value divided by trailing or forward revenue &mdash; primary SaaS valuation metric</td></tr>
+    <tr><td>FCF</td><td>Free Cash Flow &mdash; cash generated after all operating expenses and capital expenditures</td></tr>
+    <tr><td>TAM/SAM/SOM</td><td>Total / Serviceable / Obtainable Addressable Market tiers</td></tr>
+  </table>
+
+  <h2>Appendix C: Technology IP Summary</h2>
+  <table style="font-size:10pt;">
+    <tr><th>IP Component</th><th>Description</th><th>Valuation Relevance</th></tr>
+    <tr><td>HOH108 Core ERP Codebase</td><td>107 models, 102 APIs, 95+ pages covering 21 modules</td><td>High &mdash; 2+ years of development, SOX/GDPR/GST compliant</td></tr>
+    <tr><td>HOH Match AI Pipeline</td><td>ViT-L/14 fine-tuned model, 4-stage segmentation, vector search, 12 microservices</td><td>Very High &mdash; core IP, first-of-kind in material matching</td></tr>
+    <tr><td>Material Taxonomy Database</td><td>Proprietary material-image pairs with enriched metadata</td><td>Very High &mdash; grows with usage, no public alternative exists</td></tr>
+    <tr><td>DesignHub Platform</td><td>Collaborative design with Prisma/PostgreSQL, Razorpay integration</td><td>Medium &mdash; B2B SaaS with subscription revenue</td></tr>
+    <tr><td>GIK Gamification Engine</td><td>Three.js WebGL, spin-to-win, karma points, campaign analytics</td><td>Medium &mdash; customer engagement and retention tool</td></tr>
+    <tr><td>7 Agentic MCP Agents</td><td>ICP, segmentation, budget optimization, ranking, vendor QA, token optimization</td><td>High &mdash; AI agents are defensible moat and margin enhancer</td></tr>
+    <tr><td>Domain: hoh108.com</td><td>Primary domain and brand asset</td><td>Low-Medium &mdash; brand value increases with scale</td></tr>
+  </table>
+
+  <h2>Appendix D: Comparable Company Details</h2>
+  <table style="font-size:9pt;">
+    <tr><th>Company</th><th>Ticker/Status</th><th>Revenue (Latest)</th><th>Growth</th><th>EV/Rev</th><th>Gross Margin</th><th>Rule of 40</th></tr>
+    <tr><td>Procore</td><td>NYSE: PCOR</td><td>USD 900M</td><td>24%</td><td>12x</td><td>80%</td><td>28</td></tr>
+    <tr><td>Autodesk</td><td>NASDAQ: ADSK</td><td>USD 5.8B</td><td>12%</td><td>8-9x</td><td>91%</td><td>46</td></tr>
+    <tr><td>Freshworks</td><td>NASDAQ: FRSH</td><td>USD 600M</td><td>20%</td><td>9x</td><td>82%</td><td>22</td></tr>
+    <tr><td>Trimble</td><td>NASDAQ: TRMB</td><td>USD 3.6B</td><td>8%</td><td>4x</td><td>67%</td><td>30</td></tr>
+    <tr><td>Zoho</td><td>Private</td><td>USD 1B (est.)</td><td>25%</td><td>12-15x</td><td>~80%</td><td>45</td></tr>
+    <tr><td>Livspace</td><td>Private</td><td>USD 60-80M</td><td>40%</td><td>19-25x</td><td>~35%</td><td>&mdash;</td></tr>
+    <tr><td>Sell.Do</td><td>Private</td><td>USD 5-10M</td><td>30%</td><td>5-6x</td><td>~75%</td><td>&mdash;</td></tr>
+    <tr class="table-highlight"><td><strong>HOH108</strong></td><td><strong>Private</strong></td><td><strong>USD 7.2M</strong></td><td><strong>100%+</strong></td><td><strong>14-25x</strong></td><td><strong>72%</strong></td><td><strong>117</strong></td></tr>
+  </table>
+
+  <div style="margin-top:20px; text-align:center;">
+    <div style="background:var(--navy); color:var(--gold); padding:16px 24px; border-radius:8px; display:inline-block;">
+      <div style="font-size:9pt; text-transform:uppercase; letter-spacing:3px; color:rgba(255,255,255,0.5); margin-bottom:4px;">End of Report</div>
+      <div style="font-size:16pt; font-weight:800;">"From Inspiration to Installation"</div>
+      <div style="font-size:8pt; color:rgba(255,255,255,0.6); margin-top:4px;">HOH108 &bull; Hancet Globe Private Limited &bull; Product Valuation Report &bull; March 2026</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Confidential</span>
+    <span>HOH108 Product Valuation Report</span>
+    <span>Page 21</span>
+  </div>
+</div>
+
+</body>
+</html>

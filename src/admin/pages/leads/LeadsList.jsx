@@ -505,7 +505,7 @@ const LeadsList = () => {
     if (!lead || lead.status === newStatus) return
 
     // Role-based drag restrictions
-    if (isPreSales && SALES_STATUSES.includes(newStatus)) {
+    if (isPreSales && SALES_STATUSES.includes(newStatus) && newStatus !== 'qualified') {
       alert('Pre-sales cannot move leads to sales columns')
       return
     }
@@ -547,8 +547,8 @@ const LeadsList = () => {
     } else if (isSalesEmployee) {
       allowedStatuses = SALES_STATUSES
     } else {
-      // Admin sees all columns: pre-sales then sales
-      allowedStatuses = [...PRE_SALES_STATUSES, ...SALES_STATUSES]
+      // Admin sees all columns: pre-sales then sales (deduplicate qualified which is in both)
+      allowedStatuses = [...new Set([...PRE_SALES_STATUSES, ...SALES_STATUSES])]
     }
     allowedStatuses.forEach(status => {
       if (statusFilter && statusFilter !== status) {

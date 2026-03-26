@@ -8,6 +8,8 @@ import XLSX from 'xlsx'
 import ChannelPartner from '../models/ChannelPartner.js'
 import Lead from '../models/Lead.js'
 import CPDataBatch from '../models/CPDataBatch.js'
+import Company from '../models/Company.js'
+import { getNextAssignee } from '../utils/roundRobinService.js'
 
 const router = express.Router()
 
@@ -467,8 +469,22 @@ router.post('/leads', protectChannelPartner, async (req, res) => {
       })
     }
 
+    // Map city to location object
+    const city = rest.city || rest.location?.city || ''
+    const leadLocation = city ? { city } : undefined
+
+    // Generate proper Lead ID
+    const company = await Company.findById(req.partner.company)
+    let leadId
+    if (company) {
+      leadId = await company.generateLeadId({
+        location: leadLocation,
+        source: 'partner'
+      })
+    }
+
     // Create lead with source: 'channel_partner', channelPartner reference
-    const lead = await Lead.create({
+    const leadCreateData = {
       name,
       phone,
       email,
@@ -482,7 +498,13 @@ router.post('/leads', protectChannelPartner, async (req, res) => {
         description: `Lead submitted via Channel Partner Portal by ${req.partner.name}`,
         performedByName: req.partner.name
       }]
-    })
+    }
+    if (leadLocation) leadCreateData.location = leadLocation
+    if (leadId) leadCreateData.leadId = leadId
+    // Remove raw city field so it doesn't conflict
+    delete leadCreateData.city
+
+    const lead = await Lead.create(leadCreateData)
 
     // Create batch record
     const batch = await CPDataBatch.create({
@@ -508,12 +530,103 @@ router.post('/leads', protectChannelPartner, async (req, res) => {
       $inc: { 'metrics.totalLeadsSubmitted': 1 }
     })
 
+    // ---- Round-Robin: Auto-assign to presales employee ----
+    const leadCity = rest.location?.city || rest.city
+    if (leadCity) {
+      try {
+        const assignee = await getNextAssignee(req.partner.company, leadCity, 'pre_sales')
+        if (assignee) {
+          await Lead.findByIdAndUpdate(lead._id, {
+            'departmentAssignments.preSales': {
+              employee: assignee.userId,
+              employeeName: assignee.userName,
+              assignedAt: new Date(),
+              assignedBy: null,
+              assignedByName: 'System (Round-Robin via CP Portal)',
+              isActive: true
+            },
+            $push: {
+              activities: {
+                action: 'assigned',
+                description: `Auto-assigned to presales: ${assignee.userName} (Round-Robin)`,
+                performedByName: 'System'
+              }
+            }
+          })
+        }
+      } catch (rrErr) {
+        console.error('Round-robin assignment failed for CP lead:', rrErr.message)
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: 'Lead submitted successfully',
       data: lead
     })
   } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// Validate bulk upload (pre-check for duplicates without creating leads)
+router.post('/leads/validate', protectChannelPartner, uploadBulkLeads.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Please upload an XLSX or CSV file' })
+    }
+
+    const workbook = XLSX.readFile(req.file.path)
+    const sheetName = workbook.SheetNames[0]
+    const sheet = workbook.Sheets[sheetName]
+    const rows = XLSX.utils.sheet_to_json(sheet)
+
+    // Clean up file immediately since we're only validating
+    fs.unlinkSync(req.file.path)
+
+    if (!rows || rows.length === 0) {
+      return res.status(400).json({ success: false, message: 'No data found in the file' })
+    }
+
+    const fresh = []
+    const duplicates = []
+    const errors = []
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i]
+      const rowIndex = i + 2
+
+      const name = row.name || row.Name || row.NAME
+      const phone = String(row.phone || row.Phone || row.PHONE || row.mobile || row.Mobile || '').trim()
+      const email = row.email || row.Email || row.EMAIL || ''
+
+      if (!name || !phone) {
+        errors.push({ row: rowIndex, name: name || '', phone: phone || '', error: 'Name and phone are required' })
+        continue
+      }
+
+      const existing = await Lead.findOne({ phone, company: req.partner.company })
+      if (existing) {
+        duplicates.push({ row: rowIndex, name, phone, reason: 'Lead with this phone already exists' })
+      } else {
+        fresh.push({ row: rowIndex, name, phone, email, city: row.city || row.City || row.CITY || '' })
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        totalRows: rows.length,
+        fresh: fresh.length,
+        duplicates,
+        errors,
+        freshLeads: fresh
+      }
+    })
+  } catch (error) {
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path)
+    }
     res.status(500).json({ success: false, message: error.message })
   }
 })
@@ -588,6 +701,20 @@ router.post('/leads/bulk', protectChannelPartner, uploadBulkLeads.single('file')
           continue
         }
 
+        // Map city and location
+        const rowCity = row.city || row.City || row.CITY || ''
+        const rowLocation = rowCity ? { city: rowCity } : undefined
+
+        // Generate proper Lead ID
+        const bulkCompany = await Company.findById(req.partner.company)
+        let rowLeadId
+        if (bulkCompany) {
+          rowLeadId = await bulkCompany.generateLeadId({
+            location: rowLocation,
+            source: 'partner'
+          })
+        }
+
         // Create the lead
         const leadData = {
           name,
@@ -605,10 +732,8 @@ router.post('/leads/bulk', protectChannelPartner, uploadBulkLeads.single('file')
           }]
         }
 
-        // Map optional fields from the spreadsheet
-        if (row.city || row.City) {
-          leadData.location = { city: row.city || row.City }
-        }
+        if (rowLocation) leadData.location = rowLocation
+        if (rowLeadId) leadData.leadId = rowLeadId
         if (row.alternatePhone || row.AlternatePhone) {
           leadData.alternatePhone = String(row.alternatePhone || row.AlternatePhone)
         }
@@ -620,6 +745,35 @@ router.post('/leads/bulk', protectChannelPartner, uploadBulkLeads.single('file')
         await ChannelPartner.findByIdAndUpdate(req.partner._id, {
           $inc: { 'metrics.totalLeadsSubmitted': 1 }
         })
+
+        // ---- Round-Robin: Auto-assign to presales employee ----
+        const bulkCity = row.city || row.City || row.CITY
+        if (bulkCity) {
+          try {
+            const assignee = await getNextAssignee(req.partner.company, bulkCity, 'pre_sales')
+            if (assignee) {
+              await Lead.findByIdAndUpdate(lead._id, {
+                'departmentAssignments.preSales': {
+                  employee: assignee.userId,
+                  employeeName: assignee.userName,
+                  assignedAt: new Date(),
+                  assignedBy: null,
+                  assignedByName: 'System (Round-Robin via CP Portal)',
+                  isActive: true
+                },
+                $push: {
+                  activities: {
+                    action: 'assigned',
+                    description: `Auto-assigned to presales: ${assignee.userName} (Round-Robin)`,
+                    performedByName: 'System'
+                  }
+                }
+              })
+            }
+          } catch (rrErr) {
+            console.error('Round-robin assignment failed for bulk CP lead:', rrErr.message)
+          }
+        }
       } catch (rowError) {
         batchErrors.push({ row: rowIndex, field: '', error: rowError.message })
       }

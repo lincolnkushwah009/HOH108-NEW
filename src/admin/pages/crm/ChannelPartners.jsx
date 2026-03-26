@@ -146,7 +146,7 @@ const ChannelPartners = () => {
     total: pagination.total || partners.length,
     active: partners.filter(p => p.status === 'active').length,
     inactive: partners.filter(p => p.status === 'inactive').length,
-    totalLeads: partners.reduce((sum, p) => sum + (p.leadsSubmitted || 0), 0),
+    totalLeads: partners.reduce((sum, p) => sum + (p.metrics?.totalLeadsSubmitted || p.leadsSubmitted || 0), 0),
   }
 
   // ── Load partners ──────────────────────────────────────────
@@ -556,11 +556,11 @@ const ChannelPartners = () => {
                       <Table.Cell>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{ fontWeight: '600', color: '#1e293b' }}>
-                            {partner.leadsSubmitted || 0}
+                            {partner.metrics?.totalLeadsSubmitted || partner.leadsSubmitted || 0}
                           </span>
                           <span style={{ color: '#94a3b8', fontSize: '12px' }}>/</span>
                           <span style={{ fontWeight: '500', color: '#059669', fontSize: '13px' }}>
-                            {partner.leadsConverted || 0}
+                            {partner.metrics?.leadsConverted || partner.leadsConverted || 0}
                           </span>
                         </div>
                       </Table.Cell>
@@ -578,7 +578,7 @@ const ChannelPartners = () => {
 
                       {/* Portal Status */}
                       <Table.Cell>
-                        <PortalBadge enabled={partner.portalEnabled} />
+                        <PortalBadge enabled={partner.portalAccess?.enabled} />
                       </Table.Cell>
 
                       {/* Status */}
@@ -616,7 +616,7 @@ const ChannelPartners = () => {
                             <Edit size={15} />
                           </button>
 
-                          {!partner.portalEnabled && (
+                          {!partner.portalAccess?.enabled && (
                             <button
                               onClick={() => openPortalModal(partner)}
                               title="Enable Portal"

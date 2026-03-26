@@ -483,7 +483,41 @@ router.get('/stats',
           const callyzer = new CallyzerService(token)
           console.log('[Callyzer Stats] Fetching for company:', req.activeCompany._id)
 
-          // Use call history to compute stats (avoids rate limit issues with multiple API calls)
+          // Use call-log/summary for accurate totals (single API call, no pagination needed)
+          try {
+            const summaryOpts = { startDate, endDate }
+            if (effectiveEmpNumber) summaryOpts.empNumbers = [effectiveEmpNumber]
+            const summaryRes = await callyzer.getCallLogSummary(summaryOpts)
+            if (summaryRes.success && summaryRes.data?.result) {
+              const s = summaryRes.data.result
+              console.log('[Callyzer Stats] From summary API - total:', s.total_calls, 'connected:', s.total_connected_calls)
+              return res.json({
+                success: true,
+                data: {
+                  summary: {
+                    total_calls: s.total_calls || 0,
+                    total_connected_calls: s.total_connected_calls || 0,
+                    connected_calls: s.total_connected_calls || 0,
+                    total_missed_calls: s.total_missed_calls || 0,
+                    missed_calls: s.total_missed_calls || 0,
+                    total_outgoing_calls: s.total_outgoing_calls || 0,
+                    outgoing_calls: s.total_outgoing_calls || 0,
+                    total_incoming_calls: s.total_incoming_calls || 0,
+                    incoming_calls: s.total_incoming_calls || 0,
+                    total_duration: s.total_duration || 0,
+                    total_call_duration: s.total_duration || 0,
+                    total_rejected_calls: s.total_rejected_calls || 0,
+                    total_unique_clients: s.total_unique_clients || 0,
+                  },
+                  analysis: null
+                }
+              })
+            }
+          } catch (summaryErr) {
+            console.log('[Callyzer Stats] Summary API failed, falling back to call history:', summaryErr.message)
+          }
+
+          // Fallback: Use paginated call history
           const histOpts = { startDate, endDate }
           if (effectiveEmpNumber) histOpts.empNumbers = [effectiveEmpNumber]
           if (callType) histOpts.callTypes = [callType]
