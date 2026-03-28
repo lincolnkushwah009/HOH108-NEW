@@ -107,7 +107,14 @@ function mapLeadSource(sourceStr) {
     'google': 'google',
   }
 
-  return sourceMap[s] || 'other'
+  if (sourceMap[s]) return sourceMap[s]
+
+  // If source contains "CP" or "channel partner", map to partner
+  if (s.includes('cp') || s.includes('channel partner')) return 'partner'
+  // If source contains "ref", map to referral
+  if (s.includes('referral') || s.includes('reference') || s.includes('ref')) return 'referral'
+
+  return 'other'
 }
 
 /**
@@ -257,6 +264,53 @@ function parseExcelDate(value) {
 // =====================
 // ROUTES
 // =====================
+
+/**
+ * GET /api/data-migration/template
+ * Download the presales migration Excel template
+ */
+router.get('/template',
+  protect,
+  async (req, res) => {
+    try {
+      const headers = [
+        'Client Name', 'Phone Number', 'Alt Num', 'Apartment Name',
+        'Lead Source', 'Final Lead Source', 'Lead Assigned Date',
+        'Call Status', 'Followup Date', 'Remarks', 'Lead Status',
+        'Other Remarks'
+      ]
+
+      const sampleRow = {
+        'Client Name': 'John Doe',
+        'Phone Number': '9876543210',
+        'Alt Num': '9123456789',
+        'Apartment Name': 'Prestige Lakeside',
+        'Lead Source': 'Google Ads',
+        'Final Lead Source': 'Google',
+        'Lead Assigned Date': '2026-03-15',
+        'Call Status': 'Completed',
+        'Followup Date': '2026-04-01',
+        'Remarks': 'Mar-15th-Interested in 2BHK|Mar-20th-Will call back',
+        'Lead Status': 'lost',
+        'Other Remarks': ''
+      }
+
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet([sampleRow], { header: headers })
+      ws['!cols'] = headers.map(h => ({ wch: Math.max(h.length + 2, 20) }))
+      XLSX.utils.book_append_sheet(wb, ws, 'Leads')
+
+      const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      res.setHeader('Content-Disposition', 'attachment; filename=presales_migration_template.xlsx')
+      res.send(buffer)
+    } catch (error) {
+      console.error('Template download error:', error)
+      res.status(500).json({ success: false, message: 'Failed to generate template' })
+    }
+  }
+)
 
 /**
  * GET /api/data-migration/employees
@@ -455,6 +509,31 @@ router.post('/import-presales',
               }
               updated = true
             }
+            // Set assignedTo if not already assigned
+            if (!lead.assignedTo) {
+              lead.assignedTo = employee._id
+              updated = true
+            }
+            // Add employee to teamMembers if not already present
+            const isTeamMember = (lead.teamMembers || []).some(
+              tm => tm.user?.toString() === employee._id.toString()
+            )
+            if (!isTeamMember) {
+              lead.teamMembers = lead.teamMembers || []
+              lead.teamMembers.push({
+                user: employee._id,
+                role: 'owner',
+                assignedBy: req.user._id,
+                assignedAt: leadAssignedDate || new Date()
+              })
+              updated = true
+            }
+            // Update status from sheet if provided
+            if (primaryStatus && primaryStatus !== 'new' && lead.primaryStatus === 'new') {
+              lead.primaryStatus = primaryStatus
+              lead.status = primaryStatus
+              updated = true
+            }
             // Set follow-up date
             if (followupDate && !lead.followUpDate) {
               lead.followUpDate = followupDate
@@ -493,7 +572,16 @@ router.post('/import-presales',
               source: source,
               sourceDetails: finalLeadSourceStr || leadSourceStr || undefined,
               primaryStatus: primaryStatus,
+              status: primaryStatus,
               leadType: 'lead',
+              assignedTo: employee._id,
+              createdBy: req.user._id,
+              teamMembers: [{
+                user: employee._id,
+                role: 'owner',
+                assignedBy: req.user._id,
+                assignedAt: leadAssignedDate || new Date()
+              }],
               departmentAssignments: {
                 preSales: {
                   employee: employee._id,
@@ -663,17 +751,19 @@ router.post('/preview-presales',
       const preview = []
       const columns = Object.keys(rawData[0])
 
+      // First pass: collect all phones for batch lookup
+      const allPhones = []
+      const parsedRows = []
+
       for (let i = 0; i < rawData.length; i++) {
         const row = rawData[i]
 
-        // Skip completely blank rows
         const hasAnyData = Object.values(row).some(v => v !== null && v !== undefined && v.toString().trim() !== '')
         if (!hasAnyData) continue
 
         const clientName = (row['Client Name'] || row['client name'] || row['Name'] || row['name'] || '').toString().trim()
         const phoneRaw = (row['Phone Number'] || row['Phone'] || row['phone number'] || row['phone'] || row['Mobile'] || row['mobile'] || '').toString().trim()
 
-        // Skip rows with no name AND no phone (blank/garbage rows)
         if (!clientName && !phoneRaw) continue
         const altNumRaw = (row['Alt Num'] || row['Alternate Number'] || row['alt num'] || row['Alt Phone'] || '').toString().trim()
         const apartmentName = (row['Apartment Name'] || row['apartment name'] || row['Apartment'] || row['Property'] || row['property'] || '').toString().trim()
@@ -685,44 +775,60 @@ router.post('/preview-presales',
         const followupDateRaw = row['Followup Date'] || row['followup date'] || row['Follow Up Date'] || ''
 
         const phone = normalizePhone(phoneRaw)
-
-        // Check if lead exists
-        let existingLead = null
         if (phone) {
-          existingLead = await Lead.findOne({
-            company: companyId,
-            $or: [
-              { phone: phone },
-              { phone: phoneRaw },
-              { alternatePhone: phone }
-            ]
-          }).select('_id leadId name phone primaryStatus')
+          allPhones.push(phone)
+          if (phone !== phoneRaw) allPhones.push(phoneRaw)
         }
 
-        const remarksCount = remarksStr ? remarksStr.split('|').filter(Boolean).length : 0
+        parsedRows.push({
+          rowNum: i + 2, clientName, phoneRaw, phone, altNumRaw, apartmentName,
+          leadSourceStr, finalLeadSourceStr, remarksStr, leadStatusStr, callStatusStr, followupDateRaw
+        })
+      }
+
+      // Batch lookup: find all existing leads by phone in one query
+      const existingLeads = await Lead.find({
+        company: companyId,
+        $or: [
+          { phone: { $in: allPhones } },
+          { alternatePhone: { $in: allPhones } }
+        ]
+      }).select('_id leadId name phone alternatePhone primaryStatus').lean()
+
+      // Build phone-to-lead lookup map
+      const phoneToLead = {}
+      for (const lead of existingLeads) {
+        if (lead.phone) phoneToLead[lead.phone] = lead
+        if (lead.alternatePhone) phoneToLead[lead.alternatePhone] = lead
+      }
+
+      // Second pass: build preview with lookup results
+      for (const r of parsedRows) {
+        const existingLead = r.phone ? (phoneToLead[r.phone] || phoneToLead[r.phoneRaw]) : null
+        const remarksCount = r.remarksStr ? r.remarksStr.split('|').filter(Boolean).length : 0
 
         preview.push({
-          row: i + 2,
-          clientName,
-          phone: phone || phoneRaw,
-          altNum: altNumRaw,
-          apartmentName,
-          source: finalLeadSourceStr || leadSourceStr,
-          mappedSource: mapLeadSource(finalLeadSourceStr || leadSourceStr),
-          status: leadStatusStr,
-          mappedStatus: mapLeadStatus(leadStatusStr),
-          callStatus: callStatusStr,
-          followupDate: followupDateRaw ? parseExcelDate(followupDateRaw) : null,
+          row: r.rowNum,
+          clientName: r.clientName,
+          phone: r.phone || r.phoneRaw,
+          altNum: r.altNumRaw,
+          apartmentName: r.apartmentName,
+          source: r.finalLeadSourceStr || r.leadSourceStr,
+          mappedSource: mapLeadSource(r.finalLeadSourceStr || r.leadSourceStr),
+          status: r.leadStatusStr,
+          mappedStatus: mapLeadStatus(r.leadStatusStr),
+          callStatus: r.callStatusStr,
+          followupDate: r.followupDateRaw ? parseExcelDate(r.followupDateRaw) : null,
           remarksCount,
-          remarks: remarksStr,
+          remarks: r.remarksStr,
           existing: existingLead ? {
             id: existingLead._id,
             leadId: existingLead.leadId,
             name: existingLead.name,
             status: existingLead.primaryStatus
           } : null,
-          valid: !!(phone && clientName),
-          error: !phone ? 'Missing phone' : (!clientName ? 'Missing name' : null)
+          valid: !!(r.phone && r.clientName),
+          error: !r.phone ? 'Missing phone' : (!r.clientName ? 'Missing name' : null)
         })
       }
 

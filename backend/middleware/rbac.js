@@ -539,7 +539,7 @@ export const getLeadQueryFilter = (req, additionalFilters = {}) => {
   ]
 
   return {
-    ...additionalFilters,
+    ...baseFilter,
     $or: assignedConditions
   }
 }

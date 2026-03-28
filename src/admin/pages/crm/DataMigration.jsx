@@ -171,6 +171,29 @@ const DataMigration = () => {
         </p>
       </div>
 
+      {/* Download Template */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '12px',
+        padding: '14px 20px', background: BRAND_LIGHT, borderRadius: '10px',
+        marginBottom: '24px', border: `1px solid ${BRAND}33`
+      }}>
+        <Info size={18} style={{ color: BRAND, flexShrink: 0 }} />
+        <span style={{ fontSize: '14px', color: '#555', flex: 1 }}>
+          Use the official template for 100% import accuracy. Required columns: <b>Client Name</b>, <b>Phone Number</b>.
+        </span>
+        <button
+          onClick={() => dataMigrationAPI.downloadTemplate()}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '8px 18px', background: BRAND, color: '#fff',
+            border: 'none', borderRadius: '8px', cursor: 'pointer',
+            fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap'
+          }}
+        >
+          <Download size={15} /> Download Template
+        </button>
+      </div>
+
       {/* Stepper */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px', gap: '0' }}>
         {[

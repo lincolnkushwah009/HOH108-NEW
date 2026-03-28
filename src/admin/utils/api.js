@@ -183,6 +183,19 @@ export const leadsAPI = {
 // Data Migration API
 export const dataMigrationAPI = {
   getEmployees: () => apiRequest('/data-migration/employees'),
+  downloadTemplate: () => {
+    const token = localStorage.getItem('hoh108_admin_token')
+    return fetch(`${API_BASE_URL}/data-migration/template`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    }).then(r => r.blob()).then(blob => {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'presales_migration_template.xlsx'
+      a.click()
+      URL.revokeObjectURL(url)
+    })
+  },
   previewPresalesData: (formData) => {
     const token = localStorage.getItem('hoh108_admin_token')
     const companyId = localStorage.getItem('hoh108_active_company')

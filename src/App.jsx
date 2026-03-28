@@ -2037,14 +2037,13 @@ function App() {
       </main>
       <Footer />
 
-      {/* Floating Spin & Win Trigger */}
+      {/* Floating Spin & Win Trigger - temporarily hidden
       <SpinWheelTrigger onClick={() => setIsSpinWheelOpen(true)} />
-
-      {/* Spin Wheel Lightbox */}
       <SpinWheelLightbox
         isOpen={isSpinWheelOpen}
         onClose={() => setIsSpinWheelOpen(false)}
       />
+      */}
 
       {/* AI Design Lightbox */}
       <AIDesignLightbox
